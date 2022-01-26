@@ -1,73 +1,45 @@
+package Codeforces;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class Gym_SimpleCalculation {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
-
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+    static long pow(long b, long mod){
+        long p = 1;
+        long a = 2;
+        while(b > 0){
+            if(b%2==1){
+                p = (p * a)%mod;
+            }
+            a = (a * a)%mod;
+            b /= 2;
         }
 
-        return min;
+        return p;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("calc.in");
+        sc.streamOutput("calc.out");
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        long n = sc.nextLong();
+        long k = sc.nextLong();
+
+        if(k==1){
+            sc.println("0");
+            sc.close();
+            System.exit(0);
+        }
+        else if(k==2){
+            sc.println("1");
+            sc.close();
+            System.exit(0);
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        long power = pow(n, k-1);
+        long ans = (pow(power, k) + 1)%k;
+        sc.println(ans+"");
 
         sc.close();
     }

@@ -1,73 +1,93 @@
+package Spoj;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class LCMSum {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        n += 10;
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
         }
 
-        return min;
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                spf.set(i, i);
+                primes.add(i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j) <= spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(primes.get(j)*i, false);
+                spf.set(primes.get(j)*i, primes.get(j));
+            }
+        }
+    }
+
+    static Set<Integer> getPFactors(int n){
+        Set<Integer> set = new HashSet<>();
+
+        while(n>1){
+            int curpf = spf.get(n);
+            set.add(curpf);
+
+            n /= curpf;
+        }
+
+        return set;
+    }
+
+    static long[] etf;
+    static void preCompute(){
+        int n = 1001000;
+        preComputePrimes(n);
+
+        etf = new long[n];
+        for(int i=1;i<=n;i++){
+            Set<Integer> pFactors = getPFactors(i);
+
+            long etfi = i;
+            for(int pf: pFactors){
+                etfi -= (etfi / pf);
+            }
+
+            long cur = etfi * i;
+            for(int j=i;j<n;j+=i){
+                etf[j] += cur;
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        preCompute();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            long ans = etf[n] - 1;
+            ans = ans * n;
+            ans /= 2;
+
+            ans += n;
+
+            sb.append(ans).append("\n");
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(sb);
 
         sc.close();
     }

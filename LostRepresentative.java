@@ -3,8 +3,7 @@ import java.util.*;
 import java.util.StringTokenizer;
 
 public class LostRepresentative {
-    static class Cell
-    {
+    static class Cell {
         int x;
         int y;
         Cell(int x, int y)
@@ -13,8 +12,7 @@ public class LostRepresentative {
             this.y = y;
         }
     }
-    public static boolean isValid(int n, int i, int j)
-    {
+    public static boolean isValid(int n, int i, int j) {
         return (i>=0 && i<n && j>=0 && j<n);
     }
     public static void main(String[] args) throws IOException {
@@ -26,20 +24,16 @@ public class LostRepresentative {
         {
             int n = sc.nextInt();
             int[][] mat = new int[n][n];
-            for(int i=0;i<n;i++)
-            {
+            for(int i=0;i<n;i++) {
                 mat[i] = sc.nextIntArray(n);
             }
 
             boolean[][] isVisited = new boolean[n][n];
 
             HashMap<Integer, Cell> hash = new HashMap<>();
-            for(int i=0;i<n;i++)
-            {
-                for(int j=0;j<n;j++)
-                {
-                    if(!isVisited[i][j] && mat[i][j] == 1)
-                    {
+            for(int i=0;i<n;i++) {
+                for(int j=0;j<n;j++) {
+                    if(!isVisited[i][j] && mat[i][j] == 1) {
                         Cell startcell = new Cell(i, j);
 
                         Queue<Cell> q = new LinkedList<>();
@@ -47,8 +41,7 @@ public class LostRepresentative {
                         isVisited[i][j] = true;
 
                         int count = 1;
-                        while(!q.isEmpty())
-                        {
+                        while(!q.isEmpty()) {
                             Cell thiscell = q.remove();
                             if(isValid(n, thiscell.x+1, thiscell.y) && mat[thiscell.x+1][thiscell.y]==1 && !isVisited[thiscell.x+1][thiscell.y]) {
                                 q.add(new Cell(thiscell.x + 1, thiscell.y));

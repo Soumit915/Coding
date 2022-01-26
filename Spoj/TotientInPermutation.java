@@ -1,73 +1,102 @@
+package Spoj;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class TotientInPermutation {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
+    static class Pair{
+        long n;
+        long etf;
+        Pair(int n, int etf){
+            this.n = n;
+            this.etf = etf;
+        }
+        public Pair compare(Pair p){
+            long c = this.n*p.etf - this.etf*p.n;
+            if(c >= 0){
+                return p;
+            }
+            else {
+                return this;
+            }
+        }
     }
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
+    static boolean isPermutation(int a, int b){
+        int[] hasha = new int[10];
+        int[] hashb = new int[10];
 
-    static TreeSet<Integer> arlist = new TreeSet<>();
+        while (a != 0 || b != 0) {
 
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
+            if (a == 0)
+                return false;
+            if (b == 0)
+                return false;
 
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
+            hasha[a % 10]++;
+            hashb[b % 10]++;
 
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+            a /= 10;
+            b /= 10;
         }
 
-        return min;
+        for(int i=0;i<10;i++){
+            if(hasha[i]!=hashb[i])
+                return false;
+        }
+
+        return true;
+    }
+
+    static Pair[] permut_ETF;
+    static void preCompute(int n){
+        int[] etf = new int[n];
+        for(int i=1;i<n;i++){
+            etf[i] += i;
+            for(int j=2*i;j<n;j+=i){
+                etf[j] -= etf[i];
+            }
+        }
+
+        permut_ETF = new Pair[n];
+        for(int i=2;i<n;i++){
+            int cur_etf = etf[i];
+
+            if(isPermutation(i, cur_etf)){
+                if(permut_ETF[i-1]==null)
+                    permut_ETF[i] = new Pair(i, cur_etf);
+                else permut_ETF[i] = permut_ETF[i-1].compare(new Pair(i, cur_etf));
+            }
+            else{
+                permut_ETF[i] = permut_ETF[i-1];
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
+
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        Integer[] arr = {75841, 2817, 4198273, 474883, 1288663, 1924891, 20617, 400399, 783169,
+                2044501, 2710627, 7507321, 6636841, 3582907, 4696009, 2006737, 1014109, 4435, 21,
+                8316907, 69271, 1956103, 3689251, 7357291, 2868469, 7026037, 291, 5380657, 1514419,
+                1504051, 778669, 6018163, 2094901, 45421, 2991, 5050429, 8319823, 732031, 5886817,
+                162619, 284029, 176569, 63, 2239261};
+
+        TreeSet<Integer> tree = new TreeSet<>(Arrays.asList(arr));
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+
+            if(tree.floor(n)==null)
+                sb.append("No solution\n");
+            else sb.append(tree.floor(n)).append("\n");
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(sb);
 
         sc.close();
     }

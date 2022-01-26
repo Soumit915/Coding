@@ -1,73 +1,144 @@
+package Spoj;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class PrimeOrNot {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        n += 10;
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
         }
 
-        return min;
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                spf.set(i, i);
+                primes.add(i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j) <= spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(primes.get(j)*i, false);
+                spf.set(primes.get(j)*i, primes.get(j));
+            }
+        }
+    }
+
+    static long mul(long a, long b, long mod){
+        long s = 0;
+        while(b > 0){
+            if(b%2==1){
+                s = (s + a)%mod;
+            }
+            a = (a + a)%mod;
+            b /= 2;
+        }
+
+        return s;
+    }
+
+    static long pow(long a, long b, long mod){
+        long p = 1;
+        while(b > 0){
+            if(b%2==1){
+                p = mul(p, a, mod);
+            }
+            a = mul(a, a, mod);
+            b /= 2;
+        }
+
+        return p;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        long[] primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47};
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            long n = sc.nextLong();
+
+            if(n==1){
+                sb.append("NO\n");
+                continue;
+            }
+            else if(n==2){
+                sb.append("YES\n");
+                continue;
+            }
+            else if(n%2==0){
+                sb.append("NO\n");
+                continue;
+            }
+            else{
+                boolean flag = false;
+                for(long l: primes){
+                    if(l == n){
+                        sb.append("YES\n");
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if(flag)
+                    continue;
+            }
+
+            int s = 0;
+            long d = n-1;
+            while(d%2==0){
+                d /= 2;
+                s++;
+            }
+
+            boolean isPrime = true;
+            for(int test = 0;test < 1000;test++){
+                long l = (long) (Math.random()*10000);
+                if(l > n-2)
+                    break;
+
+                boolean flag = false;
+                long x0 = pow(l, d, n);
+                if(x0 == 1 || x0 == n-1){
+                    break;
+                }
+
+                for(int i=1;i<s;i++){
+                    d = d * 2;
+                    if(pow(l, d, n) == (n-1)){
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if(!flag){
+                    isPrime = false;
+                    break;
+                }
+            }
+
+            if(isPrime){
+                sb.append("YES\n");
+            }
+            else {
+                sb.append("NO\n");
+            }
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(sb);
 
         sc.close();
     }

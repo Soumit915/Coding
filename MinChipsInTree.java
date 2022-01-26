@@ -2,73 +2,69 @@ import java.io.*;
 import java.util.*;
 import java.util.StringTokenizer;
 
-public class KratiProg {
+public class MinChipsInTree {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
+    static class Node{
+        int id;
+        boolean isVisited;
+        boolean isChipped;
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+        ArrayList<Node> childNodes = new ArrayList<>();
+        Node parent;
+        Node(int id){
+            this.id = id;
         }
+    }
 
-        return min;
+    static class Tree{
+        ArrayList<Node> nodelist = new ArrayList<>();
+        Tree(int n){
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+        public void addEdge(int parent, int child){
+            Node parentNode = nodelist.get(parent);
+            Node childNode = nodelist.get(child);
+
+            parentNode.childNodes.add(childNode);
+            childNode.parent = parentNode;
+        }
+        public int countChipRequired(Node root){
+            if(root.isVisited)
+                return 0;
+
+            int c = 0;
+            for(Node child: root.childNodes){
+                c += countChipRequired(child);
+            }
+
+            boolean flag = true;
+            for(Node child : root.childNodes){
+                flag |= child.isChipped;
+            }
+
+            if(!flag){
+                c++;
+                for(Node child: root.childNodes){
+                    child.isChipped = true;
+                }
+                root.isChipped = true;
+                root.parent.isChipped = true;
+            }
+
+            if(!root.isChipped){
+                if(root.parent == null){
+                    c += 1;
+                }
+            }
+
+            return c;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
-
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
-        }
-
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
-
         sc.close();
     }
 

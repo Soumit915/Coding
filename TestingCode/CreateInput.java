@@ -131,13 +131,9 @@ public class CreateInput {
         int t = 100000;
         sc.println(t+"");
         while(t-->0){
-            int n = (int) (Math.random()*50+2);
+            int n = (int) ((Math.random()*(50000000)) + 1);
+            n *= 2;
             sc.println(n+"");
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random()*2);
-                sc.print(v+"");
-            }
-            sc.println();
         }
 
         sc.close();

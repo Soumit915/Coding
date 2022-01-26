@@ -1,73 +1,97 @@
+package Codeforces;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class TheFootballSeason {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
+    static long gcd(long a, long b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
     }
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
+    static long x, y;
+    static void gcdExtended(long a, long b, long mod){
+        if(a%b==0){
+            x = 1;
+            y = 1 - (a / b);
             return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
+        }
+        gcdExtended(b, a%b, mod);
+        long t = y;
+        y = x - ((a / b) * y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long b){
+        gcdExtended(a, b, b);
+        x = (x%b + b)%b;
+        return x;
     }
 
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+    static long mul(long a, long b, long mod){
+        long m = 0;
+        while (b > 0){
+            if(b%2==1){
+                m = (m + a)%mod;
+            }
+            a = (a + a)%mod;
+            b /= 2;
         }
 
-        return min;
+        return m;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
-        }
+        long n = sc.nextLong();
+        long p = sc.nextLong();
+        long w = sc.nextLong();
+        long d = sc.nextLong();
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
+        long gcd = gcd(w, d);
+        if(p%gcd==0){
+            p /= gcd;
+            w /= gcd;
+            d /= gcd;
 
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+            long wins = mul(modInverse(w, d), p, d)%d;
+            long draws = (p - wins * w) / d;
+
+            long min_k;
+            if(wins < 0){
+                min_k = (-wins + d - 1) / d;
+            }
+            else{
+                min_k = ((wins) / d) * -1;
+            }
+
+            long max_k;
+            if(draws < 0){
+                max_k = ((-draws + w - 1) / w) * -1;
+            }
+            else{
+                max_k = (draws / w);
+            }
+
+            if(max_k < min_k){
+                System.out.println(-1);
+            }
+            else{
+                long ans_wins = wins + (max_k * d);
+                long ans_draws = draws - (max_k * w);
+                if(ans_draws + ans_wins > n){
+                    System.out.println(-1);
+                }
+                else{
+                    System.out.println(ans_wins+" "+ans_draws+" "+(n - ans_draws - ans_wins));
+                }
+            }
+        }
+        else{
+            System.out.println(-1);
+        }
 
         sc.close();
     }

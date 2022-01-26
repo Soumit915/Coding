@@ -1,73 +1,113 @@
+package Hackerearth;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class PrimarilityTest {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
-
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+    static long mul(long a, long b, long mod){
+        long s = 0;
+        while(b > 0){
+            if(b%2==1){
+                s = (s + a)%mod;
+            }
+            a = (a + a)%mod;
+            b /= 2;
         }
 
-        return min;
+        return s;
+    }
+
+    static long pow(long a, long b, long mod){
+        long p = 1;
+        while(b > 0){
+            if(b%2==1){
+                p = mul(p, a, mod);
+            }
+            a = mul(a, a, mod);
+            b /= 2;
+        }
+
+        return p;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        long[] primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47};
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            long n = sc.nextLong();
+
+            if(n==1){
+                sb.append("Composite\n");
+                continue;
+            }
+            else if(n==2){
+                sb.append("Prime\n");
+                continue;
+            }
+            else if(n%2==0){
+                sb.append("Composite\n");
+                continue;
+            }
+            else{
+                boolean flag = false;
+                for(long l: primes){
+                    if(l == n){
+                        sb.append("Prime\n");
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if(flag)
+                    continue;
+            }
+
+            int s = 0;
+            long d = n-1;
+            while(d%2==0){
+                d /= 2;
+                s++;
+            }
+
+            boolean isPrime = true;
+            for(long l: primes){
+                if(l > n-2)
+                    break;
+
+                boolean flag = false;
+                long x0 = pow(l, d, n);
+                if(x0 == 1 || x0 == n-1){
+                    break;
+                }
+
+                for(int i=1;i<s;i++){
+                    d = d * 2;
+                    if(pow(l, d, n) == (n-1)){
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if(!flag){
+                    isPrime = false;
+                    break;
+                }
+            }
+
+            if(isPrime){
+                sb.append("Prime\n");
+            }
+            else {
+                sb.append("Composite\n");
+            }
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(sb);
 
         sc.close();
     }

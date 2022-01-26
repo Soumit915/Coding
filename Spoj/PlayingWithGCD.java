@@ -1,73 +1,38 @@
+package Spoj;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class PlayingWithGCD {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
-    }
+    static int[] non_etf;
+    static void preComputeNONETF(int n){
+        non_etf = new int[n];
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
+        for(int i=1;i<n;i++){
+            int phi = i - non_etf[i];
 
-    static TreeSet<Integer> arlist = new TreeSet<>();
+            for(int j=2*i;j<n;j+=i){
+                non_etf[j] += phi;
+            }
 
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+            non_etf[i] += non_etf[i-1];
         }
-
-        return min;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        preComputeNONETF(100100);
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int i=1;i<=t;i++){
+            int n = sc.nextInt();
+            sb.append("Case ").append(i).append(": ").append(non_etf[n]).append("\n");
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(sb);
 
         sc.close();
     }

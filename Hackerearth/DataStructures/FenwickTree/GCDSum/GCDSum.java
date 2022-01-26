@@ -6,6 +6,29 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class GCDSum {
+
+    public int minEatingSpeed(int[] piles, int h) {
+        int ll = 1, ul = 1000000000;
+        while(ll<ul){
+            int mid = (ll + ul)/2;
+
+            int hcopy = h;
+            for (int pile : piles) {
+                hcopy -= (pile + mid - 1) / mid;
+            }
+
+            if(hcopy>=0){
+                ul = mid;
+            }
+            else{
+                ll = mid+1;
+            }
+        }
+
+        return ll;
+    }
+
+
     static ArrayList<Integer> primes = new ArrayList<>();
     static int mod = (int) 1e9+7;
     static int[] phi = new int[500100];

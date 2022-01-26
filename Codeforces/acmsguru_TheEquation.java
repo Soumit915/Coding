@@ -1,73 +1,149 @@
+package Codeforces;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class KratiProg {
+public class acmsguru_TheEquation {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
+    static long gcd(long a, long b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
     }
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
-
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
+    static long x, y;
+    static void gcdExtended(long a, long b, long mod){
+        if(a%b==0) {
+            x = 1;
+            y = 1 - (a/b);
             return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
         }
-
-        return min;
+        gcdExtended(b, a%b, mod);
+        long t = y;
+        y = x - ((a/b)*y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long b){
+        gcdExtended(a, b, b);
+        x = (x%b + b)%b;
+        return x;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
+        int t = 1;
+        StringBuilder sb = new StringBuilder();
+        for(int i=1;i<=t;i++){
+            long a = sc.nextLong();
+            long b = sc.nextLong();
+            long c = sc.nextLong() * -1;
+            long x1 = sc.nextLong();
+            long x2 = sc.nextLong();
+            long y1 = sc.nextLong();
+            long y2 = sc.nextLong();
+
+            if(c<0){
+                c = -c;
+                a = -a;
+                b = -b;
+            }
+
+            if(a<0){
+                a = -a;
+                long temp = x1;
+                x1 = -x2;
+                x2 = -temp;
+            }
+
+            if(b<0){
+                b = -b;
+                long temp = y1;
+                y1 = -y2;
+                y2 = -temp;
+            }
+
+            if(a==0 && b==0 && c==0){
+                sb.append((x2-x1+1)*(y2-y1+1)).append("\n");
+                continue;
+            }
+
+            if(a==0 && b==0){
+                sb.append("0\n");
+                continue;
+            }
+
+            if(a==0){
+                if(c%b==0 && y1<=(c/b) && (c/b)<=y2){
+                    sb.append(x2-x1+1).append("\n");
+                }
+                else{
+                    sb.append("0\n");
+                }
+                continue;
+            }
+            else if(b==0){
+                if(c%a==0 && x1<=(c/a) && (c/a)<=x2){
+                    sb.append(y2-y1+1).append("\n");
+                }
+                else{
+                    sb.append("0\n");
+                }
+                continue;
+            }
+
+            long gcd = gcd(a, b);
+            if(c%gcd==0){
+                a /= gcd;
+                b /= gcd;
+                c /= gcd;
+
+                long x = (c * modInverse(a, b))%b;
+                long y = (c - a*x)/b;
+
+                long minK_x;
+                if(x < x1){
+                    minK_x = (x1 - x + b - 1) / b;
+                }
+                else{
+                    minK_x = ((x - x1) / b) * -1;
+                }
+
+                long maxK_x;
+                if(x < x2){
+                    maxK_x = (x2 - x) / b;
+                }
+                else{
+                    maxK_x = ((x - x2 + b - 1) / b) * -1;
+                }
+
+                long maxK_y;
+                if(y < y1){
+                    maxK_y = ((y1 - y + a - 1) / a) * -1;
+                }
+                else{
+                    maxK_y = (y - y1) / a;
+                }
+
+                long minK_y;
+                if(y < y2){
+                    minK_y = ((y2 - y) / a) * -1;
+                }
+                else{
+                    minK_y = ((y - y2 + a - 1) / a);
+                }
+
+                long start = Math.max(minK_x, minK_y);
+                long end = Math.min(maxK_x, maxK_y);
+                long ans = Math.max(end - start + 1, 0);
+                sb.append(ans).append("\n");
+            }
+            else{
+                sb.append("0\n");
+            }
         }
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.print(sb);
 
         sc.close();
     }

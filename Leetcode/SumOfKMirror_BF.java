@@ -34,7 +34,7 @@ public class SumOfKMirror_BF {
     }
     public static void main(String[] args) throws IOException {
         long start = System.currentTimeMillis();
-        SumOfKMirror.Soumit sc = new SumOfKMirror.Soumit();
+        Soumit sc = new Soumit();
 
         System.out.println(kMirror(5, 20));
         long end = System.currentTimeMillis();
