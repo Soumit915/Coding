@@ -12,14 +12,23 @@ public class Test1 {
         return r;
     }
 
+    static boolean isPerfectSquare(int n){
+        int sqrt = (int) (Math.sqrt(n));
+        return sqrt*sqrt == n;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = 1000;
-        for(int i=1;i<=t;i++){
-            int v = reverse(i);
-            System.out.println((i+v)+" "+i);
+        int n = 32760;
+        int c = 0;
+        for(int i=1;i<=n;i++){
+            if(n%i==0 && isPerfectSquare(i)){
+                c++;
+            }
         }
+
+        System.out.println(c);
 
         sc.close();
     }

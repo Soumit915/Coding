@@ -3,37 +3,37 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class UpTheStrip {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        int n = sc.nextInt();
+        long mod = sc.nextLong();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+        long[] dp = new long[n];
+        long[] segSum = new long[n];
+        long sum = 1;
+        dp[0] = 1;
+        for(int i=1;i<n;i++){
+            segSum[i] = (segSum[i] + 1)%mod;
+            if(2*i+1<n)
+                segSum[2*i+1] = (segSum[2*i+1] - 1 + mod)%mod;
+        }
+        for(int i=1;i<n;i++){
+            segSum[i] = (segSum[i-1] + segSum[i])%mod;
+            dp[i] = (sum + segSum[i])%mod;
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            for(int j=2*i+1;j<n;j+=(i+1)){
+                segSum[j] = (segSum[j] + dp[i])%mod;
+                int factor = (j+1) / (i+1);
+                if(j+factor < n)
+                    segSum[j+factor] = (segSum[j+factor] - dp[i] + mod)%mod;
             }
 
-            sb.append(max).append("\n");
+            sum = (sum + dp[i])%mod;
         }
 
-        System.out.println(sb);
+        System.out.println(dp[n-1]);
 
         sc.close();
     }

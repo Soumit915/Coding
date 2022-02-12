@@ -1,43 +1,108 @@
-package Codeforces;
-
+package Codeforces.Round770Div2;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+public class D {
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+    static class Pair{
+        int one, two;
+        int non_zero1, non_zero2;
+        Pair(int one, int two, int non_zero1, int non_zero2){
+            this.one = one;
+            this.two = two;
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
-            }
-
-            sb.append(max).append("\n");
+            this.non_zero1 = non_zero1;
+            this.non_zero2 = non_zero2;
         }
-
-        System.out.println(sb);
-
-        sc.close();
     }
 
+    static Pair getMaxMinIndex(Soumit sc, int a, int b, int c, int d) throws IOException {
+        System.out.println("? "+b+" "+c+" "+d);
+        System.out.flush();
+        int va = sc.nextInt();
+
+        System.out.println("? "+a+" "+c+" "+d);
+        System.out.flush();
+        int vb = sc.nextInt();
+
+        System.out.println("? "+b+" "+a+" "+d);
+        System.out.flush();
+        int vc = sc.nextInt();
+
+        System.out.println("? "+b+" "+c+" "+a);
+        System.out.flush();
+        int vd = sc.nextInt();
+
+        if(va==vb && vb==vc && vc==vd){
+            return new Pair(a, b, c, d);
+        }
+
+        if(va==vb && vb==vc){
+            return new Pair(d, a, b, c);
+        }
+        else if(va==vc && vc==vd){
+            return new Pair(b, a, c, d);
+        }
+        else if(va==vb && vb==vd){
+            return new Pair(c, a, b, d);
+        }
+        else if(vb==vc && vc==vd){
+            return new Pair(a, b, c, d);
+        }
+
+        if(va==vb && ((vc!=vd) || (vc==vd && va>vc))) {
+            return new Pair(c, d, a, b);
+        }
+        else if(va==vc && ((vb!=vd) || (vb==vd && va>vb))) {
+            return new Pair(b, d, a, c);
+        }
+        else if(va==vd && ((vc!=vb) || (vc==vb && va>vc))) {
+            return new Pair(b, c, a, d);
+        }
+        else if(vb==vc && ((va!=vd) || (va==vd && vb>vd))) {
+            return new Pair(a, d, b, c);
+        }
+        else if(vb==vd && ((va!=vc) || (va==vc && vb>vc))) {
+            return new Pair(a, c, b, d);
+        }
+        else {
+            return new Pair(a, b, c, d);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+        
+        int t = sc.nextInt();
+        while(t-->0){
+            int n = sc.nextInt();
+
+            List<Integer> nonZeroIndexList = new ArrayList<>();
+
+            int a1 = 1, a2 = 2;
+            for(int i=3;i<=n;i+=2){
+                if(i+1>n)
+                    break;
+                Pair p = getMaxMinIndex(sc, a1, a2, i, i+1);
+                a1 = p.one;
+                a2 = p.two;
+
+                nonZeroIndexList.add(p.non_zero1);
+                nonZeroIndexList.add(p.non_zero2);
+            }
+
+            if(n%2==1){
+                Pair p = getMaxMinIndex(sc, a1, a2, n, nonZeroIndexList.get(0));
+                a1 = p.one;
+                a2 = p.two;
+            }
+
+            System.out.println("! "+a1+" "+a2);
+            System.out.flush();
+        }
+        
+        sc.close();
+    }
     static class Soumit {
         final private int BUFFER_SIZE = 1 << 18;
         final private DataInputStream din;

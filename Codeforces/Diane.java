@@ -2,8 +2,9 @@ package Codeforces;
 
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class Cobb {
+public class Diane {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -11,26 +12,27 @@ public class Cobb {
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            if(n==1){
+                sb.append("a\n");
+                continue;
             }
 
-            sb.append(max).append("\n");
+            StringBuilder str = new StringBuilder();
+
+            if(n%2==1){
+                str.append("k");
+                n -= 1;
+            }
+
+            int k = n/2;
+            for(int i=0;i<k;i++)
+                str.append("a");
+            str.append("b");
+            for(int i=0;i<k-1;i++)
+                str.append("a");
+
+            sb.append(str).append("\n");
         }
 
         System.out.println(sb);

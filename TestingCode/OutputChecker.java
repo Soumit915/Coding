@@ -36,16 +36,8 @@ public class OutputChecker {
 
             if(!a1.equals(a2)){
                 System.out.println("Wrong Answer at line: "+line);
-                for(int i=0;i<a1.length();i++){
-                    if(a1.charAt(i)!=a2.charAt(i)){
-                        System.out.println(i);
-                        System.out.println(a1.substring(i-120, i+110));
-                        System.out.println(a2.substring(i-120, i+110));
-                        break;
-                    }
-                }
-                /*System.out.println(a1);
-                System.out.println(a2);*/
+                System.out.println(a1);
+                System.out.println(a2);
 
                 //System.out.println(n+" "+Arrays.toString(v));
                 System.exit(0);

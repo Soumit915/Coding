@@ -1,39 +1,102 @@
-package Codeforces;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class LongestCommonSubpath {
+
+    static long mod1 = (long) 1e11 + 7;
+    static long base1 = 100001;
+
+    static long mod2 = 119218851371L;
+    static long base2 = (long) 1e5 + 3;
+
+    static long[] pow1;
+    static long[] pow2;
+    public void preComputePow(int n){
+        pow1 = new long[n];
+        pow1[0] = 1;
+        for(int i=1;i<n;i++){
+            pow1[i] = (pow1[i-1] * base1)%mod1;
+        }
+
+        pow2 = new long[n];
+        pow2[0] = 1;
+        for(int i=1;i<n;i++){
+            pow2[i] = (pow2[i-1] * base2)%mod2;
+        }
+    }
+
+    static boolean isValid(int[][] path, int size, long base, long mod, long[] pow){
+        int m = path.length;
+
+        long hash = 0;
+        Set<Long> commonSet = new HashSet<>();
+        for(int i=0;i<size;i++){
+            hash = ((hash*base)%mod + path[0][i])%mod;
+        }
+        commonSet.add(hash);
+
+        for(int i=size;i<path[0].length;i++){
+            hash = ((hash*base)%mod - (path[0][i - size] * pow[size])%mod + mod)%mod;
+            hash = (hash + path[0][i])%mod;
+            commonSet.add(hash);
+        }
+
+        for(int i=1;i<m;i++){
+            hash = 0;
+            Set<Long> set = new HashSet<>();
+            for(int j=0;j<size;j++){
+                hash = ((hash*base)%mod + path[i][j])%mod;
+            }
+            if(commonSet.contains(hash))
+                set.add(hash);
+
+            for(int j=size;j<path[i].length;j++){
+                hash = ((hash*base)%mod - (path[i][j - size] * pow[size])%mod + mod)%mod;
+                hash = (hash + path[i][j])%mod;
+
+                if(commonSet.contains(hash))
+                    set.add(hash);
+            }
+
+            commonSet = set;
+            if(commonSet.size() == 0)
+                return false;
+        }
+
+        return commonSet.size() > 0;
+    }
+
+    public int longestCommonSubpath(int n, int[][] paths) {
+        preComputePow(100005);
+
+        int min = 10000000;
+        for (int i=0;i<paths.length;i++) {
+            for(int j=0;j<paths[i].length;j++){
+                paths[i][j] = paths[i][j] + 1;
+            }
+            min = Math.min(min, paths[i].length);
+        }
+
+
+        int ll = 0, ul = min;
+        while(ll < ul){
+            int mid = (ll + ul + 1)/2;
+            if(isValid(paths, mid, base1, mod1, pow1)){
+                ll = mid;
+            }
+            else{
+                ul = mid - 1;
+            }
+        }
+
+        return ll;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
-            }
-
-            sb.append(max).append("\n");
-        }
-
-        System.out.println(sb);
 
         sc.close();
     }

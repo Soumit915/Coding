@@ -1,36 +1,33 @@
-package Codeforces;
+package GeeksforGeeks;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class Minimize_N_in_K_moves {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            long n = sc.nextLong();
+            long k = sc.nextLong();
+            long d = sc.nextLong();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            long minK = n / d;
+            if(minK > k){
+                sb.append(n - k * d);
+                continue;
             }
 
-            sb.append(max).append("\n");
+            k -= minK;
+
+            if(k%2==0){
+                sb.append(n - k*d).append("\n");
+            }
+            else{
+                sb.append(Math.abs(n - (k+1)*d)).append("\n");
+            }
         }
 
         System.out.println(sb);

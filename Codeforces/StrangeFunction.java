@@ -3,34 +3,42 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class StrangeFunction {
+
+    static long mod = (long) 1e9 + 7;
+
+    static long gcd(long a, long b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
+    }
+    static long lcm(long a, long b){
+        return (a * b) / gcd(a, b);
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            long n = sc.nextLong();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+            long i = 2;
+            long mul = i;
+            long sum = 0;
+            long ncopy = n;
+            while(n > 0){
+                long curcount = n - ncopy / mul;
+                long currentLeastCoprime = (curcount * i)%mod;
+                sum = (sum + currentLeastCoprime)%mod;
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+                n -= curcount;
+                i++;
+                mul = lcm(i, mul);
             }
 
-            sb.append(max).append("\n");
+            sb.append(sum).append("\n");
         }
 
         System.out.println(sb);

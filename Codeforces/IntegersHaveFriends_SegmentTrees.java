@@ -3,7 +3,86 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class IntegersHaveFriends_SegmentTrees {
+
+    static long gcd(long a, long b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
+    }
+
+    static int getNextPowerOf2(int n){
+        n |= (n>>1);
+        n |= (n>>2);
+        n |= (n>>4);
+        n |= (n>>8);
+        n |= (n>>16);
+        n |= (n>>25);
+        return n+1;
+    }
+
+    static void build(long[] segTree, int si, long[] arr, int ll, int ul){
+        if(ll==ul){
+            segTree[si] = arr[ll];
+            return;
+        }
+
+        int mid = (ll + ul)/2;
+        build(segTree, 2*si+1, arr, ll, mid);
+        build(segTree, 2*si+2, arr, mid+1, ul);
+        segTree[si] = gcd(segTree[2*si + 1], segTree[2*si+2]);
+    }
+
+    static class Pair{
+        int index;
+        long val;
+        Pair(int index, long val){
+            this.index = index;
+            this.val = val;
+        }
+    }
+
+    static Pair query(long[] segTree, int si, long gcd, int start, int end, int ll, int ul){
+
+        //no overlap
+        if(start>ul || end<ll)
+            return new Pair(-1, 1);
+
+        int mid = (ll + ul)/2;
+
+        //total overlap
+        if(ll>=start && ul<=end){
+            if(gcd(gcd, segTree[si])==1){
+                if(ll==ul){
+                    return new Pair(ul+1, 1);
+                }
+
+                long si2gcd = gcd(gcd, segTree[2*si+2]);
+                if(si2gcd==1){
+                    return query(segTree, 2*si+2, gcd, start, end, mid+1, ul);
+                }
+                else{
+                    return query(segTree, 2*si+1, si2gcd, start, end, ll, mid);
+                }
+            }
+            else return new Pair(ll, gcd(gcd, segTree[si]));
+        }
+
+        //partial overlap
+        Pair right = query(segTree, 2*si+2, gcd, start, end, mid+1, ul);
+        if(right.index==-1){
+            return query(segTree, 2*si+1, gcd, start, end, ll, mid);
+        }
+
+        if(right.val==1)
+            return right;
+
+        Pair left = query(segTree, 2*si+1, right.val, start, end, ll, mid);
+        if(left.index==-1)
+            return right;
+        else return left;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -11,23 +90,31 @@ public class Cobb {
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            long[] arr = sc.nextLongArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+            if(n==1){
+                sb.append("1\n");
+                continue;
+            }
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
+            long[] diff = new long[n];
+            diff[0] = 1;
+            for(int i=1;i<n;i++){
+                diff[i] = Math.abs(arr[i] - arr[i-1]);
+            }
 
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            int sn = 2*getNextPowerOf2(n)+1;
+            long[] segTree = new long[sn];
+            build(segTree, 0, diff, 0, n-1);
+
+            int max = 1;
+            int startMax = 1;
+            for(int i=1;i<n;i++){
+                Pair p = query(segTree, 0, diff[i], startMax, i, 0, n-1);
+                int start = p.index-1;
+
+                max = Math.max(max, Math.max(0, i - start + 1));
+                startMax = Math.max(startMax, p.index);
             }
 
             sb.append(max).append("\n");

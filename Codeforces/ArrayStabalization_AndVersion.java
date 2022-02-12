@@ -3,34 +3,64 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class ArrayStabalization_AndVersion {
+
+    static int gcd(int a, int b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int  t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
             int k = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
+            int gcd = gcd(n, k);
+            boolean flag = true;
+            int max = 0;
+            for(int i=0;i<gcd;i++){
+                ArrayList<Integer> list = new ArrayList<>();
+                for(int j=i, c=0;c<(n / gcd);j=(j+k)%n,c++){
+                    list.add(arr[j]);
                 }
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
+                int index = 0;
+                while(index<list.size() && list.get(index)!=0){
+                    index++;
+                }
 
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
+                if(index==list.size()){
+                    flag = false;
+                    break;
+                }
+                else{
+                    int j = index;
+                    int count = 0;
+                    do{
+                        if(list.get(j)==0){
+                            count = 0;
+                        }
+                        else{
+                            count++;
+                        }
+                        max = Math.max(max, count);
+                        j = (j + 1)%list.size();
+                    }while(index!=j);
                 }
             }
 
-            sb.append(max).append("\n");
+            if(!flag){
+                sb.append("-1\n");
+            }
+            else{
+                sb.append(max).append("\n");
+            }
         }
 
         System.out.println(sb);

@@ -3,37 +3,79 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class CoprimeSubsequences {
+
+    static long mod = (long) 1e9 + 7;
+
+    static long[] mobius;
+    static boolean[] isPrime;
+
+    static void preComputeMobiusFunction(int n){
+        mobius = new long[n];
+        isPrime = new boolean[n];
+        Arrays.fill(mobius, 1);
+
+        for(int i=2;i<n;i++){
+            if(mobius[i]!=1)
+                continue;
+
+            isPrime[i] = true;
+            for(int j=i;j<n;j+=i){
+                mobius[j] *= -i;
+            }
+        }
+
+        for(int i=2;i<n;i++){
+            mobius[i] = mobius[i] / i;
+        }
+    }
+
+    static long pow(long a, long b){
+        long p = 1;
+        while(b > 0){
+            if(b%2==1){
+                p = (p * a)%mod;
+            }
+            a = (a * a)%mod;
+            b /= 2;
+        }
+        return p;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        int lim = 100010;
+        preComputeMobiusFunction(lim);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+        int n = sc.nextInt();
+        int[] arr = sc.nextIntArray(n);
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
-            }
-
-            sb.append(max).append("\n");
+        long[] hash = new long[lim];
+        for(int i=0;i<n;i++){
+            hash[arr[i]]++;
         }
 
-        System.out.println(sb);
+        long[] multipleHash = new long[lim];
+        for(int i=2;i<lim;i++){
+            if(mobius[i]==0)
+                continue;
+
+            for(int j=i;j<lim;j+=i){
+                multipleHash[i] += hash[j];
+            }
+        }
+
+        long totcombs = (pow(2, n) - 1 + mod)%mod;
+
+        for(int i=2;i<lim;i++){
+            if(mobius[i]==0)
+                continue;
+
+            totcombs = ((totcombs + ((pow(2, multipleHash[i]) - 1 + mod)%mod * mobius[i]))%mod + mod)%mod;
+        }
+
+        System.out.println(totcombs);
 
         sc.close();
     }

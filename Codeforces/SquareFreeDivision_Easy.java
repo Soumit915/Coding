@@ -3,9 +3,61 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class SquareFreeDivision_Easy {
+
+    static ArrayList<Integer> primes;
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(){
+        int n = 10000100;
+        primes = new ArrayList<>();
+        isPrime = new ArrayList<>(n);
+        spf = new ArrayList<>(n);
+
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
+        }
+
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                primes.add(i);
+                spf.set(i, i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j)<=spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(primes.get(j) * i, false);
+                spf.set(primes.get(j)*i, primes.get(j));
+            }
+        }
+    }
+
+    static int getMinimalFactorToSquare(int n){
+        Map<Integer, Integer> hash = new HashMap<>();
+
+        while(n > 1){
+            int f = spf.get(n);
+            hash.put(f, hash.getOrDefault(f, 0)+1);
+
+            n /= f;
+        }
+
+        int minf = 1;
+        for(int i: hash.keySet()){
+            if(hash.get(i)%2==1)
+                minf *= i;
+        }
+
+        return minf;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
+
+        preComputePrimes();
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
@@ -14,23 +66,20 @@ public class Cobb {
             int k = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+            int div = 1;
+            Set<Integer> set = new HashSet<>();
+            for(int i=0;i<n;i++){
+                int minf =  getMinimalFactorToSquare(arr[i]);
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
+                if(set.contains(minf)){
+                    div++;
 
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
+                    set = new HashSet<>();
                 }
+                set.add(minf);
             }
 
-            sb.append(max).append("\n");
+            sb.append(div).append("\n");
         }
 
         System.out.println(sb);

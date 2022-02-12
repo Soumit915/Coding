@@ -1,36 +1,49 @@
-package Codeforces;
+package Spoj;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class BoringFactorials {
+
+    static long x, y;
+    static void gcdExtended(long a, long b, long mod){
+        if(a%b==0){
+            x = 1;
+            y = 1 - (a / b);
+            return;
+        }
+        gcdExtended(b, a%b, mod);
+        long t = y;
+        y = x - ((a/b)*y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long mod){
+        gcdExtended(a, mod, mod);
+        x = (x%mod + mod)%mod;
+        return x;
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        while(t-->0){
+            long n = sc.nextLong();
+            long p = sc.nextLong();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            if(n >= p) {
+                sb.append("0\n");
+                continue;
             }
 
-            sb.append(max).append("\n");
+            long ans = p-1;
+            for(long i=p-2;i>=n;i--){
+                long deno = modInverse(i+1, p);
+                ans = (ans * deno)%p;
+            }
+
+            sb.append(ans).append("\n");
         }
 
         System.out.println(sb);

@@ -1,9 +1,9 @@
-package Codeforces;
+package Codeforces.Round770Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class C {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -12,25 +12,36 @@ public class Cobb {
         while (t-->0){
             int n = sc.nextInt();
             int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            if (k == 1) {
+                sb.append("YES\n");
+                for(int i=0;i<n;i++)
+                    sb.append(i+1).append("\n");
+                continue;
             }
 
-            sb.append(max).append("\n");
+            if((n*k)%2==1 || n%2==1){
+                sb.append("NO\n");
+                continue;
+            }
+
+            sb.append("YES\n");
+            int v = 1;
+            for(int i=0;i<n/2;i++){
+                for(int j=0;j<k;j++){
+                    sb.append(v).append(" ");
+                    v+=2;
+                }
+                sb.append("\n");
+            }
+            v = 2;
+            for(int i=0;i<n/2;i++){
+                for(int j=0;j<k;j++){
+                    sb.append(v).append(" ");
+                    v+=2;
+                }
+                sb.append("\n");
+            }
         }
 
         System.out.println(sb);

@@ -3,7 +3,7 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class Mikasa {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -11,26 +11,30 @@ public class Cobb {
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int m = sc.nextInt();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
+            if(m < n){
+                sb.append(0).append("\n");
+                continue;
+            }
+
+            m+=1;
+            int l = Integer.toBinaryString(m).length();
+            int poss_m = 2000000100;
+            int curval = 0;
+            for(int i=l-1;i>=0;i--){
+                if((n&(1<<i)) != 0)
+                    continue;
+
+                if(((curval | (1<<i))^n) >= m){
+                    poss_m = Math.min(poss_m, curval|(1<<i));
                 }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
+                else{
+                    curval |= (1<<i);
                 }
             }
 
-            sb.append(max).append("\n");
+            sb.append(poss_m).append("\n");
         }
 
         System.out.println(sb);

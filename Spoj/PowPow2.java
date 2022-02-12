@@ -1,39 +1,146 @@
-package Codeforces;
+package Spoj;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class PowPow2 {
+
+    static long x, y;
+    static void gcdExtended(long a, long b, long mod){
+        if(a%b==0){
+            x = 1;
+            y = 1 - (a/b);
+            return;
+        }
+        gcdExtended(b, a%b, mod);
+        long t = y;
+        y = x - ((a/b) * y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long b){
+        if(b==1681){
+            for(int i=1;i<b;i++){
+                if((a * i)%b == 1)
+                    return i;
+            }
+        }
+
+        gcdExtended(a, b, b);
+        x = (x%b + b)%b;
+
+        return x;
+    }
+
+    static long[] fact2;
+
+    static long[] fact1681;
+    static long[] fact1681_p;
+
+    static long[] fact148721;
+
+    static void preCompute(int n){
+        fact2 = new long[n];
+        fact2[0] = 1;
+
+        fact1681 = new long[n];
+        fact1681_p = new long[n];
+        fact1681[0] = 1;
+        fact1681_p[0] = 0;
+
+        fact148721 = new long[n];
+        fact148721[0] = 1;
+
+        for(int i=1;i<n;i++){
+            fact2[i] = (fact2[i-1] * i)%2;
+            //inverse2[i] = modInverse(fact2[i], 2);
+
+            int t = i;
+            fact1681_p[i] = fact1681_p[i-1];
+            while(t%41==0){
+                t /= 41;
+                fact1681_p[i]++;
+            }
+            fact1681[i] = (fact1681[i-1] * t)%1681;
+            //inverse1681[i] = modInverse(fact1681[i], 1681);
+
+            fact148721[i] = (fact148721[i-1] * i)%148721;
+            //inverse148721[i] = modInverse(fact148721[i], 148721);
+        }
+    }
+
+    static long getExponent(long num, long deno){
+        long rem2 = (fact2[(int) num] * modInverse((fact2[(int) deno] * fact2[(int) deno])%2, 2))%2;
+        long rem1681 = (fact1681[(int) num] * modInverse((fact1681[(int) deno] * fact1681[(int) deno])%1681, 1681))%1681;
+        rem1681 = ((pow(41, fact1681_p[(int) num] - fact1681_p[(int) deno] - fact1681_p[(int) deno], 1681)) * rem1681)%1681;
+        long rem148721 = (fact148721[(int) num] * modInverse((fact148721[(int) deno] * fact148721[(int) deno])%148721, 148721))%148721;
+
+        long prod = (long) 5e8 + 2;
+
+        long exp = (rem2 * (prod / 2) * modInverse(prod / 2, 2))%prod;
+        exp = (exp + (rem1681 * (prod / 1681) * modInverse(prod / 1681, 1681))%prod)%prod;
+        exp = (exp + (rem148721 * (prod / 148721) * modInverse(prod / 148721, 148721))%prod)%prod;
+
+        return exp;
+    }
+
+    static long pow(long a, long b, long mod){
+        long p = 1;
+        while(b > 0){
+            if(b%2==1)
+                p = (p * a)%mod;
+            a = (a * a)%mod;
+            b /= 2;
+        }
+
+        return p;
+    }
+
+    static long getBPow(long a, long b){
+        long rem2 = pow(a, 0, 2);
+        long rem5108 = pow(a, b, 500000003);
+
+        long prod = (long) 1e9 + 6;
+
+        long exp = (rem2 * (prod / 2) * modInverse(prod / 2, 2))%prod;
+        exp = (exp + (rem5108 *
+                (prod / 500000003) * modInverse(prod / 500000003, 500000003))%prod)%prod;
+
+        return exp;
+    }
+
     public static void main(String[] args) throws IOException {
+        /*Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");*/
+
         Soumit sc = new Soumit();
+
+        preCompute(200100);
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        while(t-->0){
+            long a = sc.nextLong();
+            long b = sc.nextLong();
+            long n = sc.nextLong();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            if(a==0 && b==0){
+                sb.append("1\n");
+                continue;
             }
 
-            sb.append(max).append("\n");
+            if(b==0){
+                sb.append("1\n");
+                continue;
+            }
+
+            long exp = getExponent(2L*n, n);
+            long bPow = getBPow(b, exp);
+            long ans = pow(a, bPow, 1000000007);
+
+            sb.append(ans).append("\n");
         }
 
-        System.out.println(sb);
+        System.out.println(sb.toString());
 
         sc.close();
     }

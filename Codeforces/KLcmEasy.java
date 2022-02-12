@@ -3,34 +3,42 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class KLcmEasy {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
-            int n = sc.nextInt();
+            long n = sc.nextLong();
             int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+            long[] ans = new long[k];
+            for(int i=0;i<k-3;i++){
+                ans[i] = 1;
+                n -= 1;
             }
 
-            sb.append(max).append("\n");
+            if(n % 2==1){
+                ans[k-3] = 1;
+                ans[k-2] = (n-1) / 2;
+                ans[k-1] = (n-1) / 2;
+            }
+            else if(n%4==0){
+                ans[k-3] = n/2;
+                ans[k-2] = n/4;
+                ans[k-1] = n/4;
+            }
+            else{
+                ans[k-3] = 2;
+                ans[k-2] = (n-2) / 2;
+                ans[k-1] = (n-2) / 2;
+            }
+
+            for(long i: ans){
+                sb.append(i).append(" ");
+            }
+            sb.append("\n");
         }
 
         System.out.println(sb);

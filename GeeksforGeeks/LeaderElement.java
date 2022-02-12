@@ -1,36 +1,49 @@
-package Codeforces;
+package GeeksforGeeks;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class LeaderElement {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0){
+        while(t-->0){
             int n = sc.nextInt();
-            int k = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
+            boolean flag = true;
+            for(int i=0;i<n;i++){
+                if(arr[i]!=arr[0]) {
+                    flag = false;
                     break;
-                }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
                 }
             }
 
-            sb.append(max).append("\n");
+            if(flag){
+                sb.append("-1");
+                continue;
+            }
+
+            int max = Integer.MIN_VALUE;
+            for(int i=0;i<n;i++){
+                if(arr[i] > max){
+                    max = arr[i];
+                }
+            }
+
+            int ind = -1;
+            for(int i=0;i<n;i++){
+                if(arr[i] == max){
+                    if((i>0 && arr[i] > arr[i-1]) || (i<n-1 && arr[i] > arr[i+1])){
+                        ind = i;
+                        break;
+                    }
+                }
+            }
+
+            sb.append(ind+1).append("\n");
         }
 
         System.out.println(sb);

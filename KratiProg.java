@@ -4,70 +4,91 @@ import java.util.StringTokenizer;
 
 public class KratiProg {
 
-    static class TreeNode{
-        Integer value;
-        TreeNode left;
-        TreeNode right;
+    static interface OnlineAccount{
+        int basePrice = 120;
+        int regularMoviePrice = 45;
+        int exclusiveMoviePrice = 80;
     }
 
-    static class Result{
-        Integer floorValue;
-        Integer ceilValue;
-    }
+    static class Account implements OnlineAccount, Comparable<Account>{
+        int noOfRegularMovies, noOfExclusiveMovies;
+        String ownerName;
 
-    static TreeSet<Integer> arlist = new TreeSet<>();
-
-    static void inOrderTraversal(TreeNode root){
-        if(root==null)
-            return;
-
-        inOrderTraversal(root.left);
-        arlist.add(root.value);
-        inOrderTraversal(root.right);
-    }
-
-    private void findFloorAndCeil(TreeNode root, Integer key, Result resultObj){
-        inOrderTraversal(root);
-
-        if(arlist.floor(key)!=null)
-            resultObj.floorValue = arlist.floor(key);
-        else resultObj.floorValue = -1;
-
-        if(arlist.ceiling(key)!=null)
-            resultObj.ceilValue = arlist.ceiling(key);
-        else resultObj.ceilValue = -1;
-    }
-
-    static int findMinimumPairDifference(List<Integer> arr1, List<Integer> arr2){
-        TreeSet<Integer> tree = new TreeSet<>(arr2);
-
-        int min = Integer.MAX_VALUE;
-        for(int i: arr1){
-            if(tree.floor(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.floor(i)));
-            if(tree.ceiling(i)!=null)
-                min = Math.min(min, Math.abs(i - tree.ceiling(i)));
+        //1
+        Account(String ownerName, int noOfRegularMovies, int noOfExclusiveMovies){
+            this.ownerName = ownerName;
+            this.noOfRegularMovies = noOfRegularMovies;
+            this.noOfExclusiveMovies = noOfExclusiveMovies;
         }
 
-        return min;
+        //2
+        public int monthlyCost(){
+            return basePrice + regularMoviePrice * noOfRegularMovies
+                    + exclusiveMoviePrice * noOfExclusiveMovies;
+        }
+
+        //3
+        public int compareTo(Account a){
+            return Integer.compare(this.monthlyCost(), a.monthlyCost());
+        }
+
+        //4
+        public String toString(){
+            return "Owner is ["+this.ownerName+"] and montly cost is ["+this.monthlyCost()+"] USD";
+        }
+    }
+
+    static class Shape{
+        String type, color;
+
+        Shape(String type, String color){
+            this.type = type;
+            this.color = color;
+        }
+
+        public String getType(){
+            return this.type;
+        }
+
+        public String getColor(){
+            return this.color;
+        }
+
+        public void setType(String type){
+            this.type = type;
+        }
+
+        public void setColor(String color){
+            this.color = color;
+        }
+
+        public Shape cloneShape(){
+            return new Shape(this.type, this.color);
+        }
+    }
+
+    static String simpleCipher(String encrypted, int k){
+        StringBuilder sb = new StringBuilder();
+        k%=26;
+
+        for(int i=0;i<encrypted.length();i++){
+            int ch = encrypted.charAt(i) - 'A';
+            ch = (ch - k + 26)%26;
+
+            char newch = (char) (ch + 'A');
+            sb.append(newch);
+        }
+
+        return sb.toString();
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        List<Integer> arr1 = new ArrayList<>();
-        for(int i=0;i<n;i++){
-            arr1.add(sc.nextInt());
-        }
+        String s = sc.next();
+        int k = sc.nextInt();
 
-        int m = sc.nextInt();
-        List<Integer> arr2 = new ArrayList<>();
-        for(int i=0;i<m;i++){
-            arr2.add(sc.nextInt());
-        }
-
-        System.out.println(findMinimumPairDifference(arr1, arr2));
+        System.out.println(simpleCipher(s, k));
 
         sc.close();
     }

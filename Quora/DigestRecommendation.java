@@ -1,39 +1,173 @@
-package Codeforces;
+package Quora;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+public class DigestRecommendation {
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+    static class Story{
+        int id;
+        User creator;
+        Set<User> followers = new HashSet<>();
+        Story(int id, User creator){
+            this.id = id;
+            this.creator = creator;
+        }
+        public void addFollower(User follower){
+            followers.add(follower);
+        }
+    }
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
-                }
+    static class User{
+        int id;
+        Set<Story> created = new HashSet<>();
+        Set<Story> followedStories = new HashSet<>();
+        Set<User> followedUsers = new HashSet<>();
+        Set<User> followers = new HashSet<>();
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
-                }
+        ArrayList<Recommended> storyPoint = new ArrayList<>();
+        User(int id){
+            this.id = id;
+        }
+        public void addStory(Story story){
+            created.add(story);
+        }
+        public void addFollowedStory(Story story){
+            followedStories.add(story);
+        }
+        public void addFollowedUser(User followed){
+            followedUsers.add(followed);
+        }
+        public void addFollower(User follower){
+            followers.add(follower);
+        }
+        public boolean followsStoriesCreatedBy(User user){
+            for(Story story: user.created){
+                if(this.followedStories.contains(story))
+                    return true;
             }
 
-            sb.append(max).append("\n");
+            return false;
+        }
+        public boolean followsStoriesFollowedBy(User user){
+            for(Story story: user.followedStories){
+                if(this.followedStories.contains(story))
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
+    static class Recommended implements Comparable<Recommended>{
+        Story story;
+        int points;
+        Recommended(Story story, int points){
+            this.story = story;
+            this.points = points;
+        }
+        public int compareTo(Recommended r){
+            int c = Integer.compare(this.points, r.points)*-1;
+            if(c==0){
+                return Integer.compare(this.story.id, r.story.id);
+            }
+            else return c;
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        long start = System.currentTimeMillis();
+        Soumit sc = new Soumit("Input.txt");
+
+        int storycount = sc.nextInt();
+        int usercount = sc.nextInt();
+
+        Story[] stories = new Story[storycount];
+        User[] users = new User[usercount];
+        for(int i=0;i<usercount;i++){
+            users[i] = new User(i);
+        }
+
+        for(int i=0;i<storycount;i++){
+            int creator = sc.nextInt() - 1;
+            stories[i] = new Story(i, users[creator]);
+            users[creator].addStory(stories[i]);
+        }
+
+        int userConnectionCount = sc.nextInt();
+        int storyFollowerCount = sc.nextInt();
+
+        for(int i=0;i<userConnectionCount;i++){
+            int follower = sc.nextInt()-1;
+            int follows = sc.nextInt()-1;
+
+            users[follower].addFollowedUser(users[follows]);
+            users[follows].addFollower(users[follower]);
+        }
+
+        for(int i=0;i<storyFollowerCount;i++){
+            int follower = sc.nextInt()-1;
+            int followsStory = sc.nextInt()-1;
+
+            users[follower].addFollowedStory(stories[followsStory]);
+            stories[followsStory].addFollower(users[follower]);
+        }
+
+        for(int i=0;i<usercount;i++){
+            for(int j=0;j<storycount;j++){
+                if(stories[j].creator == users[i] || stories[j].followers.contains(users[i])){
+                    users[i].storyPoint.add(new Recommended(stories[j], -1));
+                    continue;
+                }
+
+                int points = 0;
+                for(int k=0;k<usercount;k++){
+                    if(i==k)
+                        points += 0;
+                    else{
+                        int c = 0;
+                        if(users[k].followers.contains(users[i])){
+                            c = 3;
+                        }
+                        else if(users[i].followsStoriesCreatedBy(users[k])){
+                            c = 2;
+                        }
+                        else if(users[i].followsStoriesFollowedBy(users[k])){
+                            c = 1;
+                        }
+
+                        if(stories[j].creator == users[k]){
+                            c *= 2;
+                        }
+                        else if(users[k].followedStories.contains(stories[j])){
+                            c *= 1;
+                        }
+                        else{
+                            c *= 0;
+                        }
+
+                        points += c;
+                    }
+                }
+
+                users[i].storyPoint.add(new Recommended(stories[j], points));
+            }
+
+            Collections.sort(users[i].storyPoint);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<usercount;i++){
+            for(int j=0;j<3;j++){
+                sb.append(users[i].storyPoint.get(j).story.id+1).append(" ");
+            }
+            sb.append("\n");
         }
 
         System.out.println(sb);
+
+        long end = System.currentTimeMillis();
+        System.out.println((end - start)/1000.0);
 
         sc.close();
     }

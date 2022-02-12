@@ -1,9 +1,17 @@
-package Codeforces;
+package Codeforces.Round770Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class A {
+
+    static String rev(String s){
+        StringBuilder sb = new StringBuilder();
+        for(int i=s.length()-1;i>=0;i--)
+            sb.append(s.charAt(i));
+        return sb.toString();
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -12,25 +20,19 @@ public class Cobb {
         while (t-->0){
             int n = sc.nextInt();
             int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            String s = sc.next();
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
-                    break;
+            if(s.equals(rev(s))){
+                sb.append("1\n");
+            }
+            else{
+                if(k==0){
+                    sb.append("1\n");
                 }
-
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
+                else{
+                    sb.append("2\n");
                 }
             }
-
-            sb.append(max).append("\n");
         }
 
         System.out.println(sb);

@@ -3,34 +3,107 @@ package Codeforces;
 import java.io.*;
 import java.util.*;
 
-public class Cobb {
+public class AnotherProblemAboutDividingNumbers {
+
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
+
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
+        }
+
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                primes.add(i);
+                spf.set(i, i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j)<=spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(i*primes.get(j), false);
+                spf.set(i*primes.get(j), primes.get(j));
+            }
+        }
+    }
+
+    static int gcd(int a, int b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
+
+        preComputePrimes(100000);
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
-            int n = sc.nextInt();
+            int a = sc.nextInt();
+            int b = sc.nextInt();
             int k = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            long max = ((long) n*(n-1)) - ((long) k * (arr[n-1] | arr[n-2]));
-            for(int i=n-1;i>=1;i--){
-                long prod_indices = ((long) i)*(i+1);
-                if(prod_indices < max){
+            int ca = 0;
+            int copya = a;
+            int lim = (int) (Math.sqrt(a));
+            for(int i: primes){
+                if(i>lim)
                     break;
-                }
 
-                for(int j=i-1;j>=0;j--){
-                    prod_indices = ((long) i+1)*(j+1);
-                    if(prod_indices < max)
-                        break;
-
-                    max = Math.max(max, prod_indices - (long) k *(arr[i] | arr[j]));
+                while(copya%i==0){
+                    copya /= i;
+                    ca++;
                 }
             }
+            if(copya!=1)
+                ca++;
 
-            sb.append(max).append("\n");
+            int cb = 0;
+            int copyb = b;
+            lim = (int) (Math.sqrt(b));
+            for(int i: primes){
+                if(i>lim)
+                    break;
+
+                while(copyb%i==0){
+                    copyb /= i;
+                    cb++;
+                }
+            }
+            if(copyb!=1)
+                cb++;
+
+            int least;
+            int gcd = gcd(a, b);
+            if(a==b) {
+                if(k!=1 && 0<=k && k<=ca+cb){
+                    sb.append("YES\n");
+                }
+                else{
+                    sb.append("No\n");
+                }
+                continue;
+            }
+            else if(gcd==a || gcd==b){
+                least = 1;
+            }
+            else least = 2;
+
+            if(least<=k && k<=ca+cb){
+                sb.append("YES\n");
+            }
+            else{
+                sb.append("NO\n");
+            }
         }
 
         System.out.println(sb);
