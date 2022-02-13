@@ -1,151 +1,69 @@
-package TestingCode;
+package Codeforces.GlobalRound19;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateInput {
-    static class Set
-    {
-        int id;
-        int count;
-        Set parent;
-        Set(int id)
-        {
-            this.id = id;
-            this.count = 1;
-            this.parent = null;
-        }
-        public void union(Set repb)
-        {
-            if(this.count >= repb.count)
-            {
-                repb.parent = this;
-                this.count = this.count+repb.count;
-            }
-            else
-            {
-                this.parent = repb;
-                repb.count = this.count+repb.count;
-            }
-        }
-        public Set compress()
-        {
-            if(this.parent!=null)
-            {
-                this.parent = this.parent.find();
-            }
-            return this;
-        }
-        public void findUnion(Set repb)
-        {
-            Set k,k1;
-            if(this.parent == null)
-                k = this;
-            else
-                k = this.parent;
-            if(repb.parent == null)
-                k1 = repb;
-            else
-                k1 = repb.parent;
+public class B {
 
-            k.union(k1);
-        }
-        public Set find()
-        {
-            if(this.parent == null)
-            {
-                return this;
-            }
-            this.compress();
-            return this.parent;
-        }
-    }
-    static int[] edge;
-    static class Node
-    {
-        int id;
-        long val;
-        Node parent;
-        ArrayList<Node> adjacentnode = new ArrayList<>();
-        ArrayList<Long> pathvals = new ArrayList<>();
-        Node(int id)
-        {
-            this.id = id;
-            this.val = 0;
-            this.parent = null;
-        }
-    }
-    static class Tree {
-        ArrayList<Node> nodelist;
+    static long getValue(long[] arr){
+        int n = arr.length;
 
-        Tree(int n) {
-            this.nodelist = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                nodelist.add(new Node(i));
-            }
-            edge = new int[n];
-        }
+        long[][] mex = new long[n][n];
+        for(int i=0;i<n;i++){
+            Set<Long> set = new HashSet<>();
+            for(int j=i;j<n;j++){
+                set.add(arr[j]);
 
-        public void addEdge(int xi, int yi) {
-            Node nu = nodelist.get(xi);
-            Node nv = nodelist.get(yi);
-
-            nu.adjacentnode.add(nv);
-            nv.adjacentnode.add(nu);
-        }
-
-        public void setParent() {
-            Node source = nodelist.get(0);
-
-            Stack<Node> stk = new Stack<>();
-            Stack<Integer> ptrstk = new Stack<>();
-            stk.push(source);
-            ptrstk.push(-1);
-
-            while (!stk.isEmpty()) {
-                Node cur = stk.pop();
-                int ptr = ptrstk.pop();
-                if (ptr < cur.adjacentnode.size() - 1) {
-                    ptr++;
-                    stk.push(cur);
-                    ptrstk.push(ptr);
-
-                    Node next = cur.adjacentnode.get(ptr);
-
-                    if (cur.parent == next) {
-                        continue;
+                if(j==i){
+                    if(set.contains(0L))
+                        mex[i][j] = 1;
+                    else mex[i][j] = 0;
+                }
+                else{
+                    long prev = mex[i][j-1];
+                    while(set.contains(prev)){
+                        prev++;
                     }
 
-                    next.parent = cur;
-                    stk.push(next);
-                    ptrstk.push(-1);
+                    mex[i][j] = prev;
                 }
             }
         }
-    }
-    public static void main(String[] args) throws IOException
-    {
-        Soumit sc = new Soumit();
-        sc.streamOutput("Input.txt");
 
-        int t = 10;
-        sc.println(t+"");
-        while (t-->0){
-            int n = 6;
-            sc.println(n+"");
+        long ans = 0;
+        for(int start=0;start<n;start++){
+            for(int end=start;end<n;end++){
 
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random()*8+1);
-                sc.print(v+" ");
+                long[] dp = new long[n];
+                for(int i=start;i<=end;i++){
+                    long sum = 1 + mex[start][i];
+                    for(int j=start;j<i;j++){
+                        sum = Math.max(sum, dp[j]+1+mex[j+1][i]);
+                    }
+
+                    dp[i] = sum;
+                }
+
+                ans += dp[end];
             }
-            sc.println();
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random()*50+1);
-                sc.print(v+" ");
-            }
-            sc.println();
         }
+
+        return ans;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
+
+            sb.append(getValue(arr)).append("\n");
+        }
+
+        System.out.print(sb);
 
         sc.close();
     }
@@ -176,11 +94,6 @@ public class CreateInput {
             pw = new PrintWriter(bw);
         }
 
-        public void println()
-        {
-            pw.println();
-        }
-
         public void println(String a) {
             pw.println(a);
         }
@@ -190,7 +103,7 @@ public class CreateInput {
         }
 
         public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
+            byte[] buf = new byte[3000064]; // line length
             int cnt = 0, c;
             while ((c = read()) != -1) {
                 if (c == '\n')
@@ -209,6 +122,26 @@ public class CreateInput {
                 }
             }
             return st.nextToken();
+        }
+
+        public void sort(int[] arr) {
+            ArrayList<Integer> arlist = new ArrayList<>();
+            for (int i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
+        }
+
+        public void sort(long[] arr) {
+            ArrayList<Long> arlist = new ArrayList<>();
+            for (long i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
         }
 
         public int[] nextIntArray(int n) throws IOException {
