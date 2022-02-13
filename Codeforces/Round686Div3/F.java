@@ -91,7 +91,7 @@ public class F {
                     if(i+1+1<n)
                     {
                         sb.append("YES").append("\n");
-                        sb.append(i+" 1 ").append(n-i-1).append("\n");
+                        sb.append(i).append(" 1 ").append(n-i-1).append("\n");
                         flag = true;
                         break;
                     }
