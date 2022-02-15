@@ -1,115 +1,55 @@
-package Quora;
+package Codeforces.Round771Div2;
 
 import java.io.*;
-import java.util.StringTokenizer;
+import java.util.*;
 
-public class xuora {
-    static int countSetBits(long n){
-        int count = 0;
-        while(n>0){
-            n = n&(n-1);
-            count++;
-        }
-        return count;
-    }
-    public static long nextPowerof2(long n)
-    {
-        n = n|(n>>1);
-        n = n|(n>>2);
-        n = n|(n>>4);
-        n = n|(n>>8);
-        n = n|(n>>16);
-        n = n|(n>>32);
-        n = n|(n>>62);
-
-        return (n+1);
-    }
-    public static String pad(String s, int n){
-        StringBuilder sb = new StringBuilder();
-        for(int i=s.length();i<n;i++){
-            sb.append("0");
-        }
-        sb.append(s);
-        return sb.toString();
-    }
-    static void bruteForce(int n){
-
-        int min = 1000;
-        String s = "";
-        for(int nl = n;nl<n+5;nl++){
-            int lim = (int) (Math.pow(2, nl+2));
-            for(int i=0;i<lim;i++){
-                if(countSetBits(i) == n){
-                    String bin = Integer.toBinaryString(i);
-                    bin = pad(bin, nl);
-
-                    int x = 0;
-                    for(int j=0;j<bin.length();j++){
-                        if(bin.charAt(j)=='1'){
-                            x ^= (j+1);
-                        }
-                    }
-
-                    if(x==0){
-                        min = Math.min(min, bin.length());
-                        if(min == bin.length())
-                            s = bin;
-                    }
-                }
-            }
-        }
-
-        System.out.println(min+" "+s);
-    }
-
+public class A {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        long n = sc.nextLong();
+        int t= sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
 
-        //bruteForce((int) n);
+            int l = n;
+            for(int i=0;i<n;i++){
+                if(arr[i] != i+1){
+                    l = i;
+                    break;
+                }
+            }
 
-        if(n%4==3){
-            System.out.println(n);
-            System.out.println();
-        }
-        else if(n%4==2){
-            if(countSetBits(n+2)==1){
-                System.out.println(n+3);
-                System.out.println("3 4 6");
+            int r = -1;
+            for(int i=l+1;i<n;i++){
+                if(arr[i]==l+1){
+                    r = i;
+                    break;
+                }
+            }
+
+            if(l<n){
+                for(int i=0;i<l;i++){
+                    sb.append(arr[i]).append(" ");
+                }
+                for(int i=r;i>=l;i--){
+                    sb.append(arr[i]).append(" ");
+                }
+                for(int i=r+1;i<n;i++){
+                    sb.append(arr[i]).append(" ");
+                }
+                sb.append("\n");
             }
             else{
-                System.out.println(n+2);
-                long a = nextPowerof2(n+2) / 2;
-                long b = n+2 - a;
-                System.out.println(a+" "+b);
+                for(int i=0;i<n;i++){
+                    sb.append(arr[i]).append(" ");
+                }
+                sb.append("\n");
             }
         }
-        else if(n%4==1){
-            if(countSetBits(n+3) == 1){
-                System.out.println(n+4);
-                System.out.println("1 2 5 7");
-            }
-            else if(countSetBits(n+3)==2){
-                System.out.println(n+3);
-                long a = nextPowerof2(n+3) / 2;
-                long b = n + 3 - a;
-                System.out.println(1+" "+(b+1)+" "+a);
-            }
-            else{
-                System.out.println(n+3);
-                long a = nextPowerof2(n+3) / 2;
-                long b = n + 3 - a;
-                long a1 = nextPowerof2(b) / 2;
-                long a2 = b - a1;
-                System.out.println(a+" "+a1+" "+a2);
-            }
 
-        }
-        else{
-            System.out.println(n+1);
-            System.out.println(1);
-        }
+        System.out.println(sb);
 
         sc.close();
     }
@@ -149,7 +89,7 @@ public class xuora {
         }
 
         public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
+            byte[] buf = new byte[3000064]; // line length
             int cnt = 0, c;
             while ((c = read()) != -1) {
                 if (c == '\n')
@@ -168,6 +108,26 @@ public class xuora {
                 }
             }
             return st.nextToken();
+        }
+
+        public void sort(int[] arr) {
+            ArrayList<Integer> arlist = new ArrayList<>();
+            for (int i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
+        }
+
+        public void sort(long[] arr) {
+            ArrayList<Long> arlist = new ArrayList<>();
+            for (long i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
         }
 
         public int[] nextIntArray(int n) throws IOException {

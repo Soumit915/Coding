@@ -15,7 +15,7 @@ public class E {
                     }
                 }
             }
-            //System.out.println(i+" "+arr[i]+" "+count+" "+ Arrays.toString(count_hash)+" "+Arrays.toString(pair_hash));
+
             for (int j = 1; j <= lim; j++) {
                 if (k % j == 0) {
                     pair_hash[k] += count_hash[j];

@@ -5,8 +5,12 @@ import java.util.*;
 
 public class DreamoonAndWifi {
     public static String pad(String s, int n){
-        return "0".repeat(Math.max(0, n - s.length())) +
-                s;
+        StringBuilder sb = new StringBuilder();
+        for(int i=s.length();i<n;i++){
+            sb.append("0");
+        }
+        sb.append(s);
+        return sb.toString();
     }
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
