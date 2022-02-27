@@ -128,20 +128,13 @@ public class CreateInput {
         Soumit sc = new Soumit();
         sc.streamOutput("Input.txt");
 
-        int t = 10;
-        sc.println(t+"");
+        int t = 1;
+        //sc.println(t+"");
         while (t-->0){
-            int n = 6;
+            int n = 100;
             sc.println(n+"");
-
             for(int i=0;i<n;i++){
-                int v = (int) (Math.random()*8+1);
-                sc.print(v+" ");
-            }
-            sc.println();
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random()*50+1);
+                int v = (int) (Math.random()*1000000000+1);
                 sc.print(v+" ");
             }
             sc.println();
