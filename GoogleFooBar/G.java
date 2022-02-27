@@ -4,22 +4,27 @@ import java.io.*;
 import java.util.*;
 
 public class G {
-    static boolean isOk(int a, int b){
-        if((a + b)%2==1)
-            return true;
 
-        if(a==b)
+    static int gcd(int a, int b){
+        if(a%b==0)
+            return b;
+        else return gcd(b, a%b);
+    }
+
+    static boolean isOk(int x, int y){
+        if (x == y)
             return false;
 
-        if(a%2==0 && b%2==0)
-            return isOk(a/2, b/2);
+        int l = gcd(x,y);
 
-        if(a<b){
-            return isOk(a*2, b - a);
-        }
-        else{
-            return isOk(a-b, b*2);
-        }
+        if ((x+y) % 2 == 1)
+            return true;
+
+        x /= l;
+        y /= l;
+        x = Math.max(x, y);
+        y = Math.min(x, y);
+        return isOk(x-y,2*y);
     }
 
     static boolean getMatching(boolean[][] bpGraph, int u,
@@ -80,11 +85,15 @@ public class G {
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");
 
-        int n = sc.nextInt();
-        int[] arr = sc.nextIntArray(n);
+        int t = sc.nextInt();
+        while (t-->0) {
+            int n = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
 
-        System.out.println(solution(arr));
+            sc.println(solution(arr) + "");
+        }
 
         sc.close();
     }
