@@ -1,16 +1,90 @@
-package Spoj;
+package GoogleFooBar;
 
 import java.io.*;
 import java.util.*;
 
-public class SummingSums {
+public class G {
+    static boolean isOk(int a, int b){
+        if((a + b)%2==1)
+            return true;
+
+        if(a==b)
+            return false;
+
+        if(a%2==0 && b%2==0)
+            return isOk(a/2, b/2);
+
+        if(a<b){
+            return isOk(a*2, b - a);
+        }
+        else{
+            return isOk(a-b, b*2);
+        }
+    }
+
+    static boolean getMatching(boolean[][] bpGraph, int u,
+                               boolean[] seen, int[] matchR)
+    {
+        for (int v = 0; v < bpGraph.length; v++)
+        {
+            if (bpGraph[u][v] && !seen[v])
+            {
+                seen[v] = true;
+
+                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v],
+                        seen, matchR))
+                {
+                    matchR[v] = u;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static int maxBiPartiteMatching(boolean[][] admat)
+    {
+        int n = admat.length;
+
+        int[] games = new int[n];
+        for(int i = 0; i < n; ++i)
+            games[i] = -1;
+
+        int game_matches = 0;
+        for (int u = 0; u < n; u++)
+        {
+            boolean[] isVisited =new boolean[n] ;
+            for(int i = 0; i < n; ++i)
+                isVisited[i] = false;
+
+            if (getMatching(admat, u, isVisited, games))
+                game_matches++;
+        }
+        return game_matches;
+    }
+
+    public static int solution(int[] banana_list){
+        int n = banana_list.length;
+        boolean[][] admat = new boolean[n][n];
+
+        for(int i=0;i<n;i++){
+            for(int j=i+1;j<n;j++){
+                admat[i][j] = isOk(banana_list[i], banana_list[j]);
+                admat[j][i] = admat[i][j];
+            }
+        }
+
+        int max = maxBiPartiteMatching(admat);
+        return n - max;
+    }
+
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
 
         int n = sc.nextInt();
-        long t = sc.nextLong();
+        int[] arr = sc.nextIntArray(n);
 
-        long[][] mat = new long[n][n];
+        System.out.println(solution(arr));
 
         sc.close();
     }
