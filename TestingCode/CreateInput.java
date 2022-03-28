@@ -128,10 +128,17 @@ public class CreateInput {
         Soumit sc = new Soumit();
         sc.streamOutput("Input.txt");
 
+<<<<<<< Updated upstream
         int t = 10000;
         sc.println(t+"");
         while (t-->0){
             int n = (int) (Math.random()*50 + 1);
+=======
+        int t = 1000000;
+        sc.println(t+"");
+        while (t-->0){
+            int n = (int) (Math.random()*100+1);
+>>>>>>> Stashed changes
             sc.println(n+"");
             for(int i=0;i<n;i++){
                 int l = (int) (Math.random()*100+1);
