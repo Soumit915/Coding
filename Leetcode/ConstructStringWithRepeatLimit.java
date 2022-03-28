@@ -1,93 +1,92 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class ConstructStringWithRepeatLimit {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static int getLargest(int[] arr){
+        for(int i=25;i>=0;i--){
+            if(arr[i]!=0)
+                return i;
+        }
+
+        return -1;
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+    static int getSLargest(int[] arr){
+        int start = getLargest(arr);
+        for(int i=start-1;i>=0;i--){
+            if(arr[i]!=0)
+                return i;
+        }
 
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+        return -1;
     }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+    public static String repeatLimitedString(String s, int repeatLimit) {
+        int n = s.length();
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+        int[] hash = new int[26];
+        for(int i=0;i<n;i++){
+            hash[s.charAt(i) - 'a']++;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int[] chars = new int[n];
+        for(int i=0;i<n;i++){
+            chars[i] = -1;
+        }
+
+        int[] streak = new int[n];
+        for(int i=0;i<n;i++){
+            int largest = getLargest(hash);
+            if(i==0){
+                chars[i] = largest;
+                streak[i] = 1;
+            }
+            else{
+                if(chars[i-1]==largest && streak[i-1]==repeatLimit){
+                    int sl = getSLargest(hash);
+                    if(sl==-1){
+                        break;
+                    }
+                    else {
+                        chars[i] = sl;
+                        streak[i] = 1;
+                    }
+                }
+                else{
+                    chars[i] = largest;
+                    int c = 0;
+                    if(chars[i] == chars[i-1]){
+                        c = streak[i-1];
+                    }
+                    streak[i] = c + 1;
                 }
             }
+
+            hash[chars[i]]--;
         }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
 
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+            if(chars[i] == -1)
+                break;
+
+            char ch = (char) (chars[i] + 'a');
+            sb.append(ch);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return sb.toString();
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        String s = sc.next();
+        int n = sc.nextInt();
 
-            sc.println(solution(arr) + "");
-        }
+        System.out.println(repeatLimitedString(s, n));
 
         sc.close();
     }

@@ -1,92 +1,86 @@
-package GoogleFooBar;
+package Hackerearth;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class PerfectCubes {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
 
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+            isPrime.add(true);
+            spf.add(2);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                primes.add(i);
+                spf.set(i, i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j)<=spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(i*primes.get(j), false);
+                spf.set(i*primes.get(j), primes.get(j));
+            }
+        }
+    }
+
+    static class Number{
+        int i, j;
+        String hash, comp_hash;
+        Number(int i, int j, String hash, String comp_hash){
+            this.i = i;
+            this.j = j;
+            this.hash = hash;
+            this.comp_hash = comp_hash;
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        preComputePrimes(510);
 
-            sc.println(solution(arr) + "");
+        int n = sc.nextInt();
+        int[][] arr = new int[n][];
+        for(int i=0;i<n;i++){
+            int k = sc.nextInt();
+            arr[i] = sc.nextIntArray(k);
+        }
+
+        int[][] primeHash = new int[n][primes.size()];
+        for(int i=0;i<n;i++){
+            /*for(int j: arr[i]){
+                Map<Integer, Integer> primeMap;// = getPrimeFactorization(j);
+                for(int prime: primeMap.keySet()){
+                    primeHash[i][prime] += primeMap.get(prime);
+                }
+            }*/
+
+            for(int j=0;j<primes.size();j++){
+                primeHash[i][j] = primeHash[i][j] % 3;
+            }
+        }
+
+        Map<String, List<Number>> map = new HashMap<>();
+        for(int i=0;i<n;i++){
+            for(int j=i+1;j<n;j++){
+                int[] curhash = new int[primes.size()];
+                for(int k=0;k<primes.size();k++){
+                    curhash[k] = (primeHash[i][k] + primeHash[j][k])%3;
+                }
+
+
+            }
         }
 
         sc.close();

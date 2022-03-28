@@ -1,93 +1,71 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
-
+public class H {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
+
+        int[][] arr = new int[17][];
+        for(int j=2;j<=16;j++){
+            int N = 1<<j;
+            arr[j] = new int[N];
+            Arrays.fill(arr[j], -1);
+            for(int i=0;i<N;i++){
+                if(arr[j][i] != -1)
+                    continue;
+
+                arr[j][i] = i ^ (N-1);
+            }
+        }
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int k = sc.nextInt();
 
-            sc.println(solution(arr) + "");
+            int logn = (int) (Math.log(n) / Math.log(2.0));
+            if(k==n-1){
+                if(n==4)
+                    sb.append("-1\n");
+                else{
+                    for(int i=0;i<n;i++){
+                        if(i==1 || i==3 || i==n-2 || i==n-1 || i==0 || i==((n-1)^3)){
+                            continue;
+                        }
+
+                        if(i<arr[logn][i]){
+                            sb.append(i).append(" ").append(arr[logn][i]).append("\n");
+                        }
+                    }
+                    sb.append("0 ").append((n - 1) ^ 3).append("\n");
+                    sb.append("1 3\n");
+                    sb.append(n-1).append(" ").append(n-2).append("\n");
+                }
+                continue;
+            }
+
+            for(int i=0;i<n;i++){
+                if(i==0 || i==n-1 || i==k || (arr[logn][i]==k)){
+                    continue;
+                }
+
+                if(i<arr[logn][i]){
+                    sb.append(i).append(" ").append(arr[logn][i]).append("\n");
+                }
+            }
+            if(k==n-1 || k==0){
+                sb.append("0 ").append(n-1).append("\n");
+            }
+            else{
+                sb.append("0 ").append(k ^ (n - 1)).append("\n");
+                sb.append(k).append(" ").append(n - 1).append("\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

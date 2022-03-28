@@ -1,93 +1,46 @@
-package GoogleFooBar;
+package GoogleKickStart.RoundA_2022;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
-
+public class A {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Scanner sc = new Scanner(System.in);
 
         int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
 
-            sc.println(solution(arr) + "");
+            String a = sc.next();
+            String b = sc.next();
+
+            int al = a.length();
+            int bl = b.length();
+
+            if(bl < al){
+                sb.append("IMPOSSIBLE\n");
+                continue;
+            }
+
+            int j = 0;
+            for(int i=0;i<bl;i++){
+                if(j == al)
+                    break;
+                if(a.charAt(j) == b.charAt(i)){
+                    j++;
+                }
+            }
+
+            if(j==al){
+                sb.append(bl - al).append("\n");
+            }
+            else{
+                sb.append("IMPOSSIBLE\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

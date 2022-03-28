@@ -1,93 +1,71 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class ReplaceNonCoprimeNumbersInArray {
 
-    static int gcd(int a, int b){
+    public static int gcd(int a, int b)
+    {
         if(a%b==0)
+        {
             return b;
-        else return gcd(b, a%b);
+        }
+        return gcd(b, a%b);
     }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
+    public static int lcm(int a, int b)
     {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+        int g = gcd(a, b);
+        a = a/g;
+        b = b/g;
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+        return a*g*b;
+    }
+
+    public static List<Integer> replaceNonCoprimes(int[] nums) {
+
+        int lcm = nums[0];
+        Deque<Integer> list = new LinkedList<>();
+        for (int i=1;i< nums.length;i++) {
+            int num = nums[i];
+            if (gcd(num, lcm) == 1) {
+                while (list.size() > 0) {
+                    int last = list.getLast();
+                    if (gcd(last, lcm) != 1) {
+                        list.removeLast();
+                        lcm = lcm(last, lcm);
+                    } else {
+                        break;
+                    }
                 }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+                list.add(lcm);
+                lcm = num;
+            } else {
+                lcm = lcm(lcm, num);
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        while (list.size() > 0) {
+            int last = list.getLast();
+            if (gcd(last, lcm) != 1) {
+                list.removeLast();
+                lcm = lcm(last, lcm);
+            } else {
+                break;
+            }
+        }
+        list.add(lcm);
+
+        return new ArrayList<>(list);
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        int n = sc.nextInt();
+        int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
-        }
+        System.out.println(replaceNonCoprimes(arr));
 
         sc.close();
     }

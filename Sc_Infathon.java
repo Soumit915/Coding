@@ -1,93 +1,53 @@
-package GoogleFooBar;
-
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class G {
+public class Sc_Infathon {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
+    static void solve(String[] strings){
+        Arrays.sort(strings);
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
+        int n = strings.length;
+        int c = 1;
+        for(int i=1;i<n;i++){
+            if(strings[i].equals(strings[i-1])){
+                c++;
             }
-        }
-        return false;
-    }
+            else{
+                System.out.println(strings[i-1] +" "+c);
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+                c = 1;
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        System.out.println(strings[n-1] +" "+c);
+    }
+
+    static void getAns(String s){
+        Scanner sc = new Scanner(s);
+        sc.useDelimiter("\n");
+
+        int t = sc.nextInt();
+        for(int i=0;i<t;i++){
+            if(i!=0){
+                sc.next();
+            }
+
+            int n = sc.nextInt();
+            String[] strings = new String[n];
+            for(int j=0;j<n;j++){
+                strings[j] = sc.next();
+            }
+
+            solve(strings);
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
-        }
+        String s = sc.next();
+        getAns(s);
 
         sc.close();
     }

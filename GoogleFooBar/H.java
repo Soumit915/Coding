@@ -1,92 +1,104 @@
 package GoogleFooBar;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.StringTokenizer;
+import java.util.Arrays;
 
-public class G {
+public class H {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static class LocalList implements Comparable<LocalList>{
+        List<Integer> list;
+        LocalList(List<Integer> list){
+            this.list = list;
+        }
+        public int compareTo(LocalList li){
+            for(int i=0;i<this.list.size();i++){
+                int c = Integer.compare(this.list.get(i), li.list.get(i));
+                if(c!=0)
+                    return c;
+            }
+
+            return 0;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+    static boolean isSet(int n, int i){
+        return (n&(1<<i))!=0;
     }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+    static int countBits(int n){
+        int c = 0;
+        while(n > 0){
+            n = n & (n-1);
+            c++;
+        }
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+        return c;
+    }
+
+    static List<List<Integer>> getCombinations(int n, int r){
+        int lim = 1 << n;
+        List<LocalList> list = new ArrayList<>();
+        for(int i=0;i<lim;i++){
+            if(countBits(i)!=r)
+                continue;
+
+            List<Integer> cur = new ArrayList<>();
+            for(int j=0;j<n;j++){
+                if(isSet(i, j)){
+                    cur.add(j);
                 }
             }
+
+            list.add(new LocalList(cur));
         }
-        return false;
+
+        Collections.sort(list);
+
+        List<List<Integer>> combinations = new ArrayList<>();
+        for (LocalList localList : list) {
+            combinations.add(localList.list);
+        }
+
+        return combinations;
     }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
+    public static int[][] solution(int num_buns, int num_required){
 
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+        int copies_per_key = num_buns - num_required + 1;
+        List<List<Integer>> combinations = getCombinations(num_buns, copies_per_key);
+        List<List<Integer>> ways = new ArrayList<>();
+        for(int i=0;i<num_buns;i++){
+            ways.add(new ArrayList<>());
         }
-        return game_matches;
-    }
 
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+        for(int i=0;i<combinations.size();i++){
+            for(int j: combinations.get(i)){
+                ways.get(j).add(i);
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        int[][] correct_scheme = new int[num_buns][ways.get(0).size()];
+        for(int i=0;i<num_buns;i++){
+            for(int j=0;j<ways.get(0).size();j++){
+                correct_scheme[i][j] = ways.get(i).get(j);
+            }
+        }
+
+        return correct_scheme;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
+        int n = sc.nextInt();
+        int r = sc.nextInt();
+        int[][] ways = solution(n, r);
+        for(int[] i: ways){
+            System.out.println(Arrays.toString(i));
         }
 
         sc.close();

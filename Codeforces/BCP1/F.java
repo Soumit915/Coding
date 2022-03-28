@@ -1,93 +1,43 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class F {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+    static int distance(int a, int b, int c, int d){
+        return Math.abs(c-a) + Math.abs(d-b);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int m = sc.nextInt();
 
-            sc.println(solution(arr) + "");
+            int[][] mat = new int[n][m];
+            List<Integer> list = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                for(int j=0;j<m;j++){
+                    mat[i][j] = Math.max(Math.max(distance(i, j, 0, 0), distance(i, j, 0, m-1)),
+                            Math.max(distance(i, j, n-1, 0), distance(i, j, n-1, m-1)));
+
+                    list.add(mat[i][j]);
+                }
+            }
+
+            Collections.sort(list);
+
+            for (Integer integer : list) {
+                sb.append(integer).append(" ");
+            }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

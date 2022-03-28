@@ -1,93 +1,56 @@
-package GoogleFooBar;
+package Codeforces.Round776Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class E_BF {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+    static long getU(long[] arr){
+        int n = arr.length;
+        long u = arr[0] - 1;
+        for(int i=1;i<n;i++){
+            u = Math.min(u, arr[i] - arr[i-1] - 1);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return u;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        sc.streamOutput("Output2.txt");
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int d = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
 
-            sc.println(solution(arr) + "");
+            long max = getU(arr);
+            Set<Long> set = new HashSet<>();
+
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    set.add(arr[i]);
+                }
+
+                for(long j=1;j<=d;j++){
+                    if(set.contains(j))
+                        continue;
+
+                    long[] ans = new long[n];
+                    System.arraycopy(arr, 0, ans, 0, n);
+                    ans[i] = j;
+                    Arrays.sort(ans);
+
+                    max = Math.max(max, getU(ans));
+                }
+            }
+
+            sb.append(max).append("\n");
         }
+
+        sc.println(sb.toString());
 
         sc.close();
     }

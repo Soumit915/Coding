@@ -3,65 +3,41 @@ import java.util.*;
 import java.util.StringTokenizer;
 
 public class Test {
-    static long countTime(long edgecount, long t, long c){
-        long ans = 0;
-        for(int i=1;i<=edgecount;i++){
-            ans = (ans + c);
-            long k = ans / t;
-            if(k%2!=0 && i!=edgecount){
-                ans = (k+1)*t;
-            }
-        }
 
-        return ans;
-    }
-    static long timeRequired(long n, long t, long c){
-        long ans;
-        if(t <= c) {
-            if(c % t == 0 && (c/t)%2 == 0)
-                ans = n*c;
-            else
-                ans = n * c + (n - 1) * (t - c % t);
-        }
-        else {
-            long div = t/c;
-            if(t % c != 0)
-                div++;
-
-            if(n % div != 0)
-                ans = n * c + (n / div) * (t - (div * c) % t);
-            else
-                ans = n * c + ((n-1)/ div) * (t - (div * c) % t);
-        }
-
-        return ans;
-    }
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
+        Soumit in=new Soumit("Input.txt");
+        in.streamOutput("Output2.txt");
 
-        for(int i=0;i<100000;i++){
-            /*long e = (long) (Math.random()*11);
-            long t = (long) (Math.random()*10+1);
-            long c = (long) (Math.random()*10+1);*/
-
-            long e = 5, t = 3, c = 7;
-
-            long ansshilpa = timeRequired(e, t, c);
-            long anssoumit = countTime(e, t, c);
-
-            if(anssoumit!=ansshilpa){
-                System.out.println("Wrong answer");
-                System.out.println(e+" "+t+" "+c);
-                System.out.println(ansshilpa);
-                System.out.println(anssoumit);
-                System.exit(0);
+        int t=in.nextInt();
+        while(t-->0) {
+            StringBuilder sb=new StringBuilder();
+            int n=in.nextInt();
+            int mi=in.nextInt(),
+                    ma=in.nextInt(),
+                    ip=in.nextInt(),
+                    ap=ip,
+                    al=ip;
+            sb.append(ip).append("\n");
+            for(int j=1;j<n;j++) {
+                int a=in.nextInt(),
+                        b=in.nextInt(),
+                        c=in.nextInt();
+                if(a<mi||b>ma) al=Integer.MAX_VALUE;
+                if(a<mi||a==mi&&c<ip) {
+                    mi=a;
+                    ip=c;
+                }
+                if(b>ma||b==ma&&c<ap) {
+                    ma=b;
+                    ap=c;
+                }
+                if(a==mi&&b==ma) al=Math.min(al, c);
+                sb.append(Math.min(ip + ap, al)).append("\n");
             }
+            in.print(sb.toString());
         }
 
-        System.out.println("Correct answer");
-
-        sc.close();
+        in.close();
     }
 
     static class Soumit {

@@ -1,93 +1,97 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class MaximumWidthBinaryTree {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+    static class Group{
+        boolean isNode;
+        TreeNode node;
+        int count;
+        Group(boolean isNode, TreeNode node, int count){
+            this.isNode = isNode;
+            this.node = node;
+            this.count = count;
+        }
     }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+    public int widthOfBinaryTree(TreeNode root) {
+        int max = 1;
+        Queue<Group> q = new LinkedList<>();
+        Group rootgroup = new Group(true, root, 0);
+        q.add(rootgroup);
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+        while(!q.isEmpty()){
+            Queue<Group> local = new LinkedList<>();
+
+            int last = 0;
+            while(!q.isEmpty()){
+                Group cur = q.remove();
+
+                if(cur.isNode){
+                    TreeNode curnode = cur.node;
+                    if(curnode.left==null){
+                        if(!local.isEmpty()){
+                            last += 1;
+                        }
+                    }
+                    else{
+                        if(!local.isEmpty())
+                            local.add(new Group(false, null, last));
+                        last = 0;
+                        local.add(new Group(true, curnode.left, 0));
+                    }
+
+                    if(curnode.right==null){
+                        if(!local.isEmpty()){
+                            last += 1;
+                        }
+                    }
+                    else{
+                        if(!local.isEmpty())
+                            local.add(new Group(false, null, last));
+                        last = 0;
+                        local.add(new Group(true, curnode.right, 0));
+                    }
+                }
+                else{
+                    if(!local.isEmpty()){
+                        last += (cur.count) * 2;
+                    }
                 }
             }
-        }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+            int ans = 0;
+            for(Group gr: local){
+                if(gr.isNode)
+                    ans++;
+                else ans += gr.count;
             }
+
+            max = Math.max(max, ans);
+            q = local;
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return max;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
-        }
 
         sc.close();
     }

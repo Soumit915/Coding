@@ -1,93 +1,171 @@
-package GoogleFooBar;
+package Codeforces.Round775Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class C {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static class Cell implements Comparable<Cell>{
+        int x, y, color;
+        Cell(int x, int y, int color){
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+        public int compareTo(Cell cell){
+            int c = Integer.compare(this.x, cell.x);
+            if(c==0)
+                return Integer.compare(this.y, cell.y);
+            else return c;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
+    public static int getnextPowerOf2(int n)
     {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+        n |= (n>>1);
+        n |= (n>>2);
+        n |= (n>>4);
+        n |= (n>>8);
+        n |= (n>>16);
+        n |= (n>>30);
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
+        return n+1;
+    }
+
+    public static void update(long[] segTree, int sn, long val, int ind, int ll, int ul)
+    {
+        if(ll==ul)
+        {
+            segTree[sn] += val;
+            return;
+        }
+
+        int mid = (ll+ul)/2;
+        if(ind<=mid)
+        {
+            update(segTree, 2*sn+1, val, ind, ll, mid);
+        }
+        else
+        {
+            update(segTree, 2*sn+2, val, ind, mid+1, ul);
+        }
+
+        segTree[sn] = segTree[2*sn+1] + segTree[2*sn+2];
+    }
+    public static long query(long[] segTree, int sn, int start, int end, int ll, int ul)
+    {
+        if(start > end)
+            return 0;
+
+        //for no overlap
+        if(start>ul || end<ll)
+        {
+            return 0;
+        }
+
+        //for total overlap
+        if(start<=ll && end>=ul)
+        {
+            return segTree[sn];
+        }
+
+        int mid = (ll+ul)/2;
+        return query(segTree, 2*sn+1, start, end, ll, mid)
+                + query(segTree, 2*sn+2, start, end, mid+1, ul);
+    }
+
+    static long countDistPairs(List<Cell> list){
+        Collections.sort(list);
+
+        long rowsum = 0;
+        Map<Integer, Integer> columnMap = new HashMap<>();
+        List<Integer> col_list = new ArrayList<>();
+        for (Cell cell : list) {
+            rowsum += cell.x;
+            col_list.add(cell.y);
+        }
+
+        Collections.sort(col_list);
+        int col_index_mapper_count = 0;
+        for (Integer integer : col_list) {
+            if (!columnMap.containsKey(integer)) {
+                columnMap.put(integer, col_index_mapper_count);
+                col_index_mapper_count++;
             }
         }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+        int sn = 2 * getnextPowerOf2(col_index_mapper_count) - 1;
+        long[] segTree_front = new long[sn];
+        long[] count_front = new long[sn];
+        for (Cell cell : list) {
+            update(segTree_front, 0,
+                    cell.y, columnMap.get(cell.y), 0, col_index_mapper_count-1);
+            update(count_front, 0,
+                    1, columnMap.get(cell.y), 0, col_index_mapper_count-1);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        long count = 0;
+        for(int i=0;i<list.size()-1;i++){
+            rowsum -= list.get(i).x;
+            count += (rowsum - ((long) list.get(i).x) *((long) list.size() - i - 1));
+            long sumfront = query(segTree_front, 0,
+                    0, columnMap.get(list.get(i).y)-1, 0, col_index_mapper_count-1);
+            long countfront = query(count_front, 0,
+                    0, columnMap.get(list.get(i).y)-1, 0, col_index_mapper_count-1);
+
+            long sumback = query(segTree_front, 0, columnMap.get(list.get(i).y)+1,
+                    col_index_mapper_count-1, 0, col_index_mapper_count-1);
+            long countback = query(count_front, 0, columnMap.get(list.get(i).y)+1,
+                    col_index_mapper_count-1, 0, col_index_mapper_count-1);
+
+            count += (((long)list.get(i).y) * (countfront) - sumfront);
+            count += (sumback - (((long)list.get(i).y) * countback));
+
+            Cell cell = list.get(i);
+            update(segTree_front, 0,
+                    cell.y*-1, columnMap.get(cell.y), 0, col_index_mapper_count-1);
+            update(count_front, 0,
+                    -1, columnMap.get(cell.y), 0, col_index_mapper_count-1);
+        }
+
+        return count;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        StringBuilder sb = new StringBuilder();
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        int[][] mat = new int[n][m];
 
-            sc.println(solution(arr) + "");
+        for(int i=0;i<n;i++){
+            mat[i] = sc.nextIntArray(m);
         }
+
+        Map<Integer, List<Cell>> color_map = new HashMap<>();
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(color_map.containsKey(mat[i][j])){
+                    List<Cell> colorlist = color_map.get(mat[i][j]);
+                    colorlist.add(new Cell(i, j, mat[i][j]));
+                }
+                else{
+                    List<Cell> colorlist = new ArrayList<>();
+                    colorlist.add(new Cell(i, j, mat[i][j]));
+                    color_map.put(mat[i][j], colorlist);
+                }
+            }
+        }
+
+        long ans = 0;
+        for(int i: color_map.keySet()){
+            ans += countDistPairs(color_map.get(i));
+        }
+
+        sb.append(ans).append("\n");
+
+        System.out.println(sb);
 
         sc.close();
     }

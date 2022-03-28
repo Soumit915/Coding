@@ -1,93 +1,86 @@
-package GoogleFooBar;
+package Hackerearth;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class MancunianAndFactorizationGame {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
 
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+            isPrime.add(true);
+            spf.add(2);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                primes.add(i);
+                spf.set(i, i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j)<=spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(i*primes.get(j), false);
+                spf.set(i*primes.get(j), primes.get(j));
+            }
+        }
+    }
+
+    static Map<Integer, Integer> getFactors(int n){
+        Map<Integer, Integer> map = new HashMap<>();
+
+        while(n > 1){
+            int pf = spf.get(n);
+            map.put(pf, map.getOrDefault(pf, 0)+1);
+
+            n /= pf;
+        }
+
+        return map;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
+
+        preComputePrimes(1000100);
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            int[] hash = new int[1000100];
+            for(int i=0;i<n;i++){
+                Map<Integer, Integer> list = getFactors(arr[i]);
+
+                for(int j: list.keySet()){
+                    hash[j] += list.get(j);
+                }
+            }
+
+            int xor = 0;
+            for(int i=2;i<hash.length;i++){
+                xor = xor ^ hash[i];
+            }
+
+            if(xor!=0){
+                sb.append("Mancunian\n");
+            }
+            else{
+                sb.append("Liverbird\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

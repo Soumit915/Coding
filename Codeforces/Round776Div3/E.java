@@ -1,93 +1,97 @@
-package GoogleFooBar;
+package Codeforces.Round776Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class E {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static long[] delete(long[] arr, int ind){
+        int n = arr.length;
+        int index = 0;
+        long[] newarr = new long[n-1];
+        for(int i=0;i<n;i++){
+            if(i==ind)
+                continue;
+
+            newarr[index] = arr[i];
+            index++;
+        }
+
+        return newarr;
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+    static boolean isPossible(long[] arr, long k){
+        int n = arr.length;
+        long max = 0;
+        long min = Long.MAX_VALUE;
+        for(int i=1;i<n;i++){
+            max = Math.max(arr[i] - arr[i-1] - 1, max);
+            if(i!=n-1)
+                min = Math.min(arr[i] - arr[i-1] - 1, min);
+        }
 
-        int l = gcd(x,y);
+        long last = arr[n-1] - arr[n-2] - 2;
+        min = Math.min(min, Math.max(last, (max - 1) / 2));
+        return min >= k;
+    }
 
-        if ((x+y) % 2 == 1)
+    static boolean isValid(long[] arr, long k){
+        int n = arr.length;
+
+        int ind = -1;
+        for(int i=1;i<n;i++){
+            if(arr[i]-arr[i-1]-1 < k){
+                ind = i;
+                break;
+            }
+        }
+
+        if(ind == -1 || ind == n-1)
             return true;
 
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+        if(ind == 1){
+            long[] arr2 = delete(arr, ind);
+            return isPossible(arr2, k);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        long[] arr1 = delete(arr, ind-1);
+        long[] arr2 = delete(arr, ind);
+
+        return isPossible(arr1, k) || isPossible(arr2, k);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int d = sc.nextInt();
 
-            sc.println(solution(arr) + "");
+            long[] arr = new long[n+2];
+            for(int i=1;i<=n;i++){
+                arr[i] = sc.nextLong();
+            }
+            arr[0] = 0;
+            arr[n+1] = d+1;
+
+            long ll = 0, ul = (long) 1e10 + 5;
+            while(ll < ul){
+                long mid = (ll + ul + 1)/2;
+
+                if(isValid(arr, mid)){
+                    ll = mid;
+                }
+                else{
+                    ul = mid - 1;
+                }
+            }
+
+            sb.append(ll).append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

@@ -4,19 +4,58 @@ import java.io.*;
 import java.util.*;
 
 public class B {
-    static int recurse(char[][] mat, ArrayList<ArrayList<Integer>> onlist, int row, int col, int ans){
-        if(row==-1){
-            return ans;
-        }
 
-        ArrayList<Integer> row_onlist = onlist.get(row);
-        if(row_onlist.size()==0)
-            return recurse(mat, onlist, row-1, col, ans);
-        if(col==0){
-            return row_onlist.get(row_onlist.size()-1);
+    static int getMinimumSteps(char[][] mat, int cur, int top, int mode){
+        if(cur < top)
+            return 0;
+
+        int m = mat[0].length;
+        if(mode == 0){
+            int last = -1;
+            for(int i=0;i<m;i++){
+                if(mat[cur][i] == '1')
+                    last = i;
+            }
+
+            if(top == cur){
+                return last;
+            }
+            else{
+                if(last == -1){
+                    return Math.min(getMinimumSteps(mat, cur - 1, top, 0) + 1,
+                            getMinimumSteps(mat, cur - 1, top, 1) + m);
+                }
+                else{
+                    return Math.min(getMinimumSteps(mat, cur - 1, top, 0) + 2 * last + 1,
+                            getMinimumSteps(mat, cur - 1, top, 1) + m);
+                }
+            }
         }
-        return 0;
+        else{
+            int last = -1;
+            for(int i=0;i<m;i++){
+                if(mat[cur][i] == '1') {
+                    last = i;
+                    break;
+                }
+            }
+
+            if(top == cur){
+                return m - last - 1;
+            }
+            else{
+                if(last == -1){
+                    return Math.min(getMinimumSteps(mat, cur - 1, top, 0) + m,
+                            getMinimumSteps(mat, cur - 1, top, 1) + 1);
+                }
+                else{
+                    return Math.min(getMinimumSteps(mat, cur - 1, top, 0) + m,
+                            getMinimumSteps(mat, cur - 1, top, 1) + 2 * ( m - last - 1) + 1);
+                }
+            }
+        }
     }
+
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
 
@@ -27,18 +66,23 @@ public class B {
             mat[i] = sc.next().toCharArray();
         }
 
-        ArrayList<ArrayList<Integer>> onlist = new ArrayList<>();
+        int top = n+1;
         for(int i=0;i<n;i++){
-            ArrayList<Integer> col_list = new ArrayList<>();
-            for(int j=0;j<m;j++){
-                if(mat[i][j]=='1')
-                    col_list.add(j);
+            boolean flag = false;
+            for(int j=0;j<m+2;j++){
+                if(mat[i][j] == '1'){
+                    flag = true;
+                    break;
+                }
             }
-            onlist.add(col_list);
+
+            if(flag){
+                top = i;
+                break;
+            }
         }
 
-        int ans = recurse(mat, onlist, n-1, 0, 0);
-        System.out.println(ans);
+        System.out.println(getMinimumSteps(mat, n-1, top, 0));
 
         sc.close();
     }

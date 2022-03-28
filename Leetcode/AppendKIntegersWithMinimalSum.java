@@ -1,93 +1,46 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class AppendKIntegersWithMinimalSum {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static long getSum(long n){
+        return (n * (n+1)) / 2;
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+    static long getSumRange(long a, long b){
+        return getSum(a) - getSum(b);
     }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+    public long minimalKSum(int[] nums, int k) {
+        int n = nums.length;
+        Arrays.sort(nums);
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
+        long prev = 1;
+        long sum = 0;
+        long left = k;
+        for(int i=0;i<n && left > 0;i++){
+            if(nums[i] == prev){
+                continue;
             }
-        }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+            if(prev + left < nums[i]){
+                sum += getSumRange(prev + left, prev);
+                break;
+            }
+            else{
+                left -= (nums[i] - prev - 1);
+                sum += getSumRange(nums[i]-1, prev);
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return sum;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
-        }
 
         sc.close();
     }

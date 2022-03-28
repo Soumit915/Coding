@@ -1,93 +1,47 @@
-package GoogleFooBar;
+package Codeforces.Round775Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
-
+public class D {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
+            int c = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            int[] hash = new int[c+1];
+            for(int i=0;i<n;i++){
+                hash[arr[i]] = 1;
+            }
+
+            int[] count = new int[n];
+            int[] marks = new int[n];
+            boolean flag = true;
+            for(int i=1;i<=hash.length;i++){
+                count[i] += count[i-1];
+                int sqrt = (int) Math.sqrt(i);
+
+                for(int j=1;j<i;j++){
+                    if(i*j > c)
+                        break;
+
+                    if(hash[j]==1){
+                        marks[i*j]++;
+                        if(i*(j+1) <= c){
+                            marks[i*(j+1)]--;
+                        }
+                    }
+                }
+                count[i]++;
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

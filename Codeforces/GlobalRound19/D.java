@@ -1,93 +1,107 @@
-package GoogleFooBar;
+package Codeforces.GlobalRound19;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class D {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
+    static long getSumProduct(long[] a){
+        int n = a.length;
+        long sum1 = 0;
         for(int i=0;i<n;i++){
             for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+                sum1 += ((a[i] + a[j]) * (a[i] + a[j]));
+            }
+        }
+        return sum1;
+    }
+
+    static long getMinSum(long[] a, long[] b){
+        int n = a.length;
+        int lim = (int) (Math.pow(2, n));
+
+        long min = Long.MAX_VALUE;
+        for(int i=0;i<lim;i++){
+
+            long[] na = new long[n];
+            long[] nb = new long[n];
+
+            for(int j=0;j<n;j++){
+                if((i&(1<<j))!=0){
+                    na[j] = a[j];
+                    nb[j] = b[j];
+                }
+                else{
+                    na[j] = b[j];
+                    nb[j] = a[j];
+                }
+            }
+
+            long sum = getSumProduct(na) + getSumProduct(nb);
+            min = Math.min(min, sum);
+            if(sum==min && sum==35749){
+                System.out.println(Integer.toBinaryString(i));
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return min;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            long[] a = sc.nextLongArray(n);
+            long[] b = sc.nextLongArray(n);
 
-            sc.println(solution(arr) + "");
+            long bf = getMinSum(a, b);
+
+            long sum1 = 0, sum2 = 0;
+            for(int i=0;i<n;i++){
+                for(int j=i+1;j<n;j++){
+                    sum1 += ((a[i] + a[j]) * (a[i] + a[j]));
+                    sum2 += ((b[i] + b[j]) * (b[i] + b[j]));
+                }
+            }
+
+            for(int i=0;i<n;i++){
+                long tosub1 = 0, tosub2 = 0;
+                long toadd1 = 0, toadd2 = 0;
+                for(int j=0;j<n;j++){
+                    if(i==j)
+                        continue;
+
+                    tosub1 += ((a[i] + a[j]) * (a[i] + a[j]));
+                    tosub2 += ((b[i] + b[j]) * (b[i] + b[j]));
+
+                    toadd1 += ((a[i] + b[j]) * (a[i] + b[j]));
+                    toadd2 += ((b[i] + a[j]) * (b[i] + a[j]));
+                }
+
+                if(toadd1+toadd2 < tosub1+tosub2){
+                    long temp = a[i];
+                    a[i] = b[i];
+                    b[i] = temp;
+                    sum1 = sum1 - tosub1 + toadd1;
+                    sum2 = sum2 - tosub2 + toadd2;
+                }
+            }
+
+            if(sum1+sum2!=bf){
+                System.out.println("Wrong answer at "+t);
+                System.out.println(Arrays.toString(a));
+                System.out.println(Arrays.toString(b));
+                System.out.println(bf+" "+(sum1+sum2));
+                System.exit(0);
+            }
+
+            sb.append(sum1+sum2).append("\n");
         }
+
+        System.out.print(sb);
 
         sc.close();
     }

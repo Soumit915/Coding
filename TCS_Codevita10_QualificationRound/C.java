@@ -1,59 +1,102 @@
+package TCS_Codevita10_QualificationRound;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class PussysGoldManSachs {
-    static boolean ifDivides(String s, String t){
-        if(s.length()%t.length()!=0)
-            return false;
+public class C {
 
-        for(int i=0;i<s.length();i++){
-            if(s.charAt(i)!=t.charAt(i%t.length()))
-                return false;
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        n += 10;
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
+
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
         }
 
-        return true;
-    }
-    static ArrayList<Integer> getAllDivisors(int n){
-        ArrayList<Integer> divisorlist = new ArrayList<>();
-        for(int i=1;i*i<=n;i++){
-            if(n%i==0)
-                divisorlist.add(i);
-            if(n/i!=i)
-                divisorlist.add(n/i);
-        }
-        Collections.sort(divisorlist);
-        return divisorlist;
-    }
-    static boolean isValidLength(String t, int l){
-        if(t.length()%l!=0)
-            return false;
+        isPrime.set(0, false);
+        isPrime.set(1, false);
 
-        for(int i=0;i<t.length();i++){
-            if(t.charAt(i)!=t.charAt(i%l))
-                return false;
-        }
-        return true;
-    }
-    public static int findSmallestDivisor(String s, String t) {
-        if(ifDivides(s, t)){
-            ArrayList<Integer> divisors = getAllDivisors(t.length());
-            for(int i: divisors){
-                if(isValidLength(t, i))
-                    return i;
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                spf.set(i, i);
+                primes.add(i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j) <= spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(primes.get(j)*i, false);
+                spf.set(primes.get(j)*i, primes.get(j));
             }
         }
-        else{
-            return -1;
-        }
-        return -2;
     }
-    public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in);
 
-        String s = sc.next();
-        String t = sc.next();
-        System.out.println(findSmallestDivisor(s, t));
+    static boolean isPrime(long n){
+        if(n<=1)
+            return false;
+        for(int prime: primes)
+        {
+            if((long) prime *prime > n)
+                break;
+            if(n%prime==0)
+                return false;
+        }
+        return true;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        preComputePrimes(10100);
+
+        long F = sc.nextLong();
+        long l = sc.nextLong();
+        long r = sc.nextLong();
+
+        Map<Long, Boolean> isPrime = new HashMap<>();
+        for(long i=l;i<=r;i++){
+            isPrime.put(i, isPrime(i));
+        }
+
+        System.out.println(C.primes.size());
+
+        long p1 = -1, p2 = -1;
+        boolean flag = false;
+        for(long i=l;i<=r;i++){
+            if(isPrime.get(i) || i<=0)
+                continue;
+
+            for(long j=i+1;j<=r;j++){
+                if(isPrime.get(j) || j<=0)
+                    continue;
+
+                System.out.println((F * (j - i) * (j - i)));
+                System.out.println(i*j);
+
+                if((i * j) >= (F * (j - i) * (j - i))){
+                    p1 = i;
+                    p2 = j;
+                    flag = true;
+                }
+
+                if(flag)
+                    break;
+            }
+
+            if(flag)
+                break;
+        }
+
+        if(!flag){
+            System.out.println("None");
+        }
+        else{
+            System.out.println(p1+" "+p2);
+        }
 
         sc.close();
     }

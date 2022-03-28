@@ -1,93 +1,54 @@
-package GoogleFooBar;
+package Codeforces.Round776Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class D {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
+    static int search(int[] arr, int k){
+        int n = arr.length;
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+            if(arr[i] == k)
+                return i;
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return -1;
+    }
+
+    static void shift(int[] arr, int n, int k){
+        int[] shift = new int[n];
+        for(int i=0;i<n;i++){
+            int newind = (i - k + n)%n;
+            shift[newind] = arr[i];
+        }
+
+        System.arraycopy(shift, 0, arr, 0, n);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            int[] ans = new int[n];
+            for(int i=n-1;i>=0;i--){
+                int ind = search(arr, i+1);
+                ans[i] = (ind + 1)%(i+1);
+
+                shift(arr, i+1, ans[i]);
+            }
+
+            for(int i: ans){
+                sb.append(i).append(" ");
+            }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

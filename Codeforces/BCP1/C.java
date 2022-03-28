@@ -1,93 +1,67 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class C {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
+    static class Group implements Comparable<Group>{
+        int id;
+        int val;
+        Group(int id, int val){
+            this.id = id;
+            this.val = val;
         }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+        public int compareTo(Group g){
+            return Integer.compare(this.val, g.val);
         }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Scanner sc = new Scanner(System.in);
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int[] arr = new int[n];
+            for(int i=0;i<n;i++){
+                arr[i] = sc.nextInt();
+            }
+            String s = sc.next();
 
-            sc.println(solution(arr) + "");
+            List<Group> disliked = new ArrayList<>();
+            List<Group> liked = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                if(s.charAt(i) == '0'){
+                    disliked.add(new Group(i, arr[i]));
+                }
+                else{
+                    liked.add(new Group(i, arr[i]));
+                }
+            }
+
+            Collections.sort(disliked);
+            Collections.sort(liked);
+
+            int[] ans = new int[n];
+            int v = 0;
+            for(Group gr: disliked){
+                v++;
+                ans[gr.id] = v;
+            }
+            for(Group gr: liked){
+                v++;
+                ans[gr.id] = v;
+            }
+
+            for(int i: ans){
+                sb.append(i).append(" ");
+            }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

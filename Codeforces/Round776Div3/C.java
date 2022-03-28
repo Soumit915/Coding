@@ -1,93 +1,63 @@
-package GoogleFooBar;
+package Codeforces.Round776Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class C {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
+    static class Xsorter implements Comparator<Points>{
+        public int compare(Points p1, Points p2){
+            return Integer.compare(p1.xi, p2.xi);
         }
-        return false;
     }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+    static class Wsorter implements Comparator<Points>{
+        public int compare(Points p1, Points p2){
+            return Integer.compare(p1.wi, p2.wi);
         }
-        return game_matches;
     }
 
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+    static class Points{
+        int id;
+        int xi;
+        int wi;
+        Points(int id, int xi, int wi){
+            this.id = id;
+            this.xi = xi;
+            this.wi = wi;
         }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int m = sc.nextInt();
 
-            sc.println(solution(arr) + "");
+            Points[] points = new Points[m];
+            for(int i=0;i<m;i++){
+                points[i] = new Points(i, sc.nextInt(), sc.nextInt());
+            }
+            Arrays.sort(points, new Wsorter());
+
+            Points[] selected = new Points[2*n];
+            long sum = 0;
+            for(int i=0;i<2*n;i++){
+                selected[i] = points[i];
+                sum += points[i].wi;
+            }
+            Arrays.sort(selected, new Xsorter());
+
+            sb.append(sum).append("\n");
+            for(int i=0;i<n;i++){
+                sb.append(selected[i].id+1).append(" ").append(selected[2*n-i-1].id+1).append("\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

@@ -1,93 +1,67 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
-
+public class E {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            long a = sc.nextLong();
+            long s = sc.nextLong();
 
-            sc.println(solution(arr) + "");
+            boolean flag = true;
+            StringBuilder bstr = new StringBuilder();
+            while(a > 0){
+                long digit_a1 = a % 10;
+                long digit_s1 = s % 10;
+
+                if(s==0){
+                    flag = false;
+                    break;
+                }
+
+                if(digit_a1 > digit_s1){
+                    if(s % 100 <= 9){
+                        flag = false;
+                        break;
+                    }
+
+                    digit_s1 = s % 100;
+
+                    if(digit_s1 - digit_a1 > 9){
+                        flag = false;
+                        break;
+                    }
+
+                    bstr.append(digit_s1 - digit_a1);
+                    s /= 100;
+                    a /= 10;
+                }
+                else{
+                    bstr.append(digit_s1 - digit_a1);
+                    s /= 10;
+                    a /= 10;
+                }
+            }
+
+            if(!flag){
+                sb.append("-1\n");
+            }
+            else{
+                while(s > 0){
+                    bstr.append(s%10);
+                    s /= 10;
+                }
+                String b = bstr.reverse().toString();
+                sb.append(Long.parseLong(b)).append("\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

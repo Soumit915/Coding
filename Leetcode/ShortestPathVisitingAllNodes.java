@@ -1,93 +1,107 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class ShortestPathVisitingAllNodes {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
+    static int countBits(int n){
+        int c = 0;
+        while(n > 0){
+            n = n & (n-1);
+            c++;
         }
-        return false;
+
+        return c;
     }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
+    static boolean isSet(int n, int i){
+        return (n&(1<<i))!=0;
     }
 
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
+    static int unSet(int n, int i){
+        return n ^ (1<<i);
+    }
+
+    public static int shortestPathLength(int[][] graph) {
+        int n = graph.length;
+        int[][] admat = new int[n][n];
 
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+            Arrays.fill(admat[i], 100000);
+            admat[i][i] = 0;
+        }
+
+        for(int i=0;i<n;i++){
+            for(int j=0;j<graph[i].length;j++){
+                admat[i][graph[i][j]] = 1;
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        for(int k=0;k<n;k++){
+            int[][] admat_local = new int[n][n];
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    if(i==k || j==k || i==j)
+                        admat_local[i][j] = admat[i][j];
+
+                    admat_local[i][j] = Math.min(admat[i][j], admat[i][k] + admat[k][j]);
+                }
+            }
+
+            admat = admat_local;
+        }
+
+        int[][] dp = new int[1<<n][n];
+
+        int lim = (1 << n);
+
+        for(int i=2;i<=n;i++){
+
+            int[][] dp_local = new int[1<<n][n];
+
+            for(int j=0;j<lim;j++){
+                if(countBits(j)!=i)
+                    continue;
+
+                for(int k=0;k<n;k++){
+                    if(isSet(j, k)){
+                        int min = 100000;
+                        for(int l=0;l<n;l++){
+                            if(l==k || !isSet(j, l))
+                                continue;
+                            min = Math.min(min, dp[unSet(j, k)][l] + admat[k][l]);
+                        }
+
+                        dp_local[j][k] = min;
+                    }
+                }
+            }
+            dp = dp_local;
+        }
+
+        int min = 100000;
+        for(int j=0;j<n;j++){
+            min = Math.min(min, dp[(1<<n)-1][j]);
+        }
+
+        return min;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
+        int n = sc.nextInt();
+        int[][] graph = new int[n][];
+        for(int i=0;i<n;i++){
+            int k = sc.nextInt();
+            graph[i] = new int[k];
+            for(int j=0;j<k;j++){
+                graph[i][j] = sc.nextInt();
+            }
         }
+
+        System.out.println(shortestPathLength(graph));
 
         sc.close();
     }

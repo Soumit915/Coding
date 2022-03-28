@@ -1,93 +1,90 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class D {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
+    static class Range{
+        int id;
+        int l;
+        int r;
+        int chosen;
+        Range(int id, int l, int r){
+            this.id = id;
+            this.l = l;
+            this.r = r;
+            this.chosen = -1;
         }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+        public String toString(){
+            return (this.l+1)+" "+(this.r+1)+" "+(this.chosen+1);
         }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            Range[] ranges = new Range[n];
+            for(int i=0;i<n;i++){
+                ranges[i] = new Range(i, sc.nextInt()-1, sc.nextInt()-1);
+            }
 
-            sc.println(solution(arr) + "");
+            int[] segment = new int[n];
+            List<Set<Integer>> list = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                list.add(new HashSet<>());
+            }
+
+            for(int i=0;i<n;i++){
+                segment[ranges[i].l]++;
+                if(ranges[i].r != n-1){
+                    segment[ranges[i].r+1]--;
+                }
+
+                for(int j=ranges[i].l;j<=ranges[i].r;j++){
+                    Set<Integer> set = list.get(j);
+                    set.add(i);
+                }
+            }
+
+            for(int i=1;i<n;i++){
+                segment[i] += segment[i-1];
+            }
+
+            Set<Integer> visited = new HashSet<>();
+            for(int i=0;i<n;i++){
+                for(int j=0;j<n;j++){
+                    if(segment[j] == 1){
+                        Set<Integer> set = list.get(j);
+                        int flag = -1;
+                        for(int rangei: set){
+                            if(!visited.contains(rangei)){
+                                flag = rangei;
+                                break;
+                            }
+                        }
+
+                        ranges[flag].chosen = j;
+                        for(int k=ranges[flag].l;k<=ranges[flag].r;k++){
+                            segment[k]--;
+                        }
+                        visited.add(flag);
+                        break;
+                    }
+                }
+            }
+
+            for(Range range: ranges){
+                sb.append(range.toString()).append("\n");
+            }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

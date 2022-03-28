@@ -1,93 +1,88 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
+public class I {
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            int lg = -1, rg = -1;
+            long common_cost = Integer.MAX_VALUE;
+            long lmin_cost = Integer.MAX_VALUE;
+            long rmin_cost = Integer.MAX_VALUE;
+            for(int i=0;i<n;i++){
+                int li = sc.nextInt();
+                int ri = sc.nextInt();
+                int ci = sc.nextInt();
+
+                if(i==0){
+                    sb.append(ci).append("\n");
+                    lg = li; rg = ri;
+                    common_cost = ci;
+                    lmin_cost = ci;
+                    rmin_cost = ci;
+
+                    continue;
+                }
+                else{
+                    if(li < lg){
+                        lg = li;
+                        lmin_cost = ci;
+
+                        if(ri < rg){
+                            common_cost = Integer.MAX_VALUE;
+                        }
+                        else if(ri == rg){
+                            common_cost = ci;
+                            rmin_cost = Math.min(rmin_cost, ci);
+                        }
+                        else{
+                            rg = ri;
+                            common_cost = ci;
+                            rmin_cost = ci;
+                        }
+                    }
+                    else if(li == lg){
+                        lmin_cost = Math.min(lmin_cost, ci);
+
+                        if(ri < rg){
+                        }
+                        else if(ri == rg){
+                            common_cost = Math.min(common_cost, ci);
+                            rmin_cost = Math.min(rmin_cost, ci);
+                        }
+                        else{
+                            rg = ri;
+                            common_cost = ci;
+                            rmin_cost = ci;
+                        }
+                    }
+                    else{
+                        if(ri < rg){
+                        }
+                        else if(ri == rg){
+                            rmin_cost = Math.min(rmin_cost, ci);
+                        }
+                        else{
+                            rg = ri;
+                            common_cost = Integer.MAX_VALUE;
+                            rmin_cost = ci;
+                        }
+                    }
+                }
+
+                sb.append(Math.min(lmin_cost+rmin_cost, common_cost)).append("\n");
+            }
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

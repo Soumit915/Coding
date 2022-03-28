@@ -1,93 +1,115 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
 public class G {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static class Node{
+        int id;
+        boolean isVisited;
+        List<Edge> edgelist = new ArrayList<>();
+        Node(int id){
+            this.id = id;
+            this.isVisited = false;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+    static class Edge{
+        int id;
+        Node u, v;
+        int val;
+        Edge(int id, Node u, Node v){
+            this.id = id;
+            this.u = u;
+            this.v = v;
+            this.val = -1;
+        }
+    }
 
-        int l = gcd(x,y);
+    static class Graph{
+        List<Node> nodelist;
+        List<Edge> edgelist;
+        Graph(int n){
+            nodelist = new ArrayList<>(n);
+            edgelist = new ArrayList<>(n-1);
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+        public void addEdge(int id, int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
 
-        if ((x+y) % 2 == 1)
+            Edge e = new Edge(id, nu, nv);
+
+            nu.edgelist.add(e);
+            nv.edgelist.add(e);
+            edgelist.add(e);
+        }
+        public boolean isValid(){
+            for(Node node: nodelist){
+                if(node.edgelist.size() > 2){
+                    return false;
+                }
+            }
+
             return true;
+        }
+        public void assign(){
+            Node source = null;
+            for(Node node: nodelist)
+                if(node.edgelist.size() == 1){
+                    source = node;
+                    break;
+                }
 
-        x /= l;
-        y /= l;
+            dfs(source, 2);
+        }
+        public void dfs(Node source, int val){
+            if(source.isVisited){
+                return;
+            }
 
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+            source.isVisited = true;
+            for(Edge edge: source.edgelist){
+                if(edge.val==-1){
+                    edge.val = val;
+                    if(edge.v==source)
+                        dfs(edge.u, val^1);
+                    else dfs(edge.v, val^1);
                 }
             }
         }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            Graph gr = new Graph(n);
+            for(int i=0;i<n-1;i++){
+                gr.addEdge(i, sc.nextInt()-1, sc.nextInt()-1);
+            }
+
+            if(!gr.isValid()){
+                sb.append("-1\n");
+                continue;
+            }
+
+            gr.assign();
+
+            for(Edge e: gr.edgelist){
+                sb.append(e.val).append(" ");
+            }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

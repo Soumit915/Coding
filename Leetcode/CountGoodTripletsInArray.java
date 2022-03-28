@@ -1,97 +1,199 @@
-package GoogleFooBar;
-
+package Leetcode;
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class CountGoodTripletsInArray {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static int[] hash;
+
+    static class Val{
+        int ind;
+        int val;
+        long ci2;
+        long ci3;
+        Val(int ind, int val){
+            this.ind = ind;
+            this.val = val;
+            this.ci2 = 0;
+            this.ci3 = 0;
+        }
+        Val(int ind, int val, long ci2){
+            this.ind = ind;
+            this.val = val;
+            this.ci2 = ci2;
+            this.ci3 = 0;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+    static boolean isOK(int a, int b){
+        return (hash[a] < hash[b]);
     }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
+    public static long merge(Val[] arr, int ll, int mid, int ul)
     {
-        for (int v = 0; v < bpGraph.length; v++)
+        int al = mid-ll+1;
+        int bl = ul-mid;
+        Val[] A = new Val[al];
+        Val[] B = new Val[bl];
+
+        if (al >= 0) System.arraycopy(arr, ll, A, 0, al);
+        for(int i=0;i<bl;i++)
         {
-            if (bpGraph[u][v] && !seen[v])
+            B[i] = arr[mid+i+1];
+        }
+
+        long count=0;
+        int p = 0, q = 0, k = ll;
+        while(p<al && q<bl)
+        {
+            if(isOK(A[p].val, B[q].val))
             {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
+                count += (bl - q);
+                A[p].ci2 += (bl - q);
+                arr[k] = A[p];
+                p++;
             }
+            else
+            {
+                arr[k] = B[q];
+                q++;
+            }
+            k++;
         }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
+        while(p<al)
         {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+            arr[k] = A[p];
+            p++;k++;
         }
-        return game_matches;
+
+        while(q<bl)
+        {
+            arr[k] = B[q];
+            q++;k++;
+        }
+
+        return count;
+    }
+    public static long countInversions(Val[] arr, int ll, int ul)
+    {
+        if(ll<ul)
+        {
+            int mid = (ll+ul)/2;
+            long countl = countInversions(arr, ll, mid);
+            long countr = countInversions(arr, mid+1, ul);
+            return countl + countr + merge(arr, ll, mid, ul);
+        }
+        return 0;
     }
 
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
+    public static long merge3(Val[] arr, int ll, int mid, int ul)
+    {
+        int al = mid-ll+1;
+        int bl = ul-mid;
+        Val[] A = new Val[al];
+        Val[] B = new Val[bl];
+
+        if (al >= 0) System.arraycopy(arr, ll, A, 0, al);
+        long totsum = 0;
+        for(int i=0;i<bl;i++)
+        {
+            B[i] = arr[mid+i+1];
+            totsum += B[i].ci2;
+        }
+
+        long count=0;
+        int p = 0, q = 0, k = ll;
+        while(p<al && q<bl)
+        {
+            if(isOK(A[p].val, B[q].val))
+            {
+                count += (bl - q);
+                A[p].ci3 += totsum;
+                arr[k] = A[p];
+                p++;
+            }
+            else
+            {
+                totsum -= B[q].ci2;
+                arr[k] = B[q];
+                q++;
+            }
+            k++;
+        }
+
+        while(p<al)
+        {
+            arr[k] = A[p];
+            p++;k++;
+        }
+
+        while(q<bl)
+        {
+            arr[k] = B[q];
+            q++;k++;
+        }
+
+        return count;
+    }
+    public static long countInversions3(Val[] arr, int ll, int ul)
+    {
+        if(ll<ul)
+        {
+            int mid = (ll+ul)/2;
+            long countl = countInversions3(arr, ll, mid);
+            long countr = countInversions3(arr, mid+1, ul);
+            return countl + countr + merge3(arr, ll, mid, ul);
+        }
+        return 0;
+    }
+
+    static long goodTriplets(int[] nums1, int[] nums2) {
+        int n = nums1.length;
+        hash = new int[n];
 
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
+            hash[nums2[i]] = i;
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        Val[] vals = new Val[n];
+        for(int i=0;i<n;i++){
+            vals[i] = new Val(i, nums1[i]);
+        }
+
+        countInversions(vals, 0, n-1);
+
+        Val[] vals1 = new Val[n];
+        for(int i=0;i<n;i++){
+            vals1[i] = new Val(i, nums1[i], vals[hash[nums1[i]]].ci2);
+        }
+
+        countInversions3(vals1, 0, n-1);
+
+        long ans = 0;
+        for(int i=0;i<n;i++){
+            ans += vals1[i].ci3;
+        }
+        return ans;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
-
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
+        
+        int n = sc.nextInt();
+        int[] nums1 = new int[n];
+        int[] nums2 = new int[n];
+        for(int i=0;i<n;i++){
+            nums1[i] = sc.nextInt();
+        }
+        for(int i=0;i<n;i++){
+            nums2[i] = sc.nextInt();
         }
 
+        System.out.println(goodTriplets(nums1, nums2));
+        
         sc.close();
     }
-
     static class Soumit {
         final private int BUFFER_SIZE = 1 << 18;
         final private DataInputStream din;

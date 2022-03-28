@@ -1,93 +1,88 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class AllAncestorsInADAG {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static class Node{
+        int id;
+        int deg;
+        ArrayList<Node> childs = new ArrayList<>();
+        Set<Node> ancestors = new HashSet<>();
+        Node(int id){
+            this.id = id;
+            this.deg = 0;
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+    static class DAG{
+        ArrayList<Node> nodelist = new ArrayList<>();
+        DAG(int n){
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
 
-        int l = gcd(x,y);
+        public void addEdge(int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
 
-        if ((x+y) % 2 == 1)
-            return true;
+            nu.childs.add(nv);
+            nv.deg++;
+        }
 
-        x /= l;
-        y /= l;
+        public void populateAncestors(){
+            Queue<Node> q = new LinkedList<>();
 
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
+            for (Node node : nodelist) {
+                if (node.deg == 0) {
+                    q.add(node);
+                }
+            }
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
+            while(!q.isEmpty()){
+                Node cur = q.remove();
 
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+                for(Node child: cur.childs){
+                    child.deg--;
+                    child.ancestors.addAll(cur.ancestors);
+                    child.ancestors.add(cur);
+
+                    if(child.deg == 0){
+                        q.add(child);
+                    }
                 }
             }
         }
-        return false;
     }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
+    public List<List<Integer>> getAncestors(int n, int[][] edges) {
+        DAG dag = new DAG(n);
 
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+        for (int[] edge : edges) {
+            dag.addEdge(edge[0], edge[1]);
         }
-        return game_matches;
-    }
 
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
+        dag.populateAncestors();
 
+        List<List<Integer>> list = new ArrayList<>();
         for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+            List<Integer> curlist = new ArrayList<>();
+            for(Node ancestors: dag.nodelist.get(i).ancestors){
+                curlist.add(ancestors.id);
             }
+
+            Collections.sort(curlist);
+            list.add(curlist);
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return list;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
-        }
 
         sc.close();
     }

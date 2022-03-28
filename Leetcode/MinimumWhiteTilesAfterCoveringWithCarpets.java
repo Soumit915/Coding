@@ -1,93 +1,41 @@
-package GoogleFooBar;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class MinimumWhiteTilesAfterCoveringWithCarpets {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
+    public static int minimumWhiteTiles(String floor, int numCarpets, int carpetLen) {
+        int n = floor.length();
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+        int[][] memo = new int[numCarpets+1][n];
+        memo[0][n-1] = floor.charAt(n-1) - '0';
+        for(int i=n-2;i>=0;i--){
+            memo[0][i] = memo[0][i+1] + (floor.charAt(i) - '0');
+        }
 
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+        for(int i=1;i<=numCarpets;i++){
+            for(int j=n-1;j>=0;j--){
+                if(j+carpetLen >= n){
+                    memo[i][j] = 0;
+                    continue;
                 }
-            }
-        }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+                memo[i][j] = Math.min(memo[i-1][j + carpetLen], floor.charAt(j)-'0' + memo[i][j+1]);
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return memo[numCarpets][0];
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        String floor = "10110101";
+        int nc = 1;
+        int cl = 2;
 
-            sc.println(solution(arr) + "");
-        }
+        System.out.println(minimumWhiteTiles(floor, nc, cl));
 
         sc.close();
     }

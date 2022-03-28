@@ -1,93 +1,59 @@
-package GoogleFooBar;
-
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class G {
-
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
-
-    static boolean isOk(int x, int y){
-        if (x == y)
+public class GoldManSachs {
+    static boolean ifDivides(String s, String t){
+        if(s.length()%t.length()!=0)
             return false;
 
-        int l = gcd(x,y);
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)!=t.charAt(i%t.length()))
+                return false;
+        }
 
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
+        return true;
     }
+    static ArrayList<Integer> getAllDivisors(int n){
+        ArrayList<Integer> divisorlist = new ArrayList<>();
+        for(int i=1;i*i<=n;i++){
+            if(n%i==0)
+                divisorlist.add(i);
+            if(n/i!=i)
+                divisorlist.add(n/i);
+        }
+        Collections.sort(divisorlist);
+        return divisorlist;
+    }
+    static boolean isValidLength(String t, int l){
+        if(t.length()%l!=0)
+            return false;
 
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
+        for(int i=0;i<t.length();i++){
+            if(t.charAt(i)!=t.charAt(i%l))
+                return false;
+        }
+        return true;
+    }
+    public static int findSmallestDivisor(String s, String t) {
+        if(ifDivides(s, t)){
+            ArrayList<Integer> divisors = getAllDivisors(t.length());
+            for(int i: divisors){
+                if(isValidLength(t, i))
+                    return i;
             }
         }
-        return false;
-    }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
+        else{
+            return -1;
         }
-        return game_matches;
+        return -2;
     }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
-    }
-
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Scanner sc = new Scanner(System.in);
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-            sc.println(solution(arr) + "");
-        }
+        String s = sc.next();
+        String t = sc.next();
+        System.out.println(findSmallestDivisor(s, t));
 
         sc.close();
     }

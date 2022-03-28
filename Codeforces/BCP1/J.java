@@ -1,93 +1,115 @@
-package GoogleFooBar;
+package Codeforces.BCP1;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class J {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
+    static ArrayList<Boolean> isPrime;
+    static ArrayList<Integer> primes;
+    static ArrayList<Integer> spf;
+    static void preComputePrimes(int n){
+        isPrime = new ArrayList<>(n);
+        primes = new ArrayList<>();
+        spf = new ArrayList<>(n);
+
+        for(int i=0;i<n;i++){
+            isPrime.add(true);
+            spf.add(2);
+        }
+
+        isPrime.set(0, false);
+        isPrime.set(1, false);
+
+        for(int i=2;i<n;i++){
+            if(isPrime.get(i)){
+                primes.add(i);
+                spf.set(i, i);
+            }
+
+            for(int j=0;j<primes.size() && primes.get(j)<=spf.get(i) && primes.get(j)*i<n;j++){
+                isPrime.set(i*primes.get(j), false);
+                spf.set(i*primes.get(j), primes.get(j));
+            }
+        }
     }
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
+    static long countPairs(List<Integer> list){
+        int l = -1;
+        long count = 0;
+        long product = 1;
+        for(int i=0;i<list.size();i++){
+            if(!isPrime.get(list.get(i)) && list.get(i) != 1){
+                product = 1;
+                l = -1;
+                continue;
+            }
 
-        int l = gcd(x,y);
+            if(l == -1){
+                l = i;
+                product *= list.get(i);
+                continue;
+            }
 
-        if ((x+y) % 2 == 1)
-            return true;
+            if(list.get(i) == 1){
+                count += (i - l);
+            }
+            else{
+                if(product == 1){
+                    product *= list.get(i);
+                    count += (i - l);
+                }
+                else{
+                    while(product != 1){
+                        product /= list.get(l);
+                        l++;
+                    }
 
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
+                    product *= list.get(i);
+                    count += (i - l);
                 }
             }
         }
-        return false;
-    }
 
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
+        l = 0;
+        for(int i=0;i<list.size();i++){
+            if(list.get(i) == 1){
+                count -= (i - l);
+            }
+            else{
+                l = i + 1;
             }
         }
 
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+        return count;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        Soumit sc = new Soumit();
+
+        preComputePrimes(1000100);
 
         int t = sc.nextInt();
-        while (t-->0) {
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
             int n = sc.nextInt();
+            int e = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
-            sc.println(solution(arr) + "");
+            long count = 0;
+            for(int j=0;j<e;j++){
+                List<Integer> list = new ArrayList<>();
+                for(int i=j;i<n;i+=e){
+                    list.add(arr[i]);
+                }
+
+                count = count + countPairs(list);
+            }
+
+            sb.append(count).append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }

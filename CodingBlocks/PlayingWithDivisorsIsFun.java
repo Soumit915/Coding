@@ -1,93 +1,52 @@
-package GoogleFooBar;
+package CodingBlocks;
 
 import java.io.*;
 import java.util.*;
 
-public class G {
+public class PlayingWithDivisorsIsFun {
 
-    static int gcd(int a, int b){
-        if(a%b==0)
-            return b;
-        else return gcd(b, a%b);
-    }
+    static long mod = (long) 1e9 + 7;
 
-    static boolean isOk(int x, int y){
-        if (x == y)
-            return false;
-
-        int l = gcd(x,y);
-
-        if ((x+y) % 2 == 1)
-            return true;
-
-        x /= l;
-        y /= l;
-
-        return isOk(Math.abs(x-y),2*Math.min(x, y));
-    }
-
-    static boolean getMatching(boolean[][] bpGraph, int u, boolean[] seen, int[] matchR)
-    {
-        for (int v = 0; v < bpGraph.length; v++)
-        {
-            if (bpGraph[u][v] && !seen[v])
-            {
-                seen[v] = true;
-
-                if (matchR[v] < 0 || getMatching(bpGraph, matchR[v], seen, matchR))
-                {
-                    matchR[v] = u;
-                    return true;
-                }
-            }
+    static long x, y;
+    static void gcdExtended(long a, long b){
+        if(a%b==0){
+            x = 1;
+            y = 1 - (a / b);
+            return ;
         }
-        return false;
+        gcdExtended(b, a%b);
+        long t = y;
+        y = x - ((a / b)*y)%mod;
+        x = t;
     }
-
-    static int maxBiPartiteMatching(boolean[][] admat)
-    {
-        int n = admat.length;
-
-        int[] games = new int[n];
-        for(int i = 0; i < n; ++i)
-            games[i] = -1;
-
-        int game_matches = 0;
-        for (int u = 0; u < n; u++)
-        {
-            boolean[] isVisited =new boolean[n];
-            if (getMatching(admat, u, isVisited, games))
-                game_matches++;
-        }
-        return game_matches;
-    }
-
-    public static int solution(int[] banana_list){
-        int n = banana_list.length;
-        boolean[][] admat = new boolean[n][n];
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                admat[i][j] = isOk(banana_list[i], banana_list[j]);
-                admat[j][i] = admat[i][j];
-            }
-        }
-
-        int max = maxBiPartiteMatching(admat);
-        return n - 2*(max/2);
+    static long modInverse(long a){
+        gcdExtended(a, mod);
+        x = (x%mod + mod)%mod;
+        return x;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
-        while (t-->0) {
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        int n = sc.nextInt();
+        long[] arr = sc.nextLongArray(n);
 
-            sc.println(solution(arr) + "");
+        long tot_factors = 1;
+        for(int i=0;i<n;i++){
+            tot_factors = (tot_factors * (arr[i] + 1))%mod;
         }
+
+        long[] div_factors = new long[n];
+        for(int i=0;i<n;i++){
+            div_factors[i] = (((tot_factors * modInverse(arr[i] + 1))%mod) * ((arr[i] * (arr[i] + 1)) /2))%mod;
+        }
+
+        long ans = 1;
+        for(int i=0;i<n;i++){
+            ans = ((div_factors[i] + 1) * ans)%mod;
+        }
+
+        System.out.println(ans);
 
         sc.close();
     }

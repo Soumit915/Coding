@@ -4,6 +4,24 @@ import java.io.*;
 import java.util.*;
 
 public class OutputChecker {
+
+    static boolean isValid(int[] arr, int x){
+        int n = arr.length;
+        int[] hash = new int[n+1];
+        for (int j : arr) {
+            if(j%x > n)
+                return false;
+            hash[j % x]++;
+        }
+
+        for(int i=1;i<=n;i++){
+            if(hash[i] == 0)
+                return false;
+        }
+
+        return true;
+    }
+
     public static void main(String[] args) throws IOException {
         FileReader fr1 = new FileReader("Output1.txt");
         BufferedReader br1 = new BufferedReader(fr1);
@@ -13,13 +31,17 @@ public class OutputChecker {
 
         String a1;
         int line = 0;
-        Soumit sc = new Soumit("Input.txt");
-        sc.nextInt();
+        //Soumit sc = new Soumit("Input.txt");
+        //sc.nextInt();
         while((a1 = br1.readLine()) != null)
         {
             //int n = sc.nextInt();
-            //int p = sc.nextInt();
-            //int[] v = sc.nextIntArray(n);
+            /*int[][] input = new int[n][3];
+            for(int i=0;i<n;i++){
+                input[i][0] = sc.nextInt();
+                input[i][1] = sc.nextInt();
+                input[i][2] = sc.nextInt();
+            }*/
 
             a1 = a1.trim();
             String a2 = br2.readLine();
@@ -35,7 +57,17 @@ public class OutputChecker {
             a2 = a2.trim();
 
             if(!a1.equals(a2)){
+                /*if(a1.startsWith("YES")){
+                    int val = Integer.parseInt(a1.substring(4));
+                    if(isValid(v, val)){
+                        line++;
+                        continue;
+                    }
+                }*/
                 System.out.println("Wrong Answer at line: "+line);
+                /*System.out.println(n);
+                for(int[] i: input)
+                    System.out.println(Arrays.toString(i));*/
                 System.out.println(a1);
                 System.out.println(a2);
 
