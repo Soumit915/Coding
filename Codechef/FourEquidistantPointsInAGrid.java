@@ -3,50 +3,24 @@ package Codechef;
 import java.io.*;
 import java.util.*;
 
-public class D_BF {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
-    }
-
+public class FourEquidistantPointsInAGrid {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
+        Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+        int d = sc.nextInt();
 
-            boolean flag = false;
-            for(int i=1;i<=2*100000;i++){
-                if(isValid(arr, i)){
-                    sb.append("YES ").append(i).append("\n");
-                    flag = true;
-                    break;
-                }
-            }
-
-            if(!flag){
-                sb.append("NO\n");
-            }
+        if(d%2==1){
+            sb.append("-1\n");
+        }
+        else{
+            sb.append("0 ").append((d / 2) * -1).append("\n");
+            sb.append("0 ").append((d / 2)).append("\n");
+            sb.append((d / 2) * -1).append(" 0").append("\n");
+            sb.append((d / 2)).append(" 0").append("\n");
         }
 
-        sc.println(sb.toString());
+        System.out.println(sb);
 
         sc.close();
     }

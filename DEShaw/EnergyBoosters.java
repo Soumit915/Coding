@@ -1,81 +1,74 @@
-package Codechef;
+package DEShaw;
 
 import java.io.*;
 import java.util.*;
 
-public class D {
+public class EnergyBoosters {
 
-    static boolean isValid(long[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (long j : arr) {
-            if(j%x > n)
-                return false;
-            hash[(int) j % x]++;
+    static class Node{
+        int count;
+        boolean isPossible;
+
+        Node(int count, boolean isPossible){
+            this.count = count;
+            this.isPossible = isPossible;
         }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
     }
 
-    static List<Integer> getFactors(long n){
-        List<Integer> list = new ArrayList<>();
-        int lim = (int) (Math.sqrt(n));
-        for(long i=1;i<=lim;i++){
-            if(n%i==0){
-                long a = (n / i);
-                if(i<=20000000){
-                    list.add((int) i);
-                }
+    static int CDC(int[] capacities, int[] freqs, int k){
+        int n = capacities.length;
 
-                if(a!=i && a<=20000000){
-                    list.add((int) a);
+        Node[][] dp = new Node[n+1][k+1];
+        for(int i=0;i<=k;i++){
+            dp[0][i] = new Node(0, false);
+        }
+        dp[0][0].isPossible = true;
+
+        for(int i=1;i<=n;i++){
+            for(int j=0;j<=k;j++){
+                if(dp[i-1][j].isPossible){
+                    dp[i][j] = new Node(0, true);
+                }
+                else {
+                    if(j - capacities[i-1] >= 0 && dp[i][j - capacities[i-1]].isPossible
+                            && dp[i][j - capacities[i-1]].count < freqs[i-1]){
+                        dp[i][j] = new Node(dp[i][j - capacities[i-1]].count + 1, true);
+                    }
+                    else{
+                        dp[i][j] = new Node(0, false);
+                    }
                 }
             }
         }
 
-        return list;
+        int count = 0;
+        for(int i=1;i<=k;i++){
+            if(dp[n][i].isPossible)
+                count++;
+        }
+
+        return count;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long sum = 0;
-            for(int i=0;i<n;i++){
-                sum = (sum + (arr[i] - i - 1));
-            }
+            int[] capacities = sc.nextIntArray(n);
+            int[] freqs = sc.nextIntArray(n);
 
-            if(sum == 0){
-                sb.append("YES ").append(n + 1).append("\n");
-                continue;
-            }
+            int k = sc.nextInt();
 
-            List<Integer> list = getFactors(sum);
-            boolean flag = false;
-            for(int i: list){
-                if(isValid(arr, i) && i<=20000000){
-                    sb.append("YES ").append(i).append("\n");
-                    flag = true;
-                    break;
-                }
-            }
-
-            if(!flag){
-                sb.append("NO\n");
-            }
+            int ans = CDC(capacities, freqs, k);
+            sb.append(ans).append("\n");
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
 
         sc.close();
     }

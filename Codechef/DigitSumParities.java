@@ -1,87 +1,42 @@
-package TestingCode;
+package Codechef;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class DigitSumParities {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static long getDigitSum(long n){
+        long sum = 0;
+        while(n > 0){
+            sum += (n % 10);
+            n /= 10;
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
+        return sum;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            long n = sc.nextLong();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            long ds = getDigitSum(n);
+            long ds1 = getDigitSum(n+1);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+            if(ds%2 == ds1%2){
+                sb.append(n+2).append("\n");
             }
-            else if(a2==null && a1.equals("")){
-                break;
+            else{
+                sb.append(n+1).append("\n");
             }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

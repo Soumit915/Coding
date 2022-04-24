@@ -1,87 +1,74 @@
-package TestingCode;
+package DEShaw;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class EnergyBoosters_BF {
 
-    static boolean isValid(int[] arr, int x){
+    static int CDC(int[] arr, int k){
         int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+
+        boolean[][] dp = new boolean[n+1][k+1];
+        for(int i=0;i<=k;i++){
+            dp[0][i] = false;
         }
+        dp[0][0] = true;
 
         for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+            for(int j=0;j<=k;j++){
+                if(j - arr[i-1] < 0){
+                    dp[i][j] = dp[i-1][j];
+                }
+                else{
+                    dp[i][j] = dp[i-1][j - arr[i-1]] | dp[i-1][j];
+                }
+            }
         }
 
-        return true;
+        int count = 0;
+        for(int i=1;i<=k;i++){
+            if(dp[n][i])
+                count++;
+        }
+
+        return count;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output2.txt");
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            int[] capacities = sc.nextIntArray(n);
+            int[] freqs = sc.nextIntArray(n);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+            int k = sc.nextInt();
+
+            int totfreq= 0;
+            for(int i=0;i<n;i++){
+                totfreq += freqs[i];
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+            int[] arr = new int[totfreq];
+            int index = 0;
+            for(int i=0;i<n;i++){
+                for(int j=0;j<freqs[i];j++){
+                    arr[index] = capacities[i];
+                    index++;
+                }
             }
-            line++;
+
+            int ans = CDC(arr, k);
+            sb.append(ans).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        sc.println(sb.toString());
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

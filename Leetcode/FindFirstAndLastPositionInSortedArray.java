@@ -1,87 +1,69 @@
-package TestingCode;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class FindFirstAndLastPositionInSortedArray {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static int getLowerBounds(int[] nums, int target, int l, int r){
+        if(l == r){
+            return nums[l] == target? l : -1;
         }
+        else if(l < r){
+            int mid = (l + r)/2;
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+            if(nums[mid] < target){
+                return getLowerBounds(nums, target, mid+1, r);
+            }
+            else if(nums[mid] > target){
+                return getLowerBounds(nums, target, l, mid-1);
+            }
+            else{
+                if(mid>l && nums[mid-1]==target){
+                    return getLowerBounds(nums, target, l, mid-1);
+                }
+                else return mid;
+            }
         }
+        else return -1;
+    }
 
-        return true;
+    static int getUpperBounds(int[] nums, int target, int l, int r){
+        if(l == r){
+            return nums[l] == target? l : -1;
+        }
+        else if(l < r){
+            int mid = (l + r)/2;
+
+            if(nums[mid] < target){
+                return getUpperBounds(nums, target, mid+1, r);
+            }
+            else if(nums[mid] > target){
+                return getUpperBounds(nums, target, l, mid-1);
+            }
+            else{
+                if(mid<r && nums[mid+1] == target){
+                    return getUpperBounds(nums, target, mid+1, r);
+                }
+                else return mid;
+            }
+        }
+        else return -1;
+    }
+
+    public static int[] searchRange(int[] nums, int target) {
+        int[] ans = new int[2];
+        ans[0] = getLowerBounds(nums, target, 0, nums.length-1);
+        ans[1] = getUpperBounds(nums, target, 0, nums.length-1);
+
+        return ans;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

@@ -1,87 +1,122 @@
-package TestingCode;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class LongestPathWithDiffAdjacentChars {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Node{
+        int id;
+        char ch;
+        Node parent;
+
+        int maxPivDist, maxLeafDist;
+
+        List<Node> adlist = new ArrayList<>();
+        Node(int id, char ch){
+            this.id = id;
+            this.ch = ch;
+            this.parent = null;
+        }
+    }
+
+    static class Tree{
+        List<Node> nodelist;
+
+        Tree(int n, String s){
+            nodelist = new ArrayList<>(n);
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i, s.charAt(i)));
+            }
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public void addEdge(int child, int parent){
+            Node nc = nodelist.get(child);
+            Node np = nodelist.get(parent);
+
+            np.adlist.add(nc);
+            nc.parent = np;
         }
 
-        return true;
+        public void dfs(){
+            Node root = nodelist.get(0);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(root);
+            ptrstk.push(-1);
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+
+                    stk.push(root);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+                    if(next.adlist.size() == 0){
+                        next.maxLeafDist = 1;
+                        next.maxPivDist = 1;
+                    }
+                    else{
+                        stk.push(next);
+                        ptrstk.push(-1);
+                    }
+                }
+                else{
+                    List<Integer> list = new ArrayList<>();
+                    for(Node next: cur.adlist){
+                        if(next.ch != cur.ch){
+                            list.add(next.maxLeafDist);
+                        }
+                    }
+
+                    list.sort(Collections.reverseOrder());
+
+                    if(list.size() == 0){
+                        cur.maxPivDist = 1;
+                        cur.maxLeafDist = 1;
+                    }
+                    else if(list.size() == 1){
+                        cur.maxPivDist = list.get(0) + 1;
+                        cur.maxLeafDist = list.get(0) + 1;
+                    }
+                    else{
+                        cur.maxLeafDist = list.get(0) + 1;
+                        cur.maxPivDist = list.get(0) + list.get(1) + 1;
+                    }
+                }
+            }
+        }
+    }
+
+    public int longestPath(int[] parent, String s) {
+        int n = s.length();
+
+        Tree tr = new Tree(n, s);
+        for(int i=1;i<n;i++){
+            tr.addEdge(i, parent[i]);
+        }
+
+        tr.dfs();
+
+        int max = 0;
+        for(Node node: tr.nodelist){
+            max = Math.max(node.maxPivDist, max);
+        }
+
+        return max;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

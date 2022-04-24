@@ -1,87 +1,144 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class NearestExcludedPoints {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Point{
+        int x;
+        int y;
+
+        long hash;
+
+        Point excluded_neighbour = null;
+        Point(int x, int y){
+            this.x = x;
+            this.y = y;
+
+            computeHash();
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public void computeHash(){
+            this.hash = x;
+            this.hash = (this.hash * ((long) 1e7));
+            this.hash += y;
         }
 
-        return true;
+        public Point getUp(){
+            return new Point(this.x-1, this.y);
+        }
+
+        public Point getDown(){
+            return new Point(this.x+1, this.y);
+        }
+
+        public Point getLeft(){
+            return new Point(this.x, this.y-1);
+        }
+
+        public Point getRight(){
+            return new Point(this.x, this.y+1);
+        }
+
+        public int getDist(Point p){
+            return Math.abs(this.x - p.x) + Math.abs(this.y - p.y);
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        /*Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");*/
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        Soumit sc = new Soumit();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        StringBuilder sb = new StringBuilder();
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+        int t = 1;
+        while (t-->0){
+            int n = sc.nextInt();
+
+            Point[] points = new Point[n];
+            Map<Long, Point> map = new HashMap<>();
+            for(int i=0;i<n;i++){
+                points[i] = new Point(sc.nextInt(), sc.nextInt());
+                map.put(points[i].hash, points[i]);
             }
 
-            a2 = a2.trim();
+            Queue<Point> q = new LinkedList<>();
+            for(Point p: points){
+                Point up = p.getUp();
+                Point down = p.getDown();
+                Point left = p.getLeft();
+                Point right = p.getRight();
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                if(!map.containsKey(up.hash)){
+                    p.excluded_neighbour = up;
+                    q.add(p);
+                    continue;
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                if(!map.containsKey(down.hash)){
+                    p.excluded_neighbour = down;
+                    q.add(p);
+                    continue;
+                }
+
+                if(!map.containsKey(left.hash)){
+                    p.excluded_neighbour = left;
+                    q.add(p);
+                    continue;
+                }
+
+                if(!map.containsKey(right.hash)){
+                    p.excluded_neighbour = right;
+                    q.add(p);
+                }
             }
-            line++;
+
+            while(!q.isEmpty()){
+                Point p = q.remove();
+
+                Point up = p.getUp();
+                Point down = p.getDown();
+                Point left = p.getLeft();
+                Point right = p.getRight();
+
+                if(map.containsKey(up.hash) && map.get(up.hash).excluded_neighbour==null){
+                    Point neighbour = map.get(up.hash);
+                    neighbour.excluded_neighbour = p.excluded_neighbour;
+                    q.add(neighbour);
+                }
+
+                if(map.containsKey(down.hash) && map.get(down.hash).excluded_neighbour==null){
+                    Point neighbour = map.get(down.hash);
+                    neighbour.excluded_neighbour = p.excluded_neighbour;
+                    q.add(neighbour);
+                }
+
+                if(map.containsKey(left.hash) && map.get(left.hash).excluded_neighbour==null){
+                    Point neighbour = map.get(left.hash);
+                    neighbour.excluded_neighbour = p.excluded_neighbour;
+                    q.add(neighbour);
+                }
+
+                if(map.containsKey(right.hash) && map.get(right.hash).excluded_neighbour==null){
+                    Point neighbour = map.get(right.hash);
+                    neighbour.excluded_neighbour = p.excluded_neighbour;
+                    q.add(neighbour);
+                }
+            }
+
+            for(Point p: points){
+                sb.append(p.excluded_neighbour.x).append(" ").append(p.excluded_neighbour.y).append("\n");
+                /*int dist = p.getDist(p.excluded_neighbour);
+                sb.append(dist).append("\n");*/
+            }
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb.toString());
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

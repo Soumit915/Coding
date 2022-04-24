@@ -1,87 +1,131 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.BinarySearch.Step4;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class B {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Node{
+        int id;
+        Node next;
+        List<Edge> adlist = new ArrayList<>();
+        List<Edge> inedge = new ArrayList<>();
+
+        Node(int id){
+            this.id = id;
+        }
+    }
+
+    static class Edge{
+        Node u, v;
+        long weight;
+
+        Edge(Node u, Node v, long weight){
+            this.u = u;
+            this.v = v;
+            this.weight = weight;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+        double[] dist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>(n);
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public void addEdge(int u, int v, long weight){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            Edge e = new Edge(nu, nv, weight);
+
+            nu.adlist.add(e);
+            nv.inedge.add(e);
         }
 
-        return true;
+        public boolean isPossible(double avg){
+            int n = nodelist.size();
+
+            for(Node node: nodelist)
+                node.next = null;
+
+            dist = new double[n];
+            Arrays.fill(dist, 1000000000);
+            dist[n-1] = 0;
+            for(int i=n-2;i>=0;i--){
+                double min = 1000000000;
+                Node cur = nodelist.get(i);
+
+                for(Edge e: cur.adlist){
+                    Node next;
+                    if(e.u == cur){
+                        next = e.v;
+                    }
+                    else{
+                        next = e.u;
+                    }
+
+                    min = Math.min(min, e.weight + dist[next.id] - avg);
+                    if(min == e.weight+dist[next.id]-avg){
+                        cur.next = next;
+                    }
+                }
+
+                dist[i] = min;
+            }
+
+            return dist[0] <= 0;
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        StringBuilder sb = new StringBuilder();
+        int n = sc.nextInt();
+        int m = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        Graph gr = new Graph(n);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
+        for(int i=0;i<m;i++){
+            gr.addEdge(sc.nextInt()-1, sc.nextInt()-1, sc.nextLong());
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
+        double ll = 0, ul = 1000;
+        while(ul-ll > 0.000001){
+            double mid = (ll + ul) / 2;
+
+            if(gr.isPossible(mid)){
+                ul = mid;
+            }
+            else{
+                ll = mid + 0.000001;
+            }
         }
 
-        br1.close();
-        fr1.close();
+        gr.isPossible(ll);
+        Stack<Node> stk = new Stack<>();
+        Node start = gr.nodelist.get(0);
+        stk.push(start);
+        while(start.next != null){
+            start = start.next;
+            stk.push(start);
+        }
 
-        br2.close();
-        fr2.close();
+        sb.append(stk.size() - 1).append("\n");
+        for(Node node: stk){
+            sb.append(node.id+1).append(" ");
+        }
+        sb.append("\n");
+
+        System.out.println(sb);
+
+        sc.close();
     }
 
     static class Soumit {

@@ -1,87 +1,116 @@
-package TestingCode;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class MinimizeResultbyAddingParenthesestoExpression {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static long getVal(String s){
+        int n = s.length();
+
+        int start = -1, end = -1;
+        for(int i=0;i<n;i++){
+            if(s.charAt(i) == '('){
+                start = i;
+            }
+
+            if(s.charAt(i) == ')'){
+                end = i;
+                break;
+            }
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        String brackets = s.substring(start+1, end);
+
+        long sum = 0;
+        String[] numbers = brackets.split("\\+");
+        for(String number: numbers){
+            if(number.equals(""))
+                return Long.MAX_VALUE;
+            sum += Long.parseLong(number);
+        }
+        if(numbers.length < 2)
+            return Long.MAX_VALUE;
+
+        long[] start_nums = new long[1];
+        start_nums[0] = 1;
+        if(start != 0){
+            numbers[0] = s.substring(0, start);
+            start_nums[0] = Long.parseLong(numbers[0]);
         }
 
-        return true;
+        long[] end_nums = new long[1];
+        end_nums[0] = 1;
+        if(end != n-1){
+            numbers[0] = s.substring(end+1);
+            end_nums[0] = Long.parseLong(numbers[0]);
+        }
+
+        sum = (start_nums[0] * sum * end_nums[0]);
+
+        return sum;
+    }
+
+    static String pad(String ter, int n){
+        return "0".repeat(Math.max(0, n - (ter.length() + 1) + 1)) + ter;
+    }
+
+    static int countBits(int n){
+        int c = 0;
+        while(n > 0){
+            n = n & (n-1);
+            c++;
+        }
+
+        return c;
+    }
+
+    public String minimizeResult(String expression) {
+        int n = expression.length();
+
+        int lim = (1 << (n+1));
+        long max = Long.MAX_VALUE;
+        String ans = "";
+        for(int i=0;i<lim;i++){
+            if(countBits(i) != 2)
+                continue;
+
+            String bin = Integer.toBinaryString(i);
+            bin = pad(bin, n+1);
+
+            StringBuilder sb = new StringBuilder();
+            boolean flag = true;
+            for(int j=0;j<n;j++){
+                if(bin.charAt(j) == '1' && flag){
+                    sb.append("(");
+                    flag = false;
+                }
+                else if(bin.charAt(j) == '1'){
+                    sb.append(")");
+                }
+                sb.append(expression.charAt(j));
+            }
+
+            if(bin.charAt(n) == '1')
+                sb.append(")");
+
+            String poss = sb.toString();
+            long val = getVal(poss);
+
+            if(val < max){
+                max = val;
+                ans = poss;
+            }
+        }
+
+        return ans;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

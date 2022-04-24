@@ -1,87 +1,57 @@
-package TestingCode;
+package Codeforces.Round781Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
-    }
+public class D {
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int  t = sc.nextInt();
+        while (t-->0){
+            long ans = 0;
+            for(int i=0;i<30;i++){
+                long curb_a = (1L<<(i+1));
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+                if(ans == 0L){
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
+                    if(2*curb_a > 2000000000){
+                        ans = 536870912;
+                        break;
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                    System.out.println("? "+curb_a+" "+(2 * curb_a));
+                    System.out.flush();
+
+                    long g = sc.nextLong();
+
+                    if(g != curb_a){
+                        ans = ans + (1 << i);
+                    }
+                }
+                else{
+                    long offset = (1L << i) - ans;
+
+                    if(offset + curb_a > 2000000000){
+                        break;
+                    }
+
+                    System.out.println("? "+offset+" "+(offset + curb_a));
+                    System.out.flush();
+
+                    long g = sc.nextLong();
+
+                    if(g == curb_a){
+                        ans = ans + (1 << i);
+                    }
+                }
             }
-            line++;
+
+            System.out.println("! "+ans);
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

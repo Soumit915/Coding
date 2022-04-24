@@ -13,6 +13,7 @@ public class AdditionAndMinimum {
         n |= n>>28;
         return n+1;
     }
+
     static void update(long[] segTree, long[] lazyTree, int sn,
                        long val, int start, int end, int ll, int ul){
         //total overlap
@@ -26,6 +27,7 @@ public class AdditionAndMinimum {
             lazyTree[sn] = 0;
             return;
         }
+
         //no overlap
         if(start>ul || end<ll){
             segTree[sn] += lazyTree[sn];
@@ -36,18 +38,18 @@ public class AdditionAndMinimum {
             lazyTree[sn] = 0;
             return;
         }
+
         //partial overlap
         int mid = (ll+ul)/2;
         segTree[sn] += lazyTree[sn];
-        if(ll!=ul){
-            lazyTree[2*sn+1] += lazyTree[sn];
-            lazyTree[2*sn+2] += lazyTree[sn];
-        }
+        lazyTree[2*sn+1] += lazyTree[sn];
+        lazyTree[2*sn+2] += lazyTree[sn];
         lazyTree[sn] = 0;
         update(segTree, lazyTree, 2*sn+1, val, start, end, ll, mid);
         update(segTree, lazyTree, 2*sn+2, val, start, end, mid+1, ul);
         segTree[sn] = Math.min(segTree[2*sn+1], segTree[2*sn+2]);
     }
+
     static long query(long[] segTree, long[] lazyTree, int sn,
                       int start, int end, int ll, int ul){
         //total overlap
@@ -60,6 +62,7 @@ public class AdditionAndMinimum {
             lazyTree[sn] = 0;
             return segTree[sn];
         }
+
         //no overlap
         if(start>ul || end<ll){
             segTree[sn] += lazyTree[sn];
@@ -70,17 +73,17 @@ public class AdditionAndMinimum {
             lazyTree[sn] = 0;
             return Long.MAX_VALUE;
         }
+
         //partial overlap
         int mid = (ll+ul)/2;
         segTree[sn] += lazyTree[sn];
-        if(ll!=ul){
-            lazyTree[2*sn+1] += lazyTree[sn];
-            lazyTree[2*sn+2] += lazyTree[sn];
-        }
+        lazyTree[2*sn+1] += lazyTree[sn];
+        lazyTree[2*sn+2] += lazyTree[sn];
         lazyTree[sn] = 0;
         return Math.min(query(segTree, lazyTree, 2*sn+1, start, end, ll, mid),
                 query(segTree, lazyTree, 2*sn+2, start, end, mid+1, ul));
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -113,7 +116,7 @@ public class AdditionAndMinimum {
             }
         }
 
-        System.out.println(sb.toString());
+        System.out.println(sb);
 
         sc.close();
     }

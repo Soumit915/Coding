@@ -1,87 +1,115 @@
-package TestingCode;
+package Codeforces.Round781Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class C {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Node{
+        int id;
+        List<Node> child = new ArrayList<>();
+        Node parent;
+
+        Node(int id){
+            this.id = id;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public void addEdge(int parent, int child){
+            Node pnode = nodelist.get(parent);
+            Node cnode = nodelist.get(child);
+
+            cnode.parent = pnode;
+            pnode.child.add(cnode);
         }
 
-        return true;
+        public int countNonLeafNodes(){
+            int count = 0;
+            for(Node node: nodelist){
+                if(node.child.size() != 0){
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        public List<Integer> childCount(){
+            List<Integer> arlist = new ArrayList<>();
+            for(Node node: nodelist){
+                if(node.child.size() != 0)
+                    arlist.add(node.child.size());
+            }
+
+            arlist.sort(Collections.reverseOrder());
+
+            return arlist;
+        }
+    }
+
+    static boolean isPossible(List<Integer> list, int mid){
+        int sum = 0;
+        int canbe = mid;
+        for (Integer integer : list) {
+            sum += integer;
+            canbe += Math.min(mid, integer);
+        }
+
+        return sum <= canbe;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int  t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            Graph gr = new Graph(n);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+            int[] parents = sc.nextIntArray(n-1);
+            for(int i=0;i<n-1;i++){
+                gr.addEdge(parents[i]-1, i+1);
             }
 
-            a2 = a2.trim();
+            int nonLeafCount = gr.countNonLeafNodes();
+            List<Integer> list = gr.childCount();
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+            int time = nonLeafCount + 1;
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+            for(int i=0;i<list.size();i++){
+                list.set(i, list.get(i) - time + i);
             }
-            line++;
+
+            int ll = 0, ul = 1000000;
+            while(ll < ul){
+                int mid = (ll + ul) / 2;
+
+                if (isPossible(list, mid)) {
+                    ul = mid;
+                }
+                else{
+                    ll = mid + 1;
+                }
+            }
+
+            sb.append(time + ll).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

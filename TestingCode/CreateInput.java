@@ -123,31 +123,42 @@ public class CreateInput {
             }
         }
     }
+
+    static long getTotal(int[] arr){
+        long ans = 0;
+        int n = arr.length;
+        for(int i=0;i<n;i+=2){
+            ans += arr[i+1] - arr[i] + 1;
+        }
+
+        return ans;
+    }
+
     public static void main(String[] args) throws IOException
     {
         Soumit sc = new Soumit();
         sc.streamOutput("Input.txt");
 
-<<<<<<< Updated upstream
-        int t = 10000;
+        int t = 100;
         sc.println(t+"");
-        while (t-->0){
-            int n = (int) (Math.random()*50 + 1);
-=======
-        int t = 1000000;
-        sc.println(t+"");
-        while (t-->0){
-            int n = (int) (Math.random()*100+1);
->>>>>>> Stashed changes
-            sc.println(n+"");
+        while(t-->0) {
+            int n = (int) (Math.random() * 20 + 1);
+
+            sc.println(n+" ");
             for(int i=0;i<n;i++){
-                int l = (int) (Math.random()*100+1);
-                int r = (int) (Math.random()*100+1);
-                l = (l>r)?(l+r) - (r = l) : l;
-                int c = (int) (Math.random()*100);
-                sc.println(l+" "+r+" "+c);
+                int v = (int) (Math.random() * 100 + 1);
+                sc.print(v+" ");
             }
             sc.println();
+
+            for(int i=0;i<n;i++){
+                int v = (int) (Math.random() * 50 + 1);
+                sc.print(v+" ");
+            }
+            sc.println();
+
+            int k = (int) (Math.random() * 10000 + 1);
+            sc.println(k+" ");
         }
 
         sc.close();
@@ -190,6 +201,26 @@ public class CreateInput {
 
         public void print(String a) {
             pw.print(a);
+        }
+
+        public void sort(int[] arr) {
+            ArrayList<Integer> arlist = new ArrayList<>();
+            for (int i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
+        }
+
+        public void sort(long[] arr) {
+            ArrayList<Long> arlist = new ArrayList<>();
+            for (long i : arr)
+                arlist.add(i);
+
+            Collections.sort(arlist);
+            for (int i = 0; i < arr.length; i++)
+                arr[i] = arlist.get(i);
         }
 
         public String readLine() throws IOException {

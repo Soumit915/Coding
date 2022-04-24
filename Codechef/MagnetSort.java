@@ -3,7 +3,7 @@ package Codechef;
 import java.io.*;
 import java.util.*;
 
-public class C {
+public class MagnetSort {
 
     static boolean isBiPolar(String s){
         int n = s.length();

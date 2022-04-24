@@ -1,87 +1,138 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.SegmentTrees1.Step4;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class NumberOfDifferentOnSegment {
+    static int getNextPowerOf2(int n){
+        n = n | (n >> 1);
+        n = n | (n >> 2);
+        n = n | (n >> 4);
+        n = n | (n >> 8);
+        n = n | (n >> 16);
+        n = n | (n >> 25);
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+        return n+1;
+    }
+
+    static class Node{
+        int[] nums;
+        int count_diff;
+
+        Node(){
+            this.count_diff = 0;
+            this.nums = new int[41];
+        }
+    }
+
+    static void build(Node[] segTree, int si, int[] arr, int ll, int ul){
+        if(ll == ul){
+            segTree[si].count_diff = 1;
+            segTree[si].nums[arr[ll]]++;
+            return;
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        int mid = (ll + ul) / 2;
+        build(segTree, 2*si + 1, arr, ll, mid);
+        build(segTree, 2*si + 2, arr, mid+1, ul);
+
+        int[] left = segTree[2*si + 1].nums;
+        int[] right = segTree[2*si + 2].nums;
+
+        segTree[si].count_diff = 0;
+        for(int i=left.length-1;i>=0;i--){
+            segTree[si].nums[i] = left[i] + right[i];
+            segTree[si].count_diff += Math.min(1, left[i] + right[i]);
+        }
+    }
+
+    static Node query(Node[] segTree, int si, int start, int end, int ll, int ul){
+        //no overlap
+        if(end<ll || start>ul){
+            return new Node();
         }
 
-        return true;
+        //total overlap
+        if(start<=ll && end>=ul){
+            return segTree[si];
+        }
+
+        //partial overlap
+        int mid = (ll + ul) / 2;
+        Node left = query(segTree, 2*si+1, start, end, ll, mid);
+        Node right = query(segTree, 2*si+2, start, end, mid+1, ul);
+
+        Node cur = new Node();
+        for(int i=left.nums.length-1;i>=0;i--){
+            cur.nums[i] = left.nums[i] + right.nums[i];
+            cur.count_diff += Math.min(cur.nums[i], 1);
+        }
+
+        return cur;
+    }
+
+    static void update(Node[] segTree, int si, int prev, int val, int index, int ll, int ul){
+        if(ll == ul){
+            segTree[si].count_diff = 1;
+            segTree[si].nums[prev]--;
+            segTree[si].nums[val]++;
+            return;
+        }
+
+        int mid = (ll + ul) / 2;
+        if(index <= mid){
+            update(segTree, 2*si + 1, prev, val, index, ll, mid);
+        }
+        else{
+            update(segTree, 2*si + 2, prev, val, index, mid+1, ul);
+        }
+
+        int[] left = segTree[2*si + 1].nums;
+        int[] right = segTree[2*si + 2].nums;
+
+        segTree[si].count_diff = 0;
+        for(int i=left.length-1;i>=0;i--){
+            segTree[si].nums[i] = left[i] + right[i];
+            segTree[si].count_diff += Math.min(1, left[i] + right[i]);
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int n = sc.nextInt();
+        int q = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        int[] arr = sc.nextIntArray(n);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+        int sn = 2 * getNextPowerOf2(n) - 1;
+        Node[] segTree = new Node[sn];
+        for(int i=0;i<sn;i++){
+            segTree[i] = new Node();
+        }
+        build(segTree, 0, arr, 0, n-1);
+
+        StringBuilder sb = new StringBuilder();
+        while(q-->0){
+            int type = sc.nextInt();
+            int xi = sc.nextInt() - 1;
+            int yi = sc.nextInt();
+
+            if(type == 1){
+                yi--;
+
+                Node node = query(segTree, 0, xi, yi, 0, n-1);
+                sb.append(node.count_diff).append("\n");
             }
-            else if(a2==null && a1.equals("")){
-                break;
+            else{
+                update(segTree, 0, arr[xi], yi, xi, 0, n-1);
+                arr[xi] = yi;
             }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.print(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

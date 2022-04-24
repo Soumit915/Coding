@@ -1,87 +1,157 @@
-package TestingCode;
+package Codeforces.Round780Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class D {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Parts{
+        int start;
+        int end;
+        boolean isPositive;
+        int two;
+        Parts(int start, int end, int two, boolean isPositive){
+            this.start = start;
+            this.end = end;
+            this.two = two;
+            this.isPositive = isPositive;
         }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            List<Parts> partsList = new ArrayList<>();
+            int last = -1;
+            int count = 0;
+            int negatives = 0;
+            for(int i=0;i<n;i++){
+                if(arr[i] == 0){
+                    if(last < i - 1){
+                        partsList.add(new Parts(last + 1, i - 1, count, negatives%2==0));
+                    }
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+                    last = i;
+                    count = 0;
+                    negatives = 0;
+                }
+                else{
+                    if(arr[i] < 0){
+                        negatives++;
+                    }
+
+                    if(Math.abs(arr[i]) == 2){
+                        count++;
+                    }
+                }
             }
-            else if(a2==null && a1.equals("")){
-                break;
+
+            if(last < n - 1) {
+                partsList.add(new Parts(last + 1, n - 1, count, negatives % 2 == 0));
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
+            int max = 0;
+            int start = -1, end = -1;
+            for(Parts part: partsList){
+                if(part.isPositive){
+                    if(max < part.two){
+                        max = part.two;
+                        start = part.start;
+                        end = part.end;
                         continue;
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                    continue;
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                int beginInd = -1;
+                int begin_2count = 0;
+                for(int i=part.start;i<=part.end;i++){
+                    if(Math.abs(arr[i]) == 2){
+                        begin_2count++;
+                    }
+
+                    if(arr[i] < 0){
+                        beginInd = i;
+                        break;
+                    }
+                }
+
+                int endInd = -1;
+                int end_2count = 0;
+                for(int i=part.end;i>=part.start;i--){
+                    if(Math.abs(arr[i]) == 2){
+                        end_2count++;
+                    }
+
+                    if(arr[i] < 0){
+                        endInd = i;
+                        break;
+                    }
+                }
+
+                if(beginInd == -1){
+                    continue;
+                }
+
+                if(beginInd == endInd){
+                    if(begin_2count > end_2count){
+                        if(max < begin_2count){
+                            if(arr[beginInd] == -2)
+                                max = begin_2count - 1;
+                            else max = begin_2count;
+                            start = part.start;
+                            end = beginInd - 1;
+                            continue;
+                        }
+                    }
+                    else{
+                        if(max < end_2count){
+                            if(arr[beginInd] == -2)
+                                max = end_2count - 1;
+                            else max = end_2count;
+                            start = endInd + 1;
+                            end = part.end;
+                            continue;
+                        }
+                    }
+                }
+
+                int left_2count;
+                if(begin_2count < end_2count){
+                    left_2count = part.two - begin_2count;
+                    if(max < left_2count){
+                        max = left_2count;
+                        start = beginInd + 1;
+                        end = part.end;
+                    }
+                }
+                else{
+                    left_2count = part.two - end_2count;
+                    if(max < left_2count){
+                        max = left_2count;
+                        start = part.start;
+                        end = endInd - 1;
+                    }
+                }
             }
-            line++;
+
+            if(start < 0) {
+                sb.append("0 ").append(n - end - 1).append("\n");
+            }
+            else {
+                sb.append(start).append(" ").append(n - end - 1).append("\n");
+            }
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

@@ -1,87 +1,114 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.BinarySearch.Step4;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class B_Checker {
+    static class Node{
+        int id;
+        Node next;
+        Map<Integer, Edge> adlist = new HashMap<>();
+        List<Edge> inedge = new ArrayList<>();
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+        Node(int id){
+            this.id = id;
+        }
+    }
+
+    static class Edge{
+        Node u, v;
+        long weight;
+
+        Edge(Node u, Node v, long weight){
+            this.u = u;
+            this.v = v;
+            this.weight = weight;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+        long[] dist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>(n);
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public void addEdge(int u, int v, long weight){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            Edge e = new Edge(nu, nv, weight);
+
+            nu.adlist.put(v, e);
         }
 
-        return true;
+        public long getAvg(int[] path){
+            long sum = 0;
+            for(int i=1;i<path.length;i++){
+                Node source = nodelist.get(path[i-1]-1);
+                Node sink = nodelist.get(path[i] - 1);
+                if(!source.adlist.containsKey(sink.id)){
+                    System.out.println(i);
+                    System.out.println("Wrong answer at path-way for : "+Arrays.toString(path));
+                    System.exit(0);
+                }
+
+                sum += source.adlist.get(sink.id).weight;
+            }
+
+            return sum;
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit("Input.txt");
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        Soumit myoutput = new Soumit("Output1.txt");
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        Soumit actoutput = new Soumit("Output2.txt");
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+        int t = sc.nextInt();
+        while(t-->0){
+            StringBuilder sb = new StringBuilder();
+            int n = sc.nextInt();
+            int m = sc.nextInt();
+
+            Graph gr = new Graph(n);
+
+            for(int i=0;i<m;i++){
+                gr.addEdge(sc.nextInt()-1, sc.nextInt()-1, sc.nextLong());
             }
 
-            a2 = a2.trim();
+            int length1 = myoutput.nextInt();
+            int[] path1 = myoutput.nextIntArray(length1 + 1);
+            long sum1 = gr.getAvg(path1);
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
+            int length2 = actoutput.nextInt();
+            int[] path2 = actoutput.nextIntArray(length2 + 1);
+            long sum2 = gr.getAvg(path2);
+
+            if(sum1*(length2 + 1) != sum2*(length1 + 1)){
+                System.out.println("Wrong answer");
+                System.out.println(sum1+" "+sum2);
+
+                for(int i=0;i<=Math.min(length1, length2);i++){
+                    if(path1[i] != path2[i]) {
+                        System.out.println(i + " " + path1[i] + " " + path2[i]);
+                        System.exit(0);
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
                 System.exit(0);
             }
-            line++;
+
+            sc.println(sb.toString());
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

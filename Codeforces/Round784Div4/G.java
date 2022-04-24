@@ -1,23 +1,61 @@
-package Codechef;
+package Codeforces.Round784Div4;
 
 import java.io.*;
 import java.util.*;
 
-public class B {
+public class G {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Scanner sc = new Scanner(System.in);
 
+        int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        int d = sc.nextInt();
+        while (t-->0){
+            int n = sc.nextInt();
+            int m = sc.nextInt();
 
-        if(d%2==1){
-            sb.append("-1\n");
-        }
-        else{
-            sb.append("0 ").append((d / 2) * -1).append("\n");
-            sb.append("0 ").append((d / 2)).append("\n");
-            sb.append((d / 2) * -1).append(" 0").append("\n");
-            sb.append((d / 2)).append(" 0").append("\n");
+            char[][] grid = new char[n][m];
+            for(int i=0;i<n;i++){
+                grid[i] = sc.next().toCharArray();
+            }
+
+            for(int i=0;i<m;i++){
+                int count = 0;
+                for(int j=0;j<n;j++){
+                    if(grid[j][i] == '*'){
+                        count++;
+                    }
+                    else if(grid[j][i] == 'o'){
+
+                        for(int k=j-1;k>=0 && grid[k][i]!='o';k--){
+                            if(count > 0){
+                                grid[k][i] = '*';
+                                count--;
+                            }
+                            else{
+                                grid[k][i] = '.';
+                            }
+                        }
+                    }
+                }
+
+                for(int k=n-1;k>=0 && grid[k][i]!='o';k--){
+                    if(count > 0){
+                        grid[k][i] = '*';
+                        count--;
+                    }
+                    else{
+                        grid[k][i] = '.';
+                    }
+                }
+            }
+
+            for(int i=0;i<n;i++){
+                for(int j=0;j<m;j++){
+                    sb.append(grid[i][j]);
+                }
+                sb.append("\n");
+            }
+            //sb.append("\n");
         }
 
         System.out.println(sb);

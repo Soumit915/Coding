@@ -1,9 +1,9 @@
-package Codechef;
+package Codeforces.Round784Div4;
 
 import java.io.*;
 import java.util.*;
 
-public class A {
+public class C {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -11,20 +11,28 @@ public class A {
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] arr = sc.nextIntArray(n);
 
-            long[] prefsum = new long[n];
-            prefsum[0] = arr[0];
-            for(int i=1;i<n;i++){
-                prefsum[i] = prefsum[i-1] + arr[i];
-            }
-
-            long min = prefsum[n-1];
             for(int i=0;i<n;i++){
-                min = Math.min(min, Math.max(prefsum[i], prefsum[n-1] - prefsum[i]));
+                arr[i] = arr[i]%2;
             }
 
-            sb.append(min).append("\n");
+            Set<Integer> odd = new HashSet<>();
+            for(int i=0;i<n;i+=2){
+                odd.add(arr[i]);
+            }
+
+            Set<Integer> even = new HashSet<>();
+            for(int i=1;i<n;i+=2){
+                even.add(arr[i]);
+            }
+
+            if(odd.size() == 1 && even.size() == 1){
+                sb.append("YES\n");
+            }
+            else{
+                sb.append("NO\n");
+            }
         }
 
         System.out.println(sb);

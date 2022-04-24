@@ -1,87 +1,105 @@
-package TestingCode;
+package GoogleCodeJam.Year_2022.Round_1A;
 
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class OutputChecker {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
-    }
-
+public class EqualSum {
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        for(int testi = 1;testi<=t;testi++){
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
+            int n = sc.nextInt();
+            if(n == -1){
                 System.exit(0);
             }
-            else if(a2==null && a1.equals("")){
-                break;
+            long[] arr = new long[2*n];
+
+            for(int i=0;i<29;i++){
+                arr[i] = 1<<i;
+            }
+            int ind = 1;
+            for(int i=29;i<=n;i++){
+                while((ind&(ind - 1)) == 0){
+                    ind++;
+                }
+                arr[i] = ind;
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<n;i++){
+                sb.append(arr[i]).append(" ");
             }
-            line++;
+
+            System.out.println(sb);
+            System.out.flush();
+
+            for(int i=0;i<n;i++){
+                arr[i+n] = sc.nextLong();
+                if(arr[i+n] == -1){
+                    System.exit(0);
+                }
+            }
+
+            sc.sort(arr);
+
+            long sum = 0;
+            for(long l: arr)
+                sum += l;
+
+            long target = sum / 2;
+
+            n += n;
+
+            List<Set<Long>> dp = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                Set<Long> set = new HashSet<>();
+                dp.add(set);
+
+                Set<Long> prev;
+                if(i == 0)
+                    prev = new HashSet<>();
+                else prev = dp.get(i-1);
+
+                for(long j: prev){
+                    set.add(j);
+                    set.add(j+arr[i]);
+                }
+
+                set.add(arr[i]);
+
+                if(set.contains(target))
+                    break;
+            }
+
+            List<Long> list = new ArrayList<>();
+
+            for(int i=dp.size()-1;i>=0;i--){
+                if(target == 0)
+                    break;
+
+                Set<Long> set = dp.get(i);
+                Set<Long> prev;
+                if(i == 0)
+                    prev = new HashSet<>();
+                else prev = dp.get(i-1);
+
+                if(set.contains(target) && (prev.contains(target - arr[i])) || arr[i]==target){
+                    list.add(arr[i]);
+                    target -= arr[i];
+                }
+            }
+
+            sb = new StringBuilder();
+            for(long l: list){
+                sb.append(l).append(" ");
+            }
+            System.out.println(sb);
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

@@ -1,87 +1,82 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.BinarySearch.Step5;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class A_BinarySearch {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Segment{
+        long start;
+        long end;
+
+        Segment(long start, long end){
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    static long count(Segment[] segments, long k){
+        long count = 0;
+        for(Segment s: segments){
+            count += Math.max(0, Math.min(s.end, k) - s.start+1);
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        return count;
+    }
+
+    static long getNext(Segment[] segments, long k){
+        for(Segment s: segments){
+            if(s.start <= k && k <= s.end) {
+                return k;
+            }
         }
 
-        return true;
+        long min = Long.MAX_VALUE;
+        for(Segment s: segments){
+            if(s.start > k)
+                min = Math.min(min, s.start);
+        }
+
+        return min;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output.txt");
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            long k = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+            Segment[] segments = new Segment[n];
+            for(int i=0;i<n;i++) {
+                segments[i] = new Segment(sc.nextInt(), sc.nextInt());
             }
 
-            a2 = a2.trim();
+            long ll = (long) -2e9, ul = (long) 2e9;
+            while(ll < ul){
+                long mid = (ll + ul) / 2L;
+                if(mid < 0){
+                    mid = (ll + ul - 1) / 2L;
+                }
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                long count = count(segments, mid);
+                if(count >= k){
+                    ul = mid;
+                }
+                else {
+                    ll = mid + 1;
+                }
             }
-            line++;
+
+            sb.append(getNext(segments, ll)).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        sc.println(sb.toString());
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

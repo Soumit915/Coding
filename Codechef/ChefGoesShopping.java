@@ -1,87 +1,64 @@
-package TestingCode;
+package Codechef;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
-    }
-
+public class ChefGoesShopping {
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            long[] li = sc.nextLongArray(n);
+            long[] ri = sc.nextLongArray(n);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+            if(n == 1){
+                sb.append("0\n");
+                continue;
             }
-            else if(a2==null && a1.equals("")){
-                break;
+            else if(n == 2){
+                sb.append(Math.min(ri[0], li[1])).append("\n");
+                continue;
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+            long[] dp = new long[n-1];
+            for(int i=0;i<n-1;i++){
+                dp[i] = Math.min(ri[i], li[i+1]);
             }
-            line++;
+
+            long[] sum = new long[n-1];
+            sum[0] = dp[0];
+            for(int i=1;i<n-1;i++){
+                sum[i] = sum[i-1] + dp[i];
+            }
+
+            long min = Long.MAX_VALUE;
+            for(int i=0;i<n;i++){
+                long cur = 0;
+
+                if(i != 0)
+                    cur += li[i];
+                if(i != n-1)
+                    cur += ri[i];
+
+                if(i!=n-1)
+                    cur = cur + sum[n-2] - sum[i];
+
+                if(i>1)
+                    cur = cur + sum[i-2];
+
+                min = Math.min(min, cur);
+            }
+
+            sb.append(min).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

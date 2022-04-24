@@ -1,17 +1,17 @@
-package TestingCode;
+package Codechef;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class MagicalModulo {
 
-    static boolean isValid(int[] arr, int x){
+    static boolean isValid(long[] arr, int x){
         int n = arr.length;
         int[] hash = new int[n+1];
-        for (int j : arr) {
+        for (long j : arr) {
             if(j%x > n)
                 return false;
-            hash[j % x]++;
+            hash[(int) j % x]++;
         }
 
         for(int i=1;i<=n;i++){
@@ -22,66 +22,62 @@ public class OutputChecker {
         return true;
     }
 
+    static List<Integer> getFactors(long n){
+        List<Integer> list = new ArrayList<>();
+        int lim = (int) (Math.sqrt(n));
+        for(long i=1;i<=lim;i++){
+            if(n%i==0){
+                long a = (n / i);
+                if(i<=20000000){
+                    list.add((int) i);
+                }
+
+                if(a!=i && a<=20000000){
+                    list.add((int) a);
+                }
+            }
+        }
+
+        return list;
+    }
+
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+            long sum = 0;
+            for(int i=0;i<n;i++){
+                sum = (sum + (arr[i] - i - 1));
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+            if(sum == 0){
+                sb.append("YES ").append(n + 1).append("\n");
+                continue;
             }
-            line++;
+
+            List<Integer> list = getFactors(sum);
+            boolean flag = false;
+            for(int i: list){
+                if(isValid(arr, i) && i<=20000000){
+                    sb.append("YES ").append(i).append("\n");
+                    flag = true;
+                    break;
+                }
+            }
+
+            if(!flag){
+                sb.append("NO\n");
+            }
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

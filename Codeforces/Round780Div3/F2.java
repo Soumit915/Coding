@@ -1,87 +1,104 @@
-package TestingCode;
+package Codeforces.Round780Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
-    }
-
+public class F2 {
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Scanner sc = new Scanner(System.in);
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            String s = sc.next();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            long count = 0;
+            int sum = 0;
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
+            List<HashMap<Integer, Integer>> bits = new ArrayList<>();
+            for(int i=0;i<3;i++)
+                bits.add(new HashMap<>());
 
-            a2 = a2.trim();
+            bits.get(0).put(0, 1);
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
+            int[] countBits = new int[3];
+            int[] ptrBits = new int[3];
+
+            countBits[0] = 1;
+
+            for(int i=0;i<n;i++){
+                if(s.charAt(i) == '+')
+                    sum++;
+                else sum--;
+
+                int mod = ((sum % 3) + 3) % 3;
+
+                HashMap<Integer, Integer> map = bits.get(mod);
+                if(mod == 0){
+                    if(sum == ptrBits[mod]){
+                        count += countBits[mod];
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                    else if(sum > ptrBits[mod]) {
+                        countBits[mod] -= map.getOrDefault(ptrBits[mod], 0);
+                        ptrBits[mod] = sum;
+                        count += countBits[mod];
+                    }
+                    else{
+                        ptrBits[mod] = sum;
+                        countBits[mod] += map.getOrDefault(ptrBits[mod], 0);
+                        count += countBits[mod];
+                    }
+                }
+                else if(mod == 1){
+                    if(ptrBits[1] == 0){
+                        ptrBits[mod] = sum;
+                        countBits[mod] = 0;
+                    }
+                    else if(sum == ptrBits[mod]){
+                        count += countBits[mod];
+                    }
+                    else if(sum > ptrBits[mod]) {
+                        countBits[mod] -= map.getOrDefault(ptrBits[mod], 0);
+                        ptrBits[mod] = sum;
+                        count += countBits[mod];
+                    }
+                    else{
+                        ptrBits[mod] = sum;
+                        countBits[mod] += map.getOrDefault(ptrBits[mod], 0);
+                        count += countBits[mod];
+                    }
+                }
+                else{
+                    if(ptrBits[2] == 0){
+                        ptrBits[mod] = sum;
+                        countBits[mod] = 0;
+                    }
+                    else if(sum == ptrBits[mod]){
+                        count += countBits[mod];
+                    }
+                    else if(sum > ptrBits[mod]) {
+                        countBits[mod] -= map.getOrDefault(ptrBits[mod], 0);
+                        ptrBits[mod] = sum;
+                        count += countBits[mod];
+                    }
+                    else{
+                        ptrBits[mod] = sum;
+                        countBits[mod] += map.getOrDefault(ptrBits[mod], 0);
+                        count += countBits[mod];
+                    }
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                map.put(sum, map.getOrDefault(sum, 0) + 1);
+                countBits[mod]++;
             }
-            line++;
+
+            sb.append(count).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

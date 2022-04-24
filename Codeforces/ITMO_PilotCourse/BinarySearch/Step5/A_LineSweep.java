@@ -1,87 +1,106 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.BinarySearch.Step5;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class A_LineSweep {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Segment{
+        long start;
+        long end;
+
+        Segment(long start, long end){
+            this.start = start;
+            this.end = end;
         }
+    }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+    static class Start_Sorter implements Comparator<Segment>{
+        public int compare(Segment s1, Segment s2){
+            return Long.compare(s1.start, s2.start);
         }
+    }
 
-        return true;
+    static class End_Sorter implements Comparator<Segment>{
+        public int compare(Segment s1, Segment s2){
+            return Long.compare(s1.end, s2.end);
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
+        int n = sc.nextInt();
+        long k = sc.nextLong()+1;
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
-
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
+        Segment[] segments = new Segment[n];
+        for(int i=0;i<n;i++){
+            segments[i] = new Segment(sc.nextLong(), sc.nextLong());
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
+        PriorityQueue<Segment> start = new PriorityQueue<>(new Start_Sorter());
+        PriorityQueue<Segment> end = new PriorityQueue<>(new End_Sorter());
+        for(int i=0;i<n;i++){
+            start.add(segments[i]);
+            end.add(segments[i]);
         }
 
-        br1.close();
-        fr1.close();
+        long ans = Integer.MIN_VALUE;
+        long tot = 0;
+        long count = 0;
+        assert start.peek() != null;
+        long last = start.peek().start;
+        while(!start.isEmpty()){
+            assert end.peek() != null;
+            if(start.peek().start <= end.peek().end){
+                Segment si = start.remove();
 
-        br2.close();
-        fr2.close();
+                long cur = (si.start - last) * count;
+                if(cur + tot >= k){
+                    long wasLeft = k - tot;
+                    ans = last - 1 + (wasLeft + count - 1) / count;
+                    break;
+                }
+
+                tot += cur;
+                count++;
+                last = si.start;
+            }
+            else{
+                Segment ei = end.remove();
+
+                long cur = (ei.end - last + 1) * count;
+                if(cur + tot >= k){
+                    long wasLeft = k - tot;
+                    ans = last - 1 + (wasLeft + count - 1) / count;
+                    break;
+                }
+
+                tot += cur;
+                count--;
+                last = ei.end + 1;
+            }
+        }
+
+        if(ans == Integer.MIN_VALUE){
+            while(!end.isEmpty()){
+                Segment ei = end.remove();
+
+                long cur = (ei.end - last + 1) * count;
+                if(cur + tot >= k){
+                    long wasLeft = k - tot;
+                    ans = last - 1 + (wasLeft + count - 1) / count;
+                    break;
+                }
+
+                tot += cur;
+                count--;
+                last = ei.end + 1;
+            }
+        }
+
+        System.out.println(ans+"");
+
+        sc.close();
     }
 
     static class Soumit {

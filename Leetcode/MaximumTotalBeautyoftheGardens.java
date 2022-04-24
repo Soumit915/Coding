@@ -1,87 +1,113 @@
-package TestingCode;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class MaximumTotalBeautyoftheGardens {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
+    static boolean isValid(int[] hashcount, long[] prefSum, int target, long flowers, int needed){
+        int count = hashcount[target-1];
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
+        count = Math.min(count, needed);
 
-        return true;
+        if(count == 0)
+            return true;
+
+        return (((long) target * (count)) - prefSum[count - 1]) <= flowers;
     }
 
-    public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+    static long getFullPartial(int[] hashCount, long[] prefsum, int target, long left, int partial){
+        int l = 1, r = target - 1;
+        while(l < r){
+            int mid = (1 + l + r)/2;
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
-
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+            if(isValid(hashCount, prefsum, mid, left, prefsum.length)){
+                l = mid;
             }
-            else if(a2==null && a1.equals("")){
+            else{
+                r = mid - 1;
+            }
+        }
+
+        return (long) l * partial;
+    }
+
+    public static long maximumBeauty(int[] flowers, long newFlowers, int target, int full, int partial) {
+        Arrays.sort(flowers);
+        int n = flowers.length;
+
+        long[] prefsum = new long[n];
+        int[] hashCount = new int[100100];
+        prefsum[0] = flowers[0];
+        hashCount[flowers[0]]++;
+        for(int i=1;i<n;i++){
+            prefsum[i] = prefsum[i-1] + flowers[i];
+            hashCount[flowers[i]]++;
+        }
+
+        for(int i=1;i<hashCount.length;i++){
+            hashCount[i] = hashCount[i-1] + hashCount[i];
+        }
+
+        if(flowers[0] >= target)
+            return (long) n * full;
+
+        long req = 0;
+        int i;
+        for(i=n-1;i>=0;i--){
+            if(flowers[i] < target){
+                i++;
+                break;
+            }
+        }
+        long max = 0;
+        if(flowers[n-1] < target)
+            max = getFullPartial(hashCount, prefsum, target, newFlowers, partial);
+        for(i=Math.min(i, n-1);i>=0;i--){
+
+            req += Math.max(0, target - flowers[i]);
+            if(req > newFlowers)
+                break;
+
+            long left = newFlowers - req;
+
+            if(i == 0){
+                max = Math.max(max, (long) n * full);
                 break;
             }
 
-            a2 = a2.trim();
+            int l = 1, r = target - 1;
+            while(l < r){
+                int mid = (1 + l + r)/2;
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                if(isValid(hashCount, prefsum, mid, left, i)){
+                    l = mid;
+                }
+                else{
+                    r = mid - 1;
+                }
             }
-            line++;
+
+            max = Math.max(max, (long) l * partial + (long) (n - i) * full);
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        return max;
+    }
 
-        br1.close();
-        fr1.close();
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
 
-        br2.close();
-        fr2.close();
+        int n = sc.nextInt();
+        int[] flowers = sc.nextIntArray(n);
+
+        long newFlowers = sc.nextLong();
+        int target = sc.nextInt();
+        int full = sc.nextInt();
+        int partial = sc.nextInt();
+
+        System.out.println(maximumBeauty(flowers, newFlowers, target, full, partial));
+
+        sc.close();
     }
 
     static class Soumit {

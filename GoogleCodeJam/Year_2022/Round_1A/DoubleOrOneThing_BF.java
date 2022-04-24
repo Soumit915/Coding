@@ -1,87 +1,56 @@
-package TestingCode;
+package GoogleCodeJam.Year_2022.Round_1A;
 
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class OutputChecker {
-
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+public class DoubleOrOneThing_BF {
+    static String pad(String s, int n){
+        StringBuilder sb = new StringBuilder();
+        for(int i=s.length();i<n;i++){
+            sb.append("0");
         }
-
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
+        sb.append(s);
+        return sb.toString();
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output2.txt");
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            String str = sc.next();
+            int n = str.length();
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
+            int lim = (int) (Math.pow(2, n));
+            ArrayList<String> list = new ArrayList<>();
+            for(int i=0;i<lim;i++){
+                String s = Integer.toBinaryString(i);
+                s = pad(s, n);
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
+                int xor = 0;
+                StringBuilder cur = new StringBuilder();
+                for(int j=0;j<s.length();j++){
+                    cur.append(str.charAt(j));
+                    if(s.charAt(j)=='1'){
+                        cur.append(str.charAt(j));
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                list.add(cur.toString());
             }
-            line++;
+
+            Collections.sort(list);
+            sb.append(list.get(0)).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        sc.println(sb.toString());
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

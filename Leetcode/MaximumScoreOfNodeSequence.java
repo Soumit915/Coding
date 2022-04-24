@@ -1,87 +1,129 @@
-package TestingCode;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class MaximumScoreOfNodeSequence {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static class Node implements Comparable<Node>{
+        int id;
+        long value;
+        ArrayList<Node> adlist = new ArrayList<>();
+
+        Node(int id, long value){
+            this.id = id;
+            this.value = value;
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        public int compareTo(Node node){
+            return Long.compare(this.value, node.value) * -1;
+        }
+    }
+
+    static class Edge{
+        Node u;
+        Node v;
+
+        Edge(Node u, Node v){
+            this.u = u;
+            this.v = v;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+        List<Edge> edgeList;
+
+        Graph(int n, int[] array){
+            nodelist = new ArrayList<>(n);
+            edgeList = new ArrayList<>();
+
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i, array[i]));
+            }
         }
 
-        return true;
+        public void addEdge(int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            nu.adlist.add(nv);
+            nv.adlist.add(nu);
+
+            edgeList.add(new Edge(nu, nv));
+        }
+    }
+
+    public static int maximumScore(int[] scores, int[][] edges) {
+        int n = scores.length;
+        Graph gr = new Graph(n, scores);
+
+        for(int[] i : edges){
+            gr.addEdge(i[0], i[1]);
+        }
+        for(int i=0;i<n;i++){
+            Collections.sort(gr.nodelist.get(i).adlist);
+        }
+
+        long max = 0;
+
+        for(Edge e: gr.edgeList){
+            HashSet<Node> nodeSet = new HashSet<>();
+            nodeSet.add(e.u);
+            nodeSet.add(e.v);
+
+            if(e.u.adlist.size() > 1 && e.v.adlist.size() > 1){
+                nodeSet.add(e.u.adlist.get(0));
+                nodeSet.add(e.v.adlist.get(0));
+
+                if(nodeSet.size() == 2){
+                    nodeSet.add(e.u.adlist.get(1));
+                    nodeSet.add(e.v.adlist.get(1));
+                }
+
+                if(nodeSet.size() == 3){
+                    Node node1 = null, node2 = null;
+                    if(e.u.adlist.size() > 2)
+                        node1 = e.u.adlist.get(2);
+                    if(e.v.adlist.size() > 2)
+                        node2 = e.v.adlist.get(2);
+
+                    if(node1 == null){
+                        if(node2 != null)
+                            nodeSet.add(node2);
+                    }
+                    else{
+                        if(node2 == null)
+                            nodeSet.add(node1);
+                        else{
+                            if(node1.value < node2.value){
+                                nodeSet.add(node2);
+                            }
+                            else{
+                                nodeSet.add(node1);
+                            }
+                        }
+                    }
+                }
+
+                if(nodeSet.size() == 4){
+                    long score = 0;
+                    for(Node node: nodeSet){
+                        score += node.value;
+                    }
+                    max = Math.max(max, score);
+                }
+            }
+        }
+
+        return (int) max;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

@@ -1,87 +1,88 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class RangeAndPartitions {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
-        }
+    static boolean isValid(int[] hash, int l, int r, int k){
+        int inRange = hash[r] - hash[l-1];
+        int n = hash.length - 1;
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
+        int outRange = n - inRange;
 
-        return true;
+        return (inRange - outRange >= k);
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int k = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            int[] hash = new int[n+1];
+            for(int i: arr)
+                hash[i]++;
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
+            for(int i=1;i<=n;i++)
+                hash[i] += hash[i-1];
 
-            a2 = a2.trim();
+            int min = Integer.MAX_VALUE;
+            int x = -1, y = -1;
+            for(int i=1;i<=n;i++){
+                int l = 1;
+                int r = i;
 
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
+                if(!isValid(hash, l, i, k))
+                    continue;
+
+                while(l < r){
+                    int mid = (l + r + 1)/2;
+
+                    if(isValid(hash, mid, i, k)){
+                        l = mid;
                     }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
+                    else{
+                        r = mid - 1;
+                    }
+                }
 
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
+                if(i - l + 1 < min){
+                    min = i - l + 1;
+                    x = l;
+                    y = i;
+                }
             }
-            line++;
+
+            sb.append(x).append(" ").append(y).append("\n");
+
+            int cur = 1;
+            int last = 0;
+            int sum = 0;
+            for(int i=0;k>1 && i<n;i++){
+                sum += (x <= arr[i] && arr[i] <= y)? 1: -1;
+
+                if(sum == cur){
+                    cur++;
+                    sb.append(last+1).append(" ").append(i+1).append("\n");
+                    last = i+1;
+                }
+
+                if(cur == k){
+                    break;
+                }
+            }
+
+            sb.append(last+1).append(" ").append(n).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

@@ -7,9 +7,7 @@ public class D {
     static int count(int[] arr, int ll, int mid, int ul){
         int n = mid - ll + 1;
         int[] L = new int[n];
-        for(int i=0;i<n;i++){
-            L[i] = arr[ll + i];
-        }
+        System.arraycopy(arr, ll, L, 0, n);
 
         int m = ul - mid;
         int[] R = new int[m];
@@ -23,14 +21,13 @@ public class D {
             if(L[p]<R[q]){
                 arr[k] = L[p];
                 p++;
-                k++;
             }
             else{
                 arr[k] = R[q];
                 count += n - p;
                 q++;
-                k++;
             }
+            k++;
         }
 
         while(p<n){
@@ -45,7 +42,6 @@ public class D {
             k++;
         }
 
-        //System.out.println(count);
         return count;
     }
     static int countInversions(int[] arr, int ll, int ul){
@@ -53,11 +49,11 @@ public class D {
             int mid = (ll + ul)/2;
             int lc = countInversions(arr, ll, mid);
             int rc = countInversions(arr, mid+1, ul);
-            //System.out.println(lc+" "+rc);
             return lc + rc + count(arr, ll, mid, ul);
         }
         return 0;
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 

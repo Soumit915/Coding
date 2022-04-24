@@ -1,87 +1,57 @@
-package TestingCode;
+package Spoj;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class RotiPrata {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static int getN(int c){
+        int discriminant = 1 + 4 * c;
+        discriminant = (int) (Math.sqrt(discriminant));
+
+        return (discriminant - 1) / 2;
+    }
+
+    static boolean canPrepare(int[] ranks, int time, int pratas){
+        int pratas_cooked = 0;
+        for(int cook: ranks){
+            int quadratic = time / cook;
+            quadratic *= 2;
+            pratas_cooked += getN(quadratic);
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
-
-        return true;
+        return pratas_cooked >= pratas;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int pratas = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+            int cooks = sc.nextInt();
+            int[] ranks = sc.nextIntArray(cooks);
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
+            int l = 1, r = 500000000;
+            while (l < r){
+                int mid = (l + r)/2;
+
+                if(canPrepare(ranks, mid, pratas)){
+                    r = mid;
+                }
+                else{
+                    l = mid + 1;
+                }
             }
 
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
+            sb.append(l).append("\n");
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

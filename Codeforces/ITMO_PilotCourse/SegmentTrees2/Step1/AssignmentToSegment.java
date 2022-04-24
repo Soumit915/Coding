@@ -1,87 +1,104 @@
-package TestingCode;
+package Codeforces.ITMO_PilotCourse.SegmentTrees2.Step1;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class AssignmentToSegment {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    static int getNextPowerOf2(int n){
+        n |= n>>1;
+        n |= n>>2;
+        n |= n>>4;
+        n |= n>>8;
+        n |= n>>16;
+        n |= n>>26;
+        return n;
+    }
+
+    static class Node{
+        int value;
+
+        Node(){
+            this.value = 0;
+        }
+    }
+
+    static int query(Node[] segTree, int si, int index, int ll, int ul){
+        if(ll == ul){
+            return segTree[si].value;
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        int mid = (ll + ul) / 2;
+        if(segTree[si].value >= 0){
+            segTree[2*si + 1].value = segTree[si].value;
+            segTree[2*si + 2].value = segTree[si].value;
+            segTree[si].value = -1;
         }
 
-        return true;
+        if(index <= mid){
+            return query(segTree, 2*si+1, index, ll, mid);
+        }
+        else{
+            return query(segTree, 2*si+2, index, mid+1, ul);
+        }
+    }
+
+    static void update(Node[] segTree, int si, int val, int start, int end, int ll, int ul){
+        //no-overlap
+        if(start>ul || end<ll){
+            return;
+        }
+
+        //total-overlap
+        if(start<=ll && end>=ul){
+            segTree[si].value = val;
+            return;
+        }
+
+        //partial-overlap
+        if(segTree[si].value >= 0){
+            segTree[2*si + 1].value = segTree[si].value;
+            segTree[2*si + 2].value = segTree[si].value;
+            segTree[si].value = -1;
+        }
+        int mid = (ll + ul)/2;
+        update(segTree, 2*si + 1, val, start, end, ll, mid);
+        update(segTree, 2*si + 2, val, start, end, mid+1, ul);
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int n = sc.nextInt();
+        int q = sc.nextInt();
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        int sn = 2 * getNextPowerOf2(n) - 1;
+        Node[] segTree = new Node[sn];
+        for(int i=0;i<sn;i++)
+            segTree[i] = new Node();
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
+        StringBuilder sb = new StringBuilder();
+        while (q-- > 0) {
+            int type = sc.nextInt();
+
+            if(type == 1){
+                int l = sc.nextInt();
+                int r = sc.nextInt() - 1;
+                int v = sc.nextInt();
+
+                update(segTree, 0, v, l, r, 0, n-1);
             }
-            else if(a2==null && a1.equals("")){
-                break;
+            else{
+                int index = sc.nextInt();
+                int ans = query(segTree, 0, index, 0, n-1);
+
+                sb.append(ans).append("\n");
             }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
         }
 
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
+        System.out.println(sb);
 
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

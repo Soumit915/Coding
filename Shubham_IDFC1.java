@@ -1,87 +1,63 @@
-package TestingCode;
-
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
-public class OutputChecker {
+public class Shubham_IDFC1 {
 
-    static boolean isValid(int[] arr, int x){
+    static long getMax(int[] arr, long k){
+        Arrays.sort(arr);
         int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+
+        if(arr[0] == arr[n-1]){
+            return arr[0];
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
-        }
+        if(n == 2){
+            int possible = (arr[0] + arr[1] + 1) / 2;
 
-        return true;
+            if(arr[n-1] - possible > k){
+                return arr[n-1] - k;
+            }
+            else{
+                return possible;
+            }
+        }
+        if(n == 3){
+            if((arr[0] + arr[1]) % 2 == 1){
+                return arr[n-1];
+            }
+
+            int saturation = (arr[0] + arr[1]) / 2;
+
+            if(saturation - arr[0] >= k){
+                return arr[n-1];
+            }
+            else{
+                return arr[n-1] - 1;
+            }
+        }
+        else {
+            if(arr[0] == arr[n-2]){
+                if(arr[n-2] + 1 == arr[n-1])
+                    return arr[n-1];
+                else return arr[n-1] - 1;
+            }
+            else{
+                return arr[n-1];
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        int n = sc.nextInt();
+        long k = sc.nextLong();
+        int[] nums = sc.nextIntArray(n);
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
+        System.out.println(getMax(nums, k));
 
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

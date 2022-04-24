@@ -1,87 +1,43 @@
-package TestingCode;
+package DEShaw;
 
 import java.io.*;
 import java.util.*;
 
-public class OutputChecker {
+public class Madhu_amamzon {
 
-    static boolean isValid(int[] arr, int x){
-        int n = arr.length;
-        int[] hash = new int[n+1];
-        for (int j : arr) {
-            if(j%x > n)
-                return false;
-            hash[j % x]++;
+    public static int maxOfAllMin(int numComputer, List<Integer> hardDiskSpace, int segLength){
+        Deque<Integer> q = new LinkedList<>();
+
+        for(int i=0;i<segLength;i++){
+            while(!q.isEmpty() && hardDiskSpace.get(q.getLast()) > hardDiskSpace.get(i)){
+                q.removeLast();
+            }
+            q.add(i);
         }
 
-        for(int i=1;i<=n;i++){
-            if(hash[i] == 0)
-                return false;
+        int max = hardDiskSpace.get(q.getFirst());
+        for(int i=segLength;i<numComputer;i++){
+            while(!q.isEmpty() && hardDiskSpace.get(q.getLast()) >= hardDiskSpace.get(i)){
+                q.removeLast();
+            }
+            q.add(i);
+
+            while(q.getFirst() <= i - segLength){
+                q.removeFirst();
+            }
+            max = Math.max(max, hardDiskSpace.get(q.getFirst()));
         }
 
-        return true;
+        return max;
     }
 
     public static void main(String[] args) throws IOException {
-        FileReader fr1 = new FileReader("Output1.txt");
-        BufferedReader br1 = new BufferedReader(fr1);
+        Soumit sc = new Soumit();
 
-        FileReader fr2 = new FileReader("Output2.txt");
-        BufferedReader br2 = new BufferedReader(fr2);
+        Integer[] arr = {8,4,2,4,9,7,6,5};
+        System.out.println(maxOfAllMin(arr.length, Arrays.asList(arr), 2));
 
-        String a1;
-        int line = 0;
-        //Soumit sc = new Soumit("Input.txt");
-        //sc.nextInt();
-        while((a1 = br1.readLine()) != null)
-        {
-            //String s = sc.next();
-
-            a1 = a1.trim();
-            String a2 = br2.readLine();
-            if(a2==null && !a1.equals("")){
-                System.out.print(a1);
-                System.out.println("Line limit exceeded in test-output");
-                System.exit(0);
-            }
-            else if(a2==null && a1.equals("")){
-                break;
-            }
-
-            a2 = a2.trim();
-
-            if(!a1.equals(a2)){
-                /*if(a1.startsWith("YES")){
-                    int val = Integer.parseInt(a1.substring(4));
-                    if(isValid(v, val)){
-                        line++;
-                        continue;
-                    }
-                }*/
-                System.out.println("Wrong Answer at line: "+line);
-                //System.out.println(s);
-                System.out.println(a1);
-                System.out.println(a2);
-
-                //System.out.println(n+" "+Arrays.toString(v));
-                System.exit(0);
-            }
-            line++;
-        }
-
-        String a2 = br2.readLine();
-        if(a2==null || a2.trim().equals("")) {
-            System.out.println("Correct");
-        }
-        else{
-            System.out.println("Line limit exceeded in main line");
-        }
-
-        br1.close();
-        fr1.close();
-
-        br2.close();
-        fr2.close();
+        sc.close();
     }
 
     static class Soumit {

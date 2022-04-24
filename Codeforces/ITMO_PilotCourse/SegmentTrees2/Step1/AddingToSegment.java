@@ -13,6 +13,7 @@ public class AddingToSegment {
         n |= n>>28;
         return n+1;
     }
+
     static void update(long[] lazyTree, int sn,
                        long val, int start, int end, int ll, int ul){
         //total overlap
@@ -34,6 +35,7 @@ public class AddingToSegment {
         update(lazyTree, 2*sn+1, val, start, end, ll, mid);
         update(lazyTree, 2*sn+2, val, start, end, mid+1, ul);
     }
+
     static long query(long[] segTree, long[] lazyTree, int sn, int ind, int ll, int ul){
         if(ll==ul){
             segTree[sn] += lazyTree[sn];
@@ -52,6 +54,7 @@ public class AddingToSegment {
             return query(segTree, lazyTree, 2*sn+2, ind, mid+1, ul);
         }
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
@@ -82,7 +85,7 @@ public class AddingToSegment {
             }
         }
 
-        System.out.println(sb.toString());
+        System.out.println(sb);
 
         sc.close();
     }
