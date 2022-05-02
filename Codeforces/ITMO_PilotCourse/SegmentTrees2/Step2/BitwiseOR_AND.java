@@ -4,10 +4,120 @@ import java.io.*;
 import java.util.*;
 
 public class BitwiseOR_AND {
+
+    static class Node{
+        int val;
+        int lazy_val;
+    }
+
+    static int getNextPowerOf2(int n){
+        n |= n>>1;
+        n |= n>>2;
+        n |= n>>4;
+        n |= n>>8;
+        n |= n>>16;
+        n |= n>>31;
+        return n + 1;
+    }
+
+    static void update(Node[] segTree, int si, int val, int start, int end, int ll, int ul){
+        //no overlap
+        if(start > ul || end < ll){
+            return;
+        }
+
+        //total overlap
+        if(start<=ll && end>=ul){
+            segTree[si].lazy_val |= val;
+            segTree[si].val = segTree[si].val | segTree[si].lazy_val;
+            if(2*si+1 < segTree.length)
+                segTree[2*si+1].lazy_val |= segTree[si].lazy_val;
+            if(2*si+2 < segTree.length)
+                segTree[2*si+2].lazy_val |= segTree[si].lazy_val;
+            segTree[si].lazy_val = 0;
+            return;
+        }
+
+        //partial overlap
+        segTree[si].val |= segTree[si].lazy_val;
+        if(2*si+1 < segTree.length)
+            segTree[2*si+1].lazy_val |= segTree[si].lazy_val;
+        if(2*si+2 < segTree.length)
+            segTree[2*si+2].lazy_val |= segTree[si].lazy_val;
+        segTree[si].lazy_val = 0;
+
+        int mid = (ll + ul) / 2;
+        update(segTree, 2*si+1, val, start, end, ll, mid);
+        update(segTree, 2*si+2, val, start, end, mid+1, ul);
+
+        segTree[si].val = (segTree[2*si + 1].val | segTree[2*si + 1].lazy_val)
+                & (segTree[2*si + 2].val | segTree[2*si + 2].lazy_val);
+    }
+
+    static int query(Node[] segTree, int si, int start, int end, int ll, int ul){
+        //no overlap
+        if(start > ul || end < ll){
+            return Integer.MAX_VALUE;
+        }
+
+        //total overlap
+        if(start<=ll && end>=ul){
+            segTree[si].val = segTree[si].val | segTree[si].lazy_val;
+            if(2*si+1 < segTree.length)
+                segTree[2*si+1].lazy_val |= segTree[si].lazy_val;
+            if(2*si+2 < segTree.length)
+                segTree[2*si+2].lazy_val |= segTree[si].lazy_val;
+            segTree[si].lazy_val = 0;
+            return segTree[si].val;
+        }
+
+        //partial overlap
+        segTree[si].val |= segTree[si].lazy_val;
+        if(2*si+1 < segTree.length)
+            segTree[2*si+1].lazy_val |= segTree[si].lazy_val;
+        if(2*si+2 < segTree.length)
+            segTree[2*si+2].lazy_val |= segTree[si].lazy_val;
+        segTree[si].lazy_val = 0;
+
+        int mid = (ll + ul) / 2;
+        return query(segTree, 2*si+1, start, end, ll, mid)
+                & query(segTree, 2*si+2, start, end, mid+1, ul);
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
+        StringBuilder sb = new StringBuilder();
+        int n = sc.nextInt();
+        int q = sc.nextInt();
 
+        int sn = 2 * getNextPowerOf2(n) - 1;
+        Node[] segTree = new Node[sn];
+        for(int i=0;i<sn;i++){
+            segTree[i] = new Node();
+        }
+
+
+        while(q-->0){
+            int type = sc.nextInt();
+
+            if(type == 1){
+                int l = sc.nextInt();
+                int r = sc.nextInt() - 1;
+                int v = sc.nextInt();
+
+                update(segTree, 0, v, l, r, 0, n-1);
+            }
+            else{
+                int l = sc.nextInt();
+                int r = sc.nextInt() - 1;
+
+                int ans = query(segTree, 0, l, r, 0, n-1);
+                sb.append(ans).append("\n");
+            }
+        }
+
+        System.out.println(sb.toString());
 
         sc.close();
     }

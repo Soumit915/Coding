@@ -1,75 +1,79 @@
-package Codeforces;
+package GoogleCodeJam.Year_2022.Round_1B;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
+public class B {
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
-
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
-                }
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
-
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        long n = sc.nextLong();
-        long k = sc.nextLong();
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
 
-        long ans = 1;
+            int n = sc.nextInt();
+            int p = sc.nextInt();
 
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
+            long[][] mat = new long[n][p];
+            for(int i=0;i<n;i++){
+                mat[i] = sc.nextLongArray(p);
+                sc.sort(mat[i]);
+            }
+
+            long[] last = new long[p];
+            long[] min = new long[p];
+            for(int i=0;i<n;i++){
+
+                long[] looplast = new long[p];
+                long[] loopmin = new long[p];
+                Arrays.fill(loopmin, Long.MAX_VALUE);
+
+                long[] preComputeStartCost = new long[p];
+                Arrays.fill(preComputeStartCost, Long.MAX_VALUE);
+                for(int start = 0; start < p; start++) {
+                    for (int end = 0; end < p; end++) {
+                        preComputeStartCost[start] = Math.min(preComputeStartCost[start],
+                                min[end] + Math.abs(mat[i][start] - last[end]));
+                    }
+                }
+
+                for(int start = 0; start < p; start++){
+                    for(int end = 0; end < p; end++){
+                        long cost = preComputeStartCost[start];
+                        long s = mat[i][start];
+                        long f = mat[i][0];
+                        long l = mat[i][p-1];
+                        long e = mat[i][end];
+
+                        if(start < end){
+                            cost += (s - 2*f + 2*l - e);
+                        }
+                        else{
+                            cost += (e - 2*f + 2*l - s);
+                        }
+
+                        if(cost < loopmin[end]){
+                            loopmin[end] = cost;
+                            looplast[end] = mat[i][end];
+                        }
+                    }
+                }
+
+                last = looplast;
+                min = loopmin;
+            }
+
+            long ans = min[0];
+            for(long v: min){
+                ans = Math.min(ans, v);
+            }
+
+            sb.append(ans).append("\n");
         }
 
-        System.out.println(ans);
+        System.out.println(sb);
 
         sc.close();
     }

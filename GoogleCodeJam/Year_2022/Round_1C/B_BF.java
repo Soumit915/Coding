@@ -1,75 +1,61 @@
-package Codeforces;
+package GoogleCodeJam.Year_2022.Round_1C;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
+public class B_BF {
+
+    static long getType(long k, long sum, long sumsq){
+        long newsum = sum + k;
+
+        long newsumsq = sumsq + (k * k);
+        long newsqsum = newsum * newsum;
+
+        return newsumsq - newsqsum;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output2.txt");
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
+
+            int n = sc.nextInt();
+            int k = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
+
+            long sum = 0;
+            long sumsq = 0;
+            for(long l: arr){
+                sum += l;
+                sumsq += l * l;
+            }
+
+            long ans = Long.MAX_VALUE;
+            for(long j = 0;j < 1000000;j++){
+                if(getType(j, sum, sumsq) == 0){
+                    ans = j;
+                    break;
                 }
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
-
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
+                if(getType(-1L*j, sum, sumsq) == 0){
+                    ans = j*-1;
+                    break;
                 }
-                return true;
+            }
+
+            if(ans == Long.MAX_VALUE){
+                sb.append("IMPOSSIBLE\n");
+            }
+            else{
+                sb.append(ans).append("\n");
             }
         }
 
-        return false;
-    }
-
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
-
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
-
-        long n = sc.nextLong();
-        long k = sc.nextLong();
-
-        long ans = 1;
-
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
-        }
-
-        System.out.println(ans);
+        sc.println(sb.toString());
 
         sc.close();
     }

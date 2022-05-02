@@ -1,75 +1,168 @@
-package Codeforces;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
+public class EscapeTheSpreadingFire {
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
+    static class Node{
+        int x, y;
+        int val;
+        int fireTime;
 
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
+        int lastVal;
+
+        List<Node> adlist = new ArrayList<>();
+
+        boolean isVisited;
+
+        Node(int x, int y, int val){
+            this.x = x;
+            this.y = y;
+            this.val = val;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>(n);
+        }
+
+        public void addEdge(Node u, Node v){
+            if(u.val == 2 || v.val == 2)
+                return;
+
+            u.adlist.add(v);
+            v.adlist.add(u);
+        }
+
+        public void calcFireTime(List<Node> fireNodes){
+            for(Node node: nodelist){
+                node.isVisited = false;
+                node.fireTime = Integer.MAX_VALUE;
+            }
+
+            Queue<Node> q = new LinkedList<>();
+            for(Node node: fireNodes){
+                node.isVisited = true;
+                q.add(node);
+                node.fireTime = 0;
+            }
+
+            while (!q.isEmpty()){
+                Node cur = q.remove();
+
+                for(Node node: cur.adlist){
+                    if(!node.isVisited){
+                        node.isVisited = true;
+                        node.fireTime = cur.fireTime + 1;
+                        q.add(node);
+                    }
                 }
-                return true;
             }
         }
 
-        return false;
-    }
+        public boolean isPossible(int startTime){
+            for(Node node: nodelist){
+                node.isVisited = false;
+            }
+            Queue<Node> q = new LinkedList<>();
 
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
+            Node source = nodelist.get(0);
+            Node sink = nodelist.get(nodelist.size() - 1);
 
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
+            q.add(source);
+            source.isVisited = true;
+            source.lastVal = startTime;
+
+            while (!q.isEmpty()){
+                Node cur = q.remove();
+
+                for(Node node: cur.adlist){
+                    if(node == sink && sink.fireTime >= cur.lastVal + 1){
+                        return true;
+                    }
+                    if(!node.isVisited && node.fireTime > cur.lastVal + 1){
+                        node.isVisited = true;
+                        node.lastVal = cur.lastVal + 1;
+                        q.add(node);
+                    }
                 }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
+            }
 
-        return c;
+            return sink.isVisited;
+        }
     }
 
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
+    static boolean isValid(int n, int m, int i, int j){
+        return 0<=i && i<n && 0<=j && j<m;
     }
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
 
-        long n = sc.nextLong();
-        long k = sc.nextLong();
+    public static int maximumMinutes(int[][] grid) {
+        int n = grid.length;
+        int m = grid[0].length;
 
-        long ans = 1;
+        Graph gr = new Graph(n * m);
 
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
+        Node[][] mat = new Node[n][m];
+        List<Node> fireNodes = new ArrayList<>();
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                mat[i][j] = new Node(i, j, grid[i][j]);
+                gr.nodelist.add(mat[i][j]);
+
+                if(grid[i][j] == 1)
+                    fireNodes.add(mat[i][j]);
+            }
         }
 
-        System.out.println(ans);
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(isValid(n, m, i, j+1))
+                    gr.addEdge(mat[i][j], mat[i][j+1]);
+
+                if(isValid(n, m, i+1, j))
+                    gr.addEdge(mat[i][j], mat[i+1][j]);
+            }
+        }
+
+        gr.calcFireTime(fireNodes);
+
+        if(!gr.isPossible(0))
+            return -1;
+
+        int ll = 0, ul = (int) 1e9;
+        while(ll < ul){
+            int mid = ll + (ul - ll + 1) / 2;
+
+            if(gr.isPossible(mid)){
+                ll = mid;
+            }
+            else{
+                ul = mid - 1;
+            }
+        }
+
+        return ll;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+
+        int t = sc.nextInt();
+        while (t-->0){
+            int n = sc.nextInt();
+            int m = sc.nextInt();
+
+            int[][] grid = new int[n][m];
+            for(int i=0;i<n;i++){
+                grid[i] = sc.nextIntArray(m);
+            }
+
+            System.out.println(maximumMinutes(grid));
+        }
 
         sc.close();
     }

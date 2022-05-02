@@ -1,9 +1,10 @@
-package Codeforces;
+package GoogleCodeJam.Year_2022.Round_1B;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
+public class B_BF {
+
     static boolean getNextPermutation(int[] a){
         int n = a.length;
         for(int i=n-1;i>0;i--){
@@ -30,46 +31,87 @@ public class AlmostIdentityPermuatations {
         return false;
     }
 
-    static long getDearrangements(int n){
+    static int[][] getAllPerms(int n){
+        int tot = 1;
         int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
-
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
-
-        long n = sc.nextLong();
-        long k = sc.nextLong();
-
-        long ans = 1;
-
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
+        for(int i=0;i<n;i++){
+            tot = tot * (i + 1);
+            arr[i] = i;
         }
 
-        System.out.println(ans);
+        int[][] perms = new int[tot][n];
+        System.arraycopy(arr, 0, perms[0], 0, n);
+        for(int i=1;i<tot;i++){
+            getNextPermutation(arr);
+
+            System.arraycopy(arr, 0, perms[i], 0, n);
+        }
+
+        return perms;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
+
+            int n = sc.nextInt();
+            int p = sc.nextInt();
+
+            long[][] mat = new long[n][p];
+            for(int i=0;i<n;i++){
+                mat[i] = sc.nextLongArray(p);
+            }
+
+            int[][] allPerms = getAllPerms(p);
+            long[] last = new long[p];
+            long[] min = new long[p];
+            for(int i=0;i<n;i++){
+
+                long[] looplast = new long[p];
+                long[] loopmin = new long[p];
+                Arrays.fill(loopmin, Long.MAX_VALUE);
+
+                for(int[] perm: allPerms){
+                    long cost = Long.MAX_VALUE;
+                    long locallast = 0;
+
+                    for(int j=0;j<perm.length;j++){
+                        if(j == 0){
+                            for(int k=0;k<p;k++){
+                                cost = Math.min(cost, min[k] + Math.abs(mat[i][perm[j]] - last[k]));
+                            }
+                        }
+                        else{
+                            cost = cost + Math.abs(mat[i][perm[j]] - locallast);
+                        }
+                        locallast = mat[i][perm[j]];
+                    }
+
+                    int perm_last = perm[perm.length - 1];
+                    if(cost < loopmin[perm_last]){
+                        loopmin[perm_last] = cost;
+                        looplast[perm_last] = mat[i][perm_last];
+                    }
+                }
+
+                last = looplast;
+                min = loopmin;
+            }
+
+            long ans = min[0];
+            for(long v: min){
+                ans = Math.min(ans, v);
+            }
+
+            sb.append(ans).append("\n");
+        }
+
+        sc.println(sb.toString());
 
         sc.close();
     }

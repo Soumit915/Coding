@@ -1,75 +1,148 @@
-package Codeforces;
+package GoogleCodeJam.Year_2022.Round_1C;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
+public class A {
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
+    static boolean allSame(String s){
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i) != s.charAt(0))
+                return false;
+        }
 
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
-                }
-                return true;
+        return true;
+    }
+
+    static int getNext(String[] strings, List<Integer> list){
+        int count = 0;
+        int index = list.get(0);
+        for(int i : list){
+            if(allSame(strings[i])){
+                count++;
+            }
+            else{
+                index = i;
             }
         }
 
-        return false;
+        if(count < list.size() - 1){
+            return -1;
+        }
+        else return index;
     }
 
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
+    static String getAns(String[] strings, boolean[] isVisited, int start,
+                         Map<Character, List<Integer>> startsWith){
+        int n = strings.length;
 
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
-
-        long n = sc.nextLong();
-        long k = sc.nextLong();
-
-        long ans = 1;
-
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
+        int[] letters = new int[26];
+        for(String s: strings){
+            for(int i=0;i<s.length();i++){
+                letters[s.charAt(i) - 'A']++;
+            }
         }
 
-        System.out.println(ans);
+        StringBuilder sb = new StringBuilder();
+
+        int count = 0, i = start;
+        while(count < n && !isVisited[i]){
+            sb.append(strings[i]);
+            isVisited[i] = true;
+
+            for(int j=0;j<strings[i].length();j++){
+                letters[strings[i].charAt(j) - 'A']--;
+
+                if(j!=strings[i].length() - 1) {
+                    if(strings[i].charAt(j) != strings[i].charAt(j+1)
+                            && letters[strings[i].charAt(j) - 'A'] != 0){
+                        return null;
+                    }
+                }
+            }
+
+            List<Integer> list = startsWith.getOrDefault(strings[i].charAt(strings[i].length() - 1),
+                    new ArrayList<>());
+            if(list.size() == 0){
+                if(letters[strings[i].charAt(strings[i].length() - 1) - 'A'] != 0){
+                    return null;
+                }
+
+                return sb.toString();
+            }
+
+            i = getNext(strings, list);
+            for(int li: list){
+                if(i != li && !isVisited[li]){
+                    sb.append(strings[li]);
+                    for(int j=0;j<strings[li].length();j++){
+                        letters[strings[li].charAt(j) - 'A']--;
+                    }
+                    isVisited[li] = true;
+                }
+            }
+
+            if(i == -1)
+                return null;
+
+            count++;
+        }
+
+        if(letters[strings[i].charAt(strings[i].length() - 1) - 'A'] != 0){
+            return null;
+        }
+
+        return sb.toString();
+    }
+
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
+
+            int n = sc.nextInt();
+            String[] s = new String[n];
+            Map<Character, List<Integer>> map = new HashMap<>();
+            for(int i=0;i<n;i++){
+                s[i] = sc.next();
+                List<Integer> list = map.getOrDefault(s[i].charAt(0), new ArrayList<>());
+                list.add(i);
+
+                map.put(s[i].charAt(0), list);
+            }
+
+            boolean[] isVisited = new boolean[n];
+            StringBuilder ans = new StringBuilder();
+            for(int i=0;i<n;i++){
+                if(isVisited[i])
+                    continue;
+
+                boolean[] local = new boolean[n];
+                String cur = getAns(s, local, i, map);
+
+                if(cur != null){
+                    for(int j=0;j<n;j++){
+                        isVisited[j] |= local[j];
+                        local[j] = isVisited[j];
+                    }
+                    ans.append(cur);
+                }
+            }
+
+            boolean flag = true;
+            for(int i=0;i<n;i++){
+                flag = flag & isVisited[i];
+            }
+
+            if(flag)
+                sb.append(ans).append("\n");
+            else sb.append("IMPOSSIBLE\n");
+        }
+
+        System.out.println(sb);
 
         sc.close();
     }

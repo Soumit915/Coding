@@ -1,75 +1,171 @@
-package Codeforces;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
+public class EvaluateDivision {
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
+    static class Node{
+        int id;
+        String val;
 
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
-                }
-                return true;
+        boolean isVisited;
+        double fraction;
+
+        List<Edge> adlist = new ArrayList<>();
+
+        Node(int id, String val){
+            this.id = id;
+            this.val = val;
+        }
+
+    }
+
+    static class Edge{
+        Node source;
+        Node sink;
+        double value;
+
+        Edge(Node source, Node sink, double value){
+            this.source = source;
+            this.sink = sink;
+            this.value = value;
+        }
+    }
+    
+    static class Graph{
+        List<Node> nodelist;
+        
+        Graph(int n, Map<String, Integer> variable_map){
+            this.nodelist = new ArrayList<>(n);
+            
+            for(String s: variable_map.keySet()){
+                nodelist.add(new Node(variable_map.get(s), s));
             }
         }
 
-        return false;
-    }
+        public void addEdge(int u, int v, double value){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
 
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
+            Edge e = new Edge(nu, nv, value);
 
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
+            nu.adlist.add(e);
+            nv.adlist.add(e);
+        }
+
+        public double calulateEquation(int u, int v){
+
+            for(Node node: nodelist){
+                node.isVisited = false;
+                node.fraction = 1.0;
+            }
+
+            Node source = nodelist.get(u);
+            Node sink = nodelist.get(v);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(source);
+            ptrstk.push(-1);
+            source.isVisited = true;
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Edge e = cur.adlist.get(ptr);
+
+                    if(e.source == cur){
+                        Node next = e.sink;
+
+                        if(!next.isVisited){
+                            stk.push(next);
+                            ptrstk.push(-1);
+                            next.isVisited = true;
+                            next.fraction = cur.fraction * e.value;
+                        }
+                    }
+                    else{
+                        Node next = e.source;
+
+                        if(!next.isVisited){
+                            stk.push(next);
+                            ptrstk.push(-1);
+                            next.isVisited = true;
+                            next.fraction = cur.fraction / e.value;
+                        }
+                    }
                 }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
+            }
 
-        return c;
+            if(!sink.isVisited)
+                return -1;
+            else return sink.fraction;
+        }
     }
 
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
+    public double[] calcEquation(List<List<String>> equations, double[] values,
+                                 List<List<String>> queries) {
+
+        HashMap<String, Integer> variable_map = new HashMap<>();
+        for(List<String> list: equations){
+            String num = list.get(0);
+            String deno = list.get(1);
+
+            int num_id = variable_map.getOrDefault(num, variable_map.keySet().size());
+            variable_map.put(num, num_id);
+
+            int deno_id = variable_map.getOrDefault(deno, variable_map.keySet().size());
+            variable_map.put(deno, deno_id);
+        }
+
+        Graph gr = new Graph(variable_map.keySet().size(), variable_map);
+
+        for(int i=0;i<equations.size();i++){
+            List<String> list = equations.get(i);
+            String num = list.get(0);
+            String deno = list.get(1);
+
+            int num_id = variable_map.get(num);
+            int deno_id = variable_map.get(deno);
+            
+            gr.addEdge(num_id, deno_id, values[i]);
+        }
+
+        int q = queries.size();
+        double[] ans = new double[q];
+        for(int i=0;i<q;i++){
+            List<String> list = queries.get(i);
+
+            String num = list.get(0);
+            String deno = list.get(1);
+
+            int num_id = variable_map.getOrDefault(num, -1);
+            int deno_id = variable_map.getOrDefault(deno, -1);
+
+            if(num_id == -1 || deno_id == -1){
+                ans[i] = -1;
+                continue;
+            }
+
+            double cur_ans = gr.calulateEquation(num_id, deno_id);
+            ans[i] = cur_ans;
+        }
+
+        return ans;
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        long n = sc.nextLong();
-        long k = sc.nextLong();
 
-        long ans = 1;
-
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
-        }
-
-        System.out.println(ans);
 
         sc.close();
     }

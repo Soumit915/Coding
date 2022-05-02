@@ -1,75 +1,51 @@
-package Codeforces;
+package Codeforces.ITMO_PilotCourse.SegmentTrees2.Step2;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
+public class BitwiseOR_AND_BF {
 
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output2.txt");
 
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int q = sc.nextInt();
+
+            int[] arr = new int[n];
+            for(int i=0;i<n;i++){
+                arr[i] = 0;
+            }
+
+            while(q-->0){
+                int type = sc.nextInt();
+
+                if(type == 1){
+                    int l = sc.nextInt();
+                    int r = sc.nextInt() - 1;
+                    int v = sc.nextInt();
+
+                    for(int i=l;i<=r;i++){
+                        arr[i] |= v;
+                    }
                 }
-                return true;
+                else{
+                    int l = sc.nextInt();
+                    int r = sc.nextInt() - 1;
+
+                    int ans = arr[l];
+                    for(int i=l;i<=r;i++){
+                        ans = ans & arr[i];
+                    }
+                    sb.append(ans).append("\n");
+                }
             }
         }
 
-        return false;
-    }
-
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
-
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
-
-        long n = sc.nextLong();
-        long k = sc.nextLong();
-
-        long ans = 1;
-
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
-        }
-
-        System.out.println(ans);
+        sc.println(sb.toString());
 
         sc.close();
     }

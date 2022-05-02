@@ -1,75 +1,51 @@
-package Codeforces;
+package GoogleCodeJam.Year_2022.Round_1B;
 
 import java.io.*;
 import java.util.*;
 
-public class AlmostIdentityPermuatations {
-    static boolean getNextPermutation(int[] a){
-        int n = a.length;
-        for(int i=n-1;i>0;i--){
-            int l = -1;
-            if(a[i]>a[i-1]){
-                for(int j=i;j<n;j++){
-                    if(a[j]>a[i-1])
-                        l = j;
-                }
-
-                int t = a[l];
-                a[l] = a[i-1];
-                a[i-1] = t;
-
-                for(int j=i;j<n-j+i-1;j++){
-                    t = a[j];
-                    a[j] = a[n-j+i-1];
-                    a[n-j+i-1] = t;
-                }
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    static long getDearrangements(int n){
-        int[] arr = new int[n];
-        for(int i=0;i<n;i++) arr[i] = i;
-
-        int c = 0;
-        do{
-            boolean flag = true;
-            for(int i=0;i<n;i++)
-                if(arr[i]==i){
-                    flag = false;
-                    break;
-                }
-            if(flag)
-                c++;
-        }while (getNextPermutation(arr));
-
-        return c;
-    }
-
-    static long nCr(long n, long r){
-        long c = 1;
-        for(long i=n-r+1;i<=n;i++)
-            c *= i;
-        for(long i=2;i<=r;i++)
-            c /= i;
-        return c;
-    }
+public class A {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        long n = sc.nextLong();
-        long k = sc.nextLong();
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int testi = 1;testi<=t;testi++){
+            sb.append("Case #").append(testi).append(": ");
 
-        long ans = 1;
+            int n = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
 
-        for(long i=2;i<=k;i++){
-            ans += nCr(n, i) * getDearrangements((int) i);
+            int[] suffix = new int[n];
+            suffix[n-1] = 1;
+            long max = arr[n-1];
+            for(int i=n-2;i>=0;i--){
+                if(arr[i] >= max){
+                    max = arr[i];
+                    suffix[i] = suffix[i+1] + 1;
+                }
+                else {
+                    suffix[i] = suffix[i+1];
+                }
+            }
+
+            int ans = suffix[0];
+            max = arr[0];
+            int last = 0;
+            for(int i=0;i<n;i++){
+                if(arr[i] >= max){
+                    max = arr[i];
+                    last++;
+
+                    if(i!=n-1)
+                        ans = Math.max(ans, last + suffix[i+1]);
+                    else ans = Math.max(ans, last);
+                }
+            }
+
+            sb.append(ans).append("\n");
         }
 
-        System.out.println(ans);
+        System.out.println(sb);
 
         sc.close();
     }
