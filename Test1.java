@@ -3,33 +3,72 @@ import java.util.*;
 import java.util.StringTokenizer;
 
 public class Test1 {
-    static int reverse(int n){
-        int r = 0;
-        while(n>0){
-            r = r*10 + n%10;
+
+    static long x ;
+
+    public static long gcd(long a, long b)
+    {
+        if(a%b==0)
+        {
+            return b;
+        }
+        return gcd(b, a%b);
+    }
+
+    static long query(long a, long b){
+        return gcd(x +a , x + b);
+    }
+
+    static List<Long> getDigits(long n){
+        List<Long> list = new ArrayList<>();
+
+        while(n > 0){
+            long v = n % 10;
+            list.add((v));
             n /= 10;
         }
-        return r;
+
+        return list;
     }
 
-    static boolean isPerfectSquare(int n){
-        int sqrt = (int) (Math.sqrt(n));
-        return sqrt*sqrt == n;
-    }
+    public static void main(String args[]) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output1.txt");
 
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
 
-        int n = 32760;
-        int c = 0;
-        for(int i=1;i<=n;i++){
-            if(n%i==0 && isPerfectSquare(i)){
-                c++;
+        while(t-->0){
+            long n = sc.nextLong();
+
+            if(n%2 == 1){
+                sb.append("False\n");
+                continue;
+            }
+            else{
+                List<Long> list = getDigits(n);
+                boolean flag = true;
+                for(long i: list){
+                    if(i == 0)
+                        continue;
+                    long ans = n / i;
+
+                    if(ans % 2== 1){
+                        flag = false;
+                        break;
+                    }
+                }
+
+                if(flag){
+                    sb.append("True\n");
+                }
+                else{
+                    sb.append("False\n");
+                }
             }
         }
 
-        System.out.println(c);
-
+        System.out.println(sb);
         sc.close();
     }
 

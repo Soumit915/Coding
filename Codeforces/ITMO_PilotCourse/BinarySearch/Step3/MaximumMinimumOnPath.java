@@ -4,8 +4,141 @@ import java.io.*;
 import java.util.*;
 
 public class MaximumMinimumOnPath {
+
+    static class Node{
+        int id;
+        boolean isVisited;
+        Node parent;
+        List<Edge> adlist = new ArrayList<>();
+
+        Node(int id){
+            this.id = id;
+            this.isVisited = false;
+            this.parent = null;
+        }
+    }
+
+    static class Edge{
+        Node u;
+        Node v;
+        int weight;
+
+        Edge(Node u, Node v, int weight){
+            this.u = u;
+            this.v = v;
+            this.weight = weight;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>(n);
+            for(int i=0;i<n;i++)
+                nodelist.add(new Node(i));
+        }
+
+        public void addEdge(int u, int v, int weight){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            Edge e = new Edge(nu, nv, weight);
+
+            nu.adlist.add(e);
+        }
+
+        public int getMinPossible(int max, int k){
+            for(Node node: nodelist){
+                node.isVisited = false;
+                node.parent = null;
+            }
+
+            int[] dist = new int[nodelist.size()];
+
+            Queue<Node> q = new LinkedList<>();
+            Node source = nodelist.get(0);
+
+            q.add(source);
+            source.isVisited = true;
+            dist[source.id] = 0;
+
+            while(!q.isEmpty()){
+                Node cur = q.remove();
+
+                for(Edge e: cur.adlist){
+                    Node node;
+
+                    if(e.u == cur)
+                        node = e.v;
+                    else node = e.u;
+
+                    if(!node.isVisited && e.weight <= max){
+                        q.add(node);
+                        node.isVisited = true;
+                        dist[node.id] = dist[cur.id] + 1;
+                        node.parent = cur;
+                    }
+                }
+            }
+
+            Node dest = nodelist.get(nodelist.size()-1);
+            return dest.isVisited? dist[dest.id] : k+5;
+        }
+
+        public void findWays(int k){
+            int ll = 0, ul = (int) 1e9 + 7;
+
+            while(ll < ul){
+                int mid = (ll + ul) / 2;
+
+                if(getMinPossible(mid, k) <= k){
+                    ul = mid;
+                }
+                else{
+                    ll = mid + 1;
+                }
+            }
+
+            if(ll <= 1000000000){
+                StringBuilder sb = new StringBuilder();
+                int pathLength = getMinPossible(ll, k);
+                sb.append(pathLength).append("\n");
+
+                Node dest = nodelist.get(nodelist.size()-1);
+                Stack<Node> stk = new Stack<>();
+                stk.push(dest);
+                while(dest.parent != null){
+                    stk.push(dest.parent);
+                    dest = dest.parent;
+                }
+
+                while(!stk.isEmpty()){
+                    sb.append(stk.pop().id + 1).append(" ");
+                }
+
+                System.out.println(sb);
+            }
+            else{
+                System.out.println(-1);
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
+
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        int d = sc.nextInt();
+
+        Graph gr = new Graph(n);
+
+        for(int i=0;i<m;i++){
+            gr.addEdge(sc.nextInt()-1, sc.nextInt()-1, sc.nextInt());
+        }
+
+        gr.findWays(d);
 
         sc.close();
     }
