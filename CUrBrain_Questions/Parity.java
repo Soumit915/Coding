@@ -1,51 +1,38 @@
+package CUrBrain_Questions;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test1 {
+public class Parity {
 
-    static long x ;
-
-    public static long gcd(long a, long b)
-    {
-        if(a%b==0)
-        {
-            return b;
-        }
-        return gcd(b, a%b);
-    }
-
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
-
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
-        }
-
-        return list;
-    }
-
-    public static void main(String args[]) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input2.txt");
+        sc.streamOutput("Output2.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
 
         while(t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
+            int max = 0;
+            while(n>0){
+                int j = n%10;
+                max = Math.max(max, j);
+                n /= 10;
+            }
 
+            if(max%2==0){
+                sb.append("Even\n");
+            }
+            else{
+                sb.append("Odd\n");
+            }
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
+
+
         sc.close();
     }
 

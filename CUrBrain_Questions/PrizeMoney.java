@@ -1,51 +1,56 @@
+package CUrBrain_Questions;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test1 {
-
-    static long x ;
-
-    public static long gcd(long a, long b)
-    {
-        if(a%b==0)
-        {
-            return b;
-        }
-        return gcd(b, a%b);
-    }
-
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
-
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
-        }
-
-        return list;
-    }
-
-    public static void main(String args[]) throws IOException {
+public class PrizeMoney {
+    public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        sc.streamOutput("Output2.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-
         while(t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
 
+            String s = sc.next();
 
+            for(int i=0;i<n;i++){
+                char ch = s.charAt(i);
+
+                if('A' <= ch && ch <= 'Z'){
+                    int ascii = ch - 'A';
+                    ascii = (ascii + i + 1)%26;
+
+                    ch = (char) (ascii + 'A');
+
+                    sb.append(ch);
+                }
+                else if('a' <= ch && ch <= 'z'){
+                    int ascii = ch - 'a';
+                    ascii = (ascii + i + 1)%26;
+
+                    ch = (char) (ascii + 'a');
+
+                    sb.append(ch);
+                }
+                else if('0' <= ch && ch <= '9'){
+                    int ascii = ch - '0';
+                    ascii = (ascii + i + 1)%10;
+
+                    ch = (char) (ascii + '0');
+
+                    sb.append(ch);
+                }
+                else{
+                    sb.append(ch);
+                }
+            }
+            sb.append("\n");
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
+
         sc.close();
     }
 

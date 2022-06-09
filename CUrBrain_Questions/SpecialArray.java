@@ -1,51 +1,59 @@
+package CUrBrain_Questions;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test1 {
+public class SpecialArray {
 
-    static long x ;
+    static long mod = (long) 1e9 + 7;
 
-    public static long gcd(long a, long b)
-    {
-        if(a%b==0)
-        {
-            return b;
-        }
-        return gcd(b, a%b);
-    }
-
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
-
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
-        }
-
-        return list;
-    }
-
-    public static void main(String args[]) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input1.txt");
         sc.streamOutput("Output1.txt");
 
-        int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-
-        while(t-->0){
+        int t = sc.nextInt();
+        while (t-->0){
             int n = sc.nextInt();
             int[] arr = sc.nextIntArray(n);
 
+            List<Integer> odd = new ArrayList<>();
+            for(int i: arr)
+                if(i%2==1)
+                    odd.add(i);
 
+            if(odd.size() == 0){
+                sb.append("0\n");
+                continue;
+            }
+
+            List<Long> dp = new ArrayList<>();
+            Map<Integer, Integer> last = new HashMap<>();
+
+            dp.add(1L);
+            last.put(odd.get(0), 0);
+
+            for(int i=1;i<odd.size();i++){
+                if(last.containsKey(odd.get(i))){
+                    int last_index = last.get(odd.get(i));
+                    long val = dp.get(dp.size() - 1);
+                    if(last_index != 0){
+                        val -= dp.get(last_index - 1);
+                    }
+                    val = (val%mod + mod)%mod;
+                    dp.add((val+dp.get(dp.size()-1))%mod);
+                }
+                else{
+                    dp.add((dp.get(dp.size() - 1) * 2 + 1)%mod);
+                }
+                last.put(odd.get(i), i);
+            }
+
+            sb.append(dp.get(dp.size() - 1)).append("\n");
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
+
         sc.close();
     }
 
