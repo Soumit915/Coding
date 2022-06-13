@@ -3,6 +3,73 @@ import java.io.*;
 import java.text.*;
 
 public class Test{
+    static class Interval{
+
+        int start;
+        int end;
+
+        Interval(int start, int end){
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    static class startSort implements Comparator<Interval>
+    {
+        public int compare(Interval p1, Interval p2)
+        {
+            return Long.compare(p1.start, p2.start);
+        }
+    }
+    static class endSort implements Comparator<Interval>
+    {
+        public int compare(Interval p1, Interval p2)
+        {
+            return Long.compare(p1.end, p2.end);
+        }
+    }
+
+    TreeSet<Interval> start;
+    TreeSet<Interval> end;
+
+    int total;
+
+    public Test() {
+        this.start = new TreeSet<>(new startSort());
+        this.end = new TreeSet<>(new endSort());
+
+        this.total = 0;
+    }
+
+    public void add(int left, int right) {
+        List<Interval> list = new ArrayList<>();
+        while(end.ceiling(new Interval(0, left)) != null && end.ceiling(new Interval(0, left)).start <= right){
+            Interval interval = end.ceiling(new Interval(0, left));
+
+            list.add(interval);
+
+            end.remove(interval);
+            start.remove(interval);
+        }
+
+        int cur_count = 0;
+        for(int i=1;i<list.size();i++){
+            cur_count += (list.get(i).start - list.get(i-1).end - 1);
+        }
+        if(list.size() > 0)
+            cur_count += Math.max(0, right - list.get(list.size() - 1).end);
+
+        total += cur_count;
+
+        Interval  interval = new Interval(left, right);
+        start.add(interval);
+        end.add(interval);
+    }
+
+    public int count() {
+        return this.total;
+    }
+
     static FastReader in;
     static PrintWriter out;
 
