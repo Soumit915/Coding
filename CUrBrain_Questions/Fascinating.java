@@ -1,51 +1,48 @@
+package CUrBrain_Questions;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test1 {
+public class Fascinating {
 
-    static long x ;
-
-    public static long gcd(long a, long b)
-    {
-        if(a%b==0)
-        {
-            return b;
+    static void countFrequency(long n, int frequency[]){
+        while(n!=0){
+            int r = (int)(n%10);
+            frequency[r]++;
+            n/=10;
         }
-        return gcd(b, a%b);
     }
 
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
+    static boolean fascinating(long n) {
+        // code here
+        long n2 = n*2;
+        long n3 = n*3;
+        int frequency[] = new int[10];
+        countFrequency(n,  frequency );
+        countFrequency(n2, frequency);
+        countFrequency(n3, frequency);
 
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
+        for(int i=1; i<10; i++){
+            if(frequency[i] != 1)
+                return false;
         }
+        return true;
 
-        return list;
     }
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
         sc.streamOutput("Output1.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-
         while(t-->0){
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
-
-
+            long n = sc.nextLong();
+            sb.append(fascinating(n) ? "YES" : "NO" ).append("\n");
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
+
         sc.close();
     }
 

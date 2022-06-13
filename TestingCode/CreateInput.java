@@ -124,33 +124,34 @@ public class CreateInput {
         }
     }
 
-    static long getTotal(int[] arr){
-        long ans = 0;
-        int n = arr.length;
-        for(int i=0;i<n;i+=2){
-            ans += arr[i+1] - arr[i] + 1;
-        }
-
-        return ans;
-    }
-
     public static void main(String[] args) throws IOException
     {
         Soumit sc = new Soumit();
-        sc.streamOutput("Input.txt");
+        sc.streamOutput("Input3.txt");
 
-        int t = 10000;
-        sc.println(t+"");
-        while(t-->0) {
-            int n = (int) (Math.random() * 100 + 1);
+        int t = 10;
+        sc.println(t + "");
 
-            sc.println(n+" "+1);
+        while(t-->0){
+            int n = 1000;
+            int q = 1000;
+
+            sc.println(n+" "+q);
 
             for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 100 + 1);
-                sc.print(v+" ");
+                int x = (int) (Math.random() * 200000 - 100000);
+                int y = (int) (Math.random() * 200000 - 100000);
+                int r = (int) (Math.random() * 100000 + 1);
+
+                sc.println(x+" "+y+" "+r);
             }
-            sc.println();
+
+            for(int i=0;i<q;i++){
+                int ori = (int) (Math.random() * 200000 - 100000);
+                int intercept = (int) (Math.random() * 200000 - 100000);
+
+                sc.println(ori+" "+intercept);
+            }
         }
 
         sc.close();

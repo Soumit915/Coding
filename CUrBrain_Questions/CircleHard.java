@@ -1,51 +1,62 @@
+package CUrBrain_Questions;
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test1 {
+public class CircleHard {
 
-    static long x ;
+    static int overhead = 20005;
 
-    public static long gcd(long a, long b)
-    {
-        if(a%b==0)
-        {
-            return b;
-        }
-        return gcd(b, a%b);
-    }
-
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
-
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
-        }
-
-        return list;
-    }
-
-    public static void main(String args[]) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input2.txt");
+        sc.streamOutput("Output2.txt");
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-
-        while(t-->0){
+        while (t-->0){
             int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int q = sc.nextInt();
 
+            int[] x_ps = new int[40100];
+            int[] y_ps = new int[40100];
 
+            for(int i=0;i<n;i++){
+                int x = sc.nextInt();
+                int y = sc.nextInt();
+                int r = sc.nextInt();
+
+                int left = x - r;
+                int right = x + r;
+                int up = y + r;
+                int down = y - r;
+
+                x_ps[left + overhead]++;
+                x_ps[right + overhead + 1]--;
+                y_ps[down + overhead]++;
+                y_ps[up + overhead + 1]--;
+            }
+
+            for(int i=1;i<x_ps.length;i++){
+                x_ps[i] += x_ps[i-1];
+                y_ps[i] += y_ps[i-1];
+            }
+
+            while (q-->0){
+                int orientation = sc.nextInt();
+                int intercept = sc.nextInt();
+                intercept += overhead;
+
+                if(orientation == 0){   //parallel to y-axis, i.e. x-axis intercept
+                    sb.append(x_ps[intercept]).append("\n");
+                }
+                else{
+                    sb.append(y_ps[intercept]).append("\n");
+                }
+            }
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
+
         sc.close();
     }
 
