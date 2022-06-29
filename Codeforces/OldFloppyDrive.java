@@ -1,161 +1,104 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateInput {
-    static class Set
-    {
-        int id;
-        int count;
-        Set parent;
-        Set(int id)
-        {
-            this.id = id;
-            this.count = 1;
-            this.parent = null;
-        }
-        public void union(Set repb)
-        {
-            if(this.count >= repb.count)
-            {
-                repb.parent = this;
-                this.count = this.count+repb.count;
-            }
-            else
-            {
-                this.parent = repb;
-                repb.count = this.count+repb.count;
-            }
-        }
-        public Set compress()
-        {
-            if(this.parent!=null)
-            {
-                this.parent = this.parent.find();
-            }
-            return this;
-        }
-        public void findUnion(Set repb)
-        {
-            Set k,k1;
-            if(this.parent == null)
-                k = this;
-            else
-                k = this.parent;
-            if(repb.parent == null)
-                k1 = repb;
-            else
-                k1 = repb.parent;
+public class OldFloppyDrive {
 
-            k.union(k1);
+    static int getNextPowerOf2(int n){
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n |= n >> 25;
+
+        return n + 1;
+    }
+
+    static void build(long[] segTree, int si, long[] arr, int l, int r){
+        if(l == r){
+            segTree[si] = arr[l];
+            return;
         }
-        public Set find()
-        {
-            if(this.parent == null)
-            {
-                return this;
-            }
-            this.compress();
-            return this.parent;
+
+        int mid = (l + r) / 2;
+        build(segTree, 2*si + 1, arr, l, mid);
+        build(segTree, 2*si + 2, arr, mid + 1, r);
+        segTree[si] = Math.max(segTree[2*si + 1], segTree[2*si + 2]);
+    }
+
+    static int query(long[] segTree, int si, long x, int l, int r){
+
+        if(segTree[si] < x)
+            return -1;
+
+        if(l == r)
+            return l;
+
+        int mid = (l + r) / 2;
+        if(segTree[2*si + 1] >= x){
+            return query(segTree, 2*si + 1, x, l, mid);
+        }
+        else {
+            return query(segTree, 2*si + 2, x, mid + 1, r);
         }
     }
-    static int[] edge;
-    static class Node
-    {
-        int id;
-        long val;
-        Node parent;
-        ArrayList<Node> adjacentnode = new ArrayList<>();
-        ArrayList<Long> pathvals = new ArrayList<>();
-        Node(int id)
-        {
-            this.id = id;
-            this.val = 0;
-            this.parent = null;
-        }
-    }
-    static class Tree {
-        ArrayList<Node> nodelist;
 
-        Tree(int n) {
-            this.nodelist = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                nodelist.add(new Node(i));
+    public static void main(String[] args) throws IOException{
+        Soumit sc = new Soumit("Input1.txt");
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0){
+            int n = sc.nextInt();
+            int m = sc.nextInt();
+            long[] arr = sc.nextLongArray(n);
+
+            long[] dp = new long[n];
+            dp[0] = arr[0];
+            for(int i=1;i<n;i++){
+                dp[i] = dp[i-1] + arr[i];
             }
-            edge = new int[n];
-        }
 
-        public void addEdge(int xi, int yi) {
-            Node nu = nodelist.get(xi);
-            Node nv = nodelist.get(yi);
+            int sn = 2 * getNextPowerOf2(n) - 1;
+            long[] segTree = new long[sn];
+            for(int i=0;i<sn;i++)
+                segTree[i] = Long.MIN_VALUE;
+            build(segTree, 0, dp, 0, n-1);
 
-            nu.adjacentnode.add(nv);
-            nv.adjacentnode.add(nu);
-        }
+            long loop_cost = dp[n-1];
+            for(int i=0;i<m;i++){
+                long x = sc.nextLong();
 
-        public void setParent() {
-            Node source = nodelist.get(0);
+                long first_loop_ops = query(segTree, 0, x, 0, n-1);
 
-            Stack<Node> stk = new Stack<>();
-            Stack<Integer> ptrstk = new Stack<>();
-            stk.push(source);
-            ptrstk.push(-1);
-
-            while (!stk.isEmpty()) {
-                Node cur = stk.pop();
-                int ptr = ptrstk.pop();
-                if (ptr < cur.adjacentnode.size() - 1) {
-                    ptr++;
-                    stk.push(cur);
-                    ptrstk.push(ptr);
-
-                    Node next = cur.adjacentnode.get(ptr);
-
-                    if (cur.parent == next) {
-                        continue;
+                if(first_loop_ops == -1){
+                    if(loop_cost <= 0){
+                        sb.append("-1 ");
                     }
+                    else{
+                        long looped_x = x - segTree[0];
+                        long times = (looped_x + loop_cost - 1) / loop_cost;
 
-                    next.parent = cur;
-                    stk.push(next);
-                    ptrstk.push(-1);
+                        long sum_collected_after_times = times * loop_cost;
+                        long ops = times * n;
+
+                        x -= sum_collected_after_times;
+
+                        long last_loop_ops = query(segTree, 0, x, 0, n-1) + ops;
+                        sb.append(last_loop_ops).append(" ");
+                    }
+                }
+                else{
+                    sb.append(first_loop_ops).append(" ");
                 }
             }
+
+            sb.append("\n");
         }
-    }
 
-    public static void main(String[] args) throws IOException
-    {
-        Soumit sc = new Soumit();
-        sc.streamOutput("Input3.txt");
-
-        int t = 1;
-        //sc.println(t + "");
-
-        while(t-->0){
-            int n = 30000;
-
-            sc.println(n+"");
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 1000000000 + 1);
-                sc.print(v+" ");
-            }
-            sc.println();
-
-            int q = 1000;
-            sc.println(q+"");
-            for(int i=0;i<q;i++){
-                int l = (int) (Math.random() * n + 1);
-                int r = (int) (Math.random() * n + 1);
-                if(l > r)
-                    l = (l + r) - (r = l);
-
-                int k = (int) (Math.random() * 1000000000 + 1);
-
-                sc.println(l+" "+r+" "+k);
-            }
-        }
+        System.out.println(sb);
 
         sc.close();
     }
@@ -186,17 +129,34 @@ public class CreateInput {
             pw = new PrintWriter(bw);
         }
 
-        public void println()
-        {
-            pw.println();
-        }
-
         public void println(String a) {
             pw.println(a);
         }
 
         public void print(String a) {
             pw.print(a);
+        }
+
+        public String readLine() throws IOException {
+            byte[] buf = new byte[3000064]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n')
+                    break;
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        String next() {
+            while (st == null || !st.hasMoreElements()) {
+                try {
+                    st = new StringTokenizer(readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
         }
 
         public void sort(int[] arr) {
@@ -217,28 +177,6 @@ public class CreateInput {
             Collections.sort(arlist);
             for (int i = 0; i < arr.length; i++)
                 arr[i] = arlist.get(i);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
-                    break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return st.nextToken();
         }
 
         public int[] nextIntArray(int n) throws IOException {
@@ -346,4 +284,5 @@ public class CreateInput {
             if (pw != null) pw.close();
         }
     }
+
 }

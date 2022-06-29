@@ -12,6 +12,7 @@ public class ChefAndClosure_BruteForce {
         sb.append(s);
         return sb.toString();
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
         sc.streamOutput("Output2.txt");

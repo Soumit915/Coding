@@ -1,161 +1,104 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateInput {
-    static class Set
-    {
-        int id;
-        int count;
-        Set parent;
-        Set(int id)
-        {
-            this.id = id;
-            this.count = 1;
-            this.parent = null;
-        }
-        public void union(Set repb)
-        {
-            if(this.count >= repb.count)
-            {
-                repb.parent = this;
-                this.count = this.count+repb.count;
+public class Sakoban1D {
+
+    static int getMaxPossible_Pos(List<Integer> a, List<Integer> b){
+
+        int n = a.size();
+        int m = b.size();
+
+        if(n == 0 || m == 0)
+            return 0;
+
+        int j = 0;
+
+        List<Integer> special_count = new ArrayList<>();
+        for (int v : b) {
+            while (j < n && a.get(j) < v) {
+                j++;
             }
-            else
-            {
-                this.parent = repb;
-                repb.count = this.count+repb.count;
-            }
-        }
-        public Set compress()
-        {
-            if(this.parent!=null)
-            {
-                this.parent = this.parent.find();
-            }
-            return this;
-        }
-        public void findUnion(Set repb)
-        {
-            Set k,k1;
-            if(this.parent == null)
-                k = this;
-            else
-                k = this.parent;
-            if(repb.parent == null)
-                k1 = repb;
-            else
-                k1 = repb.parent;
 
-            k.union(k1);
-        }
-        public Set find()
-        {
-            if(this.parent == null)
-            {
-                return this;
-            }
-            this.compress();
-            return this.parent;
-        }
-    }
-    static int[] edge;
-    static class Node
-    {
-        int id;
-        long val;
-        Node parent;
-        ArrayList<Node> adjacentnode = new ArrayList<>();
-        ArrayList<Long> pathvals = new ArrayList<>();
-        Node(int id)
-        {
-            this.id = id;
-            this.val = 0;
-            this.parent = null;
-        }
-    }
-    static class Tree {
-        ArrayList<Node> nodelist;
-
-        Tree(int n) {
-            this.nodelist = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                nodelist.add(new Node(i));
-            }
-            edge = new int[n];
-        }
-
-        public void addEdge(int xi, int yi) {
-            Node nu = nodelist.get(xi);
-            Node nv = nodelist.get(yi);
-
-            nu.adjacentnode.add(nv);
-            nv.adjacentnode.add(nu);
-        }
-
-        public void setParent() {
-            Node source = nodelist.get(0);
-
-            Stack<Node> stk = new Stack<>();
-            Stack<Integer> ptrstk = new Stack<>();
-            stk.push(source);
-            ptrstk.push(-1);
-
-            while (!stk.isEmpty()) {
-                Node cur = stk.pop();
-                int ptr = ptrstk.pop();
-                if (ptr < cur.adjacentnode.size() - 1) {
-                    ptr++;
-                    stk.push(cur);
-                    ptrstk.push(ptr);
-
-                    Node next = cur.adjacentnode.get(ptr);
-
-                    if (cur.parent == next) {
-                        continue;
-                    }
-
-                    next.parent = cur;
-                    stk.push(next);
-                    ptrstk.push(-1);
-                }
+            if (j < n && a.get(j) == v) {
+                special_count.add(1);
+            } else {
+                special_count.add(0);
             }
         }
+
+        for(int i=1;i<m;i++){
+            special_count.set(i, special_count.get(i) + special_count.get(i-1));
+        }
+
+        j = 0;
+        int lptr_i = 0;
+        int max = special_count.get(m - 1);
+        for(int i=0;i<m;i++){
+            int v = b.get(i);
+
+            while (j<n && a.get(j) <= v){
+                j++;
+            }
+
+            if(j == 0)
+                continue;
+
+            int start_special_pos = v - j + 1;
+
+            while (lptr_i<i && b.get(lptr_i)<start_special_pos){
+                lptr_i++;
+            }
+
+            int match_positions = i - lptr_i + 1;
+            int already_matched = special_count.get(m-1) - special_count.get(i);
+
+            max = Math.max(max, match_positions + already_matched);
+        }
+
+        return max;
     }
 
-    public static void main(String[] args) throws IOException
-    {
+    public static void main(String[] args) throws IOException{
         Soumit sc = new Soumit();
-        sc.streamOutput("Input3.txt");
 
-        int t = 1;
-        //sc.println(t + "");
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int m = sc.nextInt();
 
-        while(t-->0){
-            int n = 30000;
+            int[] a = sc.nextIntArray(n);
+            int[] b = sc.nextIntArray(m);
 
-            sc.println(n+"");
+            List<Integer> posa = new ArrayList<>();
+            List<Integer> nega = new ArrayList<>();
+
+            List<Integer> posb = new ArrayList<>();
+            List<Integer> negb = new ArrayList<>();
 
             for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 1000000000 + 1);
-                sc.print(v+" ");
+                if(a[i] >= 0)
+                    posa.add(a[i]);
+                else nega.add(a[i] * -1);
             }
-            sc.println();
 
-            int q = 1000;
-            sc.println(q+"");
-            for(int i=0;i<q;i++){
-                int l = (int) (Math.random() * n + 1);
-                int r = (int) (Math.random() * n + 1);
-                if(l > r)
-                    l = (l + r) - (r = l);
-
-                int k = (int) (Math.random() * 1000000000 + 1);
-
-                sc.println(l+" "+r+" "+k);
+            for(int i=0;i<m;i++){
+                if(b[i] >= 0)
+                    posb.add(b[i]);
+                else negb.add(b[i] * -1);
             }
+
+            Collections.sort(nega);
+            Collections.sort(negb);
+
+            int max = getMaxPossible_Pos(posa, posb) + getMaxPossible_Pos(nega, negb);
+
+            sb.append(max).append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }
@@ -186,17 +129,34 @@ public class CreateInput {
             pw = new PrintWriter(bw);
         }
 
-        public void println()
-        {
-            pw.println();
-        }
-
         public void println(String a) {
             pw.println(a);
         }
 
         public void print(String a) {
             pw.print(a);
+        }
+
+        public String readLine() throws IOException {
+            byte[] buf = new byte[3000064]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n')
+                    break;
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        String next() {
+            while (st == null || !st.hasMoreElements()) {
+                try {
+                    st = new StringTokenizer(readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
         }
 
         public void sort(int[] arr) {
@@ -217,28 +177,6 @@ public class CreateInput {
             Collections.sort(arlist);
             for (int i = 0; i < arr.length; i++)
                 arr[i] = arlist.get(i);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
-                    break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return st.nextToken();
         }
 
         public int[] nextIntArray(int n) throws IOException {
@@ -346,4 +284,5 @@ public class CreateInput {
             if (pw != null) pw.close();
         }
     }
+
 }

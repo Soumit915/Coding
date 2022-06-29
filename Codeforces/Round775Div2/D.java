@@ -16,28 +16,34 @@ public class D {
 
             int[] hash = new int[c+1];
             for(int i=0;i<n;i++){
-                hash[arr[i]] = 1;
+                hash[arr[i]]++;
             }
 
-            int[] count = new int[n];
-            int[] marks = new int[n];
+            for(int i=1;i<=c;i++){
+                hash[i] += hash[i-1];
+            }
+
             boolean flag = true;
-            for(int i=1;i<=hash.length;i++){
-                count[i] += count[i-1];
-                int sqrt = (int) Math.sqrt(i);
+            for(int i=1;i<=c && flag;i++){
+                if(hash[i]-hash[i-1] == 0)
+                    continue;
 
-                for(int j=1;j<i;j++){
-                    if(i*j > c)
+                for(int j=i;j<=c;j+=i){
+                    int end = Math.min(j+i-1, c);
+
+                    int c1 = hash[end] - hash[j-1];
+                    if(c1 > 0 && hash[j/i]-hash[j/i - 1] == 0){
+                        flag = false;
                         break;
-
-                    if(hash[j]==1){
-                        marks[i*j]++;
-                        if(i*(j+1) <= c){
-                            marks[i*(j+1)]--;
-                        }
                     }
                 }
-                count[i]++;
+            }
+
+            if(flag){
+                sb.append("Yes\n");
+            }
+            else{
+                sb.append("No\n");
             }
         }
 

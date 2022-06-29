@@ -1,161 +1,69 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateInput {
-    static class Set
-    {
-        int id;
-        int count;
-        Set parent;
-        Set(int id)
-        {
-            this.id = id;
-            this.count = 1;
-            this.parent = null;
+public class RiverLocks {
+    public static void main(String[] args) throws IOException{
+        Soumit sc = new Soumit();
+
+        int n = sc.nextInt();
+        long[] arr = sc.nextLongArray(n);
+
+        long[] suffix_sum = new long[n];
+        suffix_sum[n-1] = arr[n-1];
+        for(int i=n-2;i>=0;i--){
+            suffix_sum[i] = suffix_sum[i + 1] + arr[i];
         }
-        public void union(Set repb)
-        {
-            if(this.count >= repb.count)
-            {
-                repb.parent = this;
-                this.count = this.count+repb.count;
+
+        long[] time = new long[n];
+        long[] extra = new long[n];
+        long[] time_to_fill_with_k_pipes = new long[n];
+
+        time[0] = arr[0];
+        extra[0] = 0;
+        time_to_fill_with_k_pipes[0] = suffix_sum[0];
+
+        for(int i=1;i<n;i++){
+            if(time[i-1] >= arr[i]){
+                time[i] = time[i-1];
+                extra[i] = extra[i-1] + (time[i] - arr[i]);
             }
-            else
-            {
-                this.parent = repb;
-                repb.count = this.count+repb.count;
-            }
-        }
-        public Set compress()
-        {
-            if(this.parent!=null)
-            {
-                this.parent = this.parent.find();
-            }
-            return this;
-        }
-        public void findUnion(Set repb)
-        {
-            Set k,k1;
-            if(this.parent == null)
-                k = this;
-            else
-                k = this.parent;
-            if(repb.parent == null)
-                k1 = repb;
-            else
-                k1 = repb.parent;
+            else{
+                long totalfill_at_time_t = extra[i-1] + time[i-1];
 
-            k.union(k1);
-        }
-        public Set find()
-        {
-            if(this.parent == null)
-            {
-                return this;
-            }
-            this.compress();
-            return this.parent;
-        }
-    }
-    static int[] edge;
-    static class Node
-    {
-        int id;
-        long val;
-        Node parent;
-        ArrayList<Node> adjacentnode = new ArrayList<>();
-        ArrayList<Long> pathvals = new ArrayList<>();
-        Node(int id)
-        {
-            this.id = id;
-            this.val = 0;
-            this.parent = null;
-        }
-    }
-    static class Tree {
-        ArrayList<Node> nodelist;
-
-        Tree(int n) {
-            this.nodelist = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                nodelist.add(new Node(i));
-            }
-            edge = new int[n];
-        }
-
-        public void addEdge(int xi, int yi) {
-            Node nu = nodelist.get(xi);
-            Node nv = nodelist.get(yi);
-
-            nu.adjacentnode.add(nv);
-            nv.adjacentnode.add(nu);
-        }
-
-        public void setParent() {
-            Node source = nodelist.get(0);
-
-            Stack<Node> stk = new Stack<>();
-            Stack<Integer> ptrstk = new Stack<>();
-            stk.push(source);
-            ptrstk.push(-1);
-
-            while (!stk.isEmpty()) {
-                Node cur = stk.pop();
-                int ptr = ptrstk.pop();
-                if (ptr < cur.adjacentnode.size() - 1) {
-                    ptr++;
-                    stk.push(cur);
-                    ptrstk.push(ptr);
-
-                    Node next = cur.adjacentnode.get(ptr);
-
-                    if (cur.parent == next) {
-                        continue;
-                    }
-
-                    next.parent = cur;
-                    stk.push(next);
-                    ptrstk.push(-1);
+                if(totalfill_at_time_t >= arr[i]){
+                    time[i] = time[i-1];
+                    extra[i] = totalfill_at_time_t - arr[i];
+                }
+                else{
+                    long left = arr[i] - totalfill_at_time_t;
+                    long extraTime = ( left + i )/ (i + 1);
+                    time[i] = time[i-1] + extraTime;
+                    extra[i] = extraTime * (i + 1) - left;
                 }
             }
+
+            time_to_fill_with_k_pipes[i] = time[i] +
+                    Math.max(0, (i==n-1?0:suffix_sum[i+1]) - extra[i] + i) / (i + 1);
         }
-    }
 
-    public static void main(String[] args) throws IOException
-    {
-        Soumit sc = new Soumit();
-        sc.streamOutput("Input3.txt");
-
-        int t = 1;
-        //sc.println(t + "");
-
-        while(t-->0){
-            int n = 30000;
-
-            sc.println(n+"");
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 1000000000 + 1);
-                sc.print(v+" ");
-            }
-            sc.println();
-
-            int q = 1000;
-            sc.println(q+"");
-            for(int i=0;i<q;i++){
-                int l = (int) (Math.random() * n + 1);
-                int r = (int) (Math.random() * n + 1);
-                if(l > r)
-                    l = (l + r) - (r = l);
-
-                int k = (int) (Math.random() * 1000000000 + 1);
-
-                sc.println(l+" "+r+" "+k);
-            }
+        TreeMap<Long, Integer> map = new TreeMap<>();
+        for(int i=n-1;i>=0;i--){
+            map.put(time_to_fill_with_k_pipes[i], i+1);
         }
+        map.put(0L, -1);
+
+        int q = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<q;i++){
+            long ti = sc.nextLong();
+
+            int pipes = map.get(map.floorKey(ti));
+            sb.append(pipes).append("\n");
+        }
+
+        System.out.println(sb);
 
         sc.close();
     }
@@ -186,17 +94,34 @@ public class CreateInput {
             pw = new PrintWriter(bw);
         }
 
-        public void println()
-        {
-            pw.println();
-        }
-
         public void println(String a) {
             pw.println(a);
         }
 
         public void print(String a) {
             pw.print(a);
+        }
+
+        public String readLine() throws IOException {
+            byte[] buf = new byte[3000064]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n')
+                    break;
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        String next() {
+            while (st == null || !st.hasMoreElements()) {
+                try {
+                    st = new StringTokenizer(readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
         }
 
         public void sort(int[] arr) {
@@ -217,28 +142,6 @@ public class CreateInput {
             Collections.sort(arlist);
             for (int i = 0; i < arr.length; i++)
                 arr[i] = arlist.get(i);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
-                    break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return st.nextToken();
         }
 
         public int[] nextIntArray(int n) throws IOException {
@@ -346,4 +249,5 @@ public class CreateInput {
             if (pw != null) pw.close();
         }
     }
+
 }

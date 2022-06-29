@@ -1,161 +1,100 @@
-package TestingCode;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateInput {
-    static class Set
-    {
-        int id;
-        int count;
-        Set parent;
-        Set(int id)
-        {
-            this.id = id;
-            this.count = 1;
-            this.parent = null;
-        }
-        public void union(Set repb)
-        {
-            if(this.count >= repb.count)
-            {
-                repb.parent = this;
-                this.count = this.count+repb.count;
-            }
-            else
-            {
-                this.parent = repb;
-                repb.count = this.count+repb.count;
-            }
-        }
-        public Set compress()
-        {
-            if(this.parent!=null)
-            {
-                this.parent = this.parent.find();
-            }
-            return this;
-        }
-        public void findUnion(Set repb)
-        {
-            Set k,k1;
-            if(this.parent == null)
-                k = this;
-            else
-                k = this.parent;
-            if(repb.parent == null)
-                k1 = repb;
-            else
-                k1 = repb.parent;
+public class AlmostSorted {
 
-            k.union(k1);
-        }
-        public Set find()
-        {
-            if(this.parent == null)
-            {
-                return this;
+    static void reverse(int[] arr, int l, int r){
+        for(int i=0;i<r-l;i++){
+            if(l+i < r-i){
+                int t = arr[l + i];
+                arr[l + i] = arr[r - i];
+                arr[r - i] = t;
             }
-            this.compress();
-            return this.parent;
+            else{
+                break;
+            }
         }
     }
-    static int[] edge;
-    static class Node
-    {
-        int id;
-        long val;
-        Node parent;
-        ArrayList<Node> adjacentnode = new ArrayList<>();
-        ArrayList<Long> pathvals = new ArrayList<>();
-        Node(int id)
-        {
-            this.id = id;
-            this.val = 0;
-            this.parent = null;
-        }
+
+    static long setAllBits(long n){
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n |= n >> 32;
+        n |= n >> 63;
+        return n;
     }
-    static class Tree {
-        ArrayList<Node> nodelist;
 
-        Tree(int n) {
-            this.nodelist = new ArrayList<>(n);
-            for (int i = 0; i < n; i++) {
-                nodelist.add(new Node(i));
+    static long flipBits(long n){
+        long allbits = setAllBits(n);
+        return allbits ^ n;
+    }
+
+    public static String pad(String s, int n){
+        StringBuilder sb = new StringBuilder();
+        for(int i=s.length();i<n;i++){
+            sb.append("0");
+        }
+        sb.append(s);
+        return sb.toString();
+    }
+
+    public static void main(String[] args) throws IOException{
+        Soumit sc = new Soumit("Input1.txt");
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            long k = sc.nextLong();
+
+            if(n<62 && (1L<<(n-1)) < k){
+                sb.append("-1\n");
+                continue;
             }
-            edge = new int[n];
-        }
 
-        public void addEdge(int xi, int yi) {
-            Node nu = nodelist.get(xi);
-            Node nv = nodelist.get(yi);
+            if(k == 1){
+                for(int i=0;i<n;i++){
+                    sb.append(i+1).append(" ");
+                }
+                sb.append("\n");
+                continue;
+            }
 
-            nu.adjacentnode.add(nv);
-            nv.adjacentnode.add(nu);
-        }
+            long revBits = flipBits(k - 1);
+            revBits = revBits * 2 + 1;
 
-        public void setParent() {
-            Node source = nodelist.get(0);
+            String bin = Long.toBinaryString(revBits);
+            bin = pad(bin, Long.toBinaryString(k-1).length() + 1);
 
-            Stack<Node> stk = new Stack<>();
-            Stack<Integer> ptrstk = new Stack<>();
-            stk.push(source);
-            ptrstk.push(-1);
+            int l = bin.length();
+            int[] arr = new int[bin.length()];
+            for(int i=0;i<l;i++){
+                arr[i] = i;
+            }
 
-            while (!stk.isEmpty()) {
-                Node cur = stk.pop();
-                int ptr = ptrstk.pop();
-                if (ptr < cur.adjacentnode.size() - 1) {
-                    ptr++;
-                    stk.push(cur);
-                    ptrstk.push(ptr);
-
-                    Node next = cur.adjacentnode.get(ptr);
-
-                    if (cur.parent == next) {
-                        continue;
-                    }
-
-                    next.parent = cur;
-                    stk.push(next);
-                    ptrstk.push(-1);
+            int last = -1;
+            for(int i=0;i<l;i++){
+                if(bin.charAt(i) == '1'){
+                    reverse(arr, last + 1, i);
+                    last = i;
                 }
             }
-        }
-    }
 
-    public static void main(String[] args) throws IOException
-    {
-        Soumit sc = new Soumit();
-        sc.streamOutput("Input3.txt");
-
-        int t = 1;
-        //sc.println(t + "");
-
-        while(t-->0){
-            int n = 30000;
-
-            sc.println(n+"");
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 1000000000 + 1);
-                sc.print(v+" ");
+            for(int i=0;i<n-l;i++){
+                sb.append(i+1).append(" ");
             }
-            sc.println();
-
-            int q = 1000;
-            sc.println(q+"");
-            for(int i=0;i<q;i++){
-                int l = (int) (Math.random() * n + 1);
-                int r = (int) (Math.random() * n + 1);
-                if(l > r)
-                    l = (l + r) - (r = l);
-
-                int k = (int) (Math.random() * 1000000000 + 1);
-
-                sc.println(l+" "+r+" "+k);
+            for(int i=0;i<l;i++){
+                sb.append(arr[i] + (n - l) + 1).append(" ");
             }
+            sb.append("\n");
         }
+
+        System.out.println(sb);
 
         sc.close();
     }
@@ -186,17 +125,34 @@ public class CreateInput {
             pw = new PrintWriter(bw);
         }
 
-        public void println()
-        {
-            pw.println();
-        }
-
         public void println(String a) {
             pw.println(a);
         }
 
         public void print(String a) {
             pw.print(a);
+        }
+
+        public String readLine() throws IOException {
+            byte[] buf = new byte[3000064]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n')
+                    break;
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        String next() {
+            while (st == null || !st.hasMoreElements()) {
+                try {
+                    st = new StringTokenizer(readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return st.nextToken();
         }
 
         public void sort(int[] arr) {
@@ -217,28 +173,6 @@ public class CreateInput {
             Collections.sort(arlist);
             for (int i = 0; i < arr.length; i++)
                 arr[i] = arlist.get(i);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
-                    break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return st.nextToken();
         }
 
         public int[] nextIntArray(int n) throws IOException {
@@ -346,4 +280,5 @@ public class CreateInput {
             if (pw != null) pw.close();
         }
     }
+
 }
