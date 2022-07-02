@@ -1,137 +1,63 @@
+package Codeforces.RateUp_Contest_1;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class A {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Node implements Comparable<Node>{
+        int id;
+        int si;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        Node(int id, int si){
+            this.id = id;
+            this.si = si;
         }
+
+        public int compareTo(Node node){
+            return Integer.compare(this.si, node.si);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
+
+            PriorityQueue<Node> heap = new PriorityQueue<>(Collections.reverseOrder());
+            for(int i=0;i<n;i++)
+                if(arr[i] > 0)
+                    heap.add(new Node(i, arr[i]));
+
+            int tot_meetings = 0;
+            StringBuilder meetings = new StringBuilder();
+            while(heap.size() > 1){
+                Node max = heap.remove();
+                Node max2 = heap.remove();
+
+                tot_meetings++;
+                meetings.append(max.id+1).append(" ").append(max2.id+1).append("\n");
+
+                max.si--;
+                if(max.si > 0)
+                    heap.add(max);
+
+                max2.si--;
+                if(max2.si > 0)
+                    heap.add(max2);
+            }
+
+            sb.append(tot_meetings).append("\n");
+            sb.append(meetings);
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

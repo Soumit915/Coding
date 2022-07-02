@@ -4,48 +4,122 @@ import java.util.StringTokenizer;
 
 public class Test1 {
 
-    static long x ;
-
-    public static long gcd(long a, long b)
+    public static int sum(int a[],int k)
     {
-        if(a%b==0)
+        int sum=0;
+        while(k>=1)
         {
-            return b;
+            sum+=a[k];
+            k-=k&-k;
         }
-        return gcd(b, a%b);
+        return sum;
     }
-
-    static long query(long a, long b){
-        return gcd(x +a , x + b);
-    }
-
-    static List<Long> getDigits(long n){
-        List<Long> list = new ArrayList<>();
-
-        while(n > 0){
-            long v = n % 10;
-            list.add((v));
-            n /= 10;
+    public static void update(int a[],int d,int k,int n)
+    {
+        while(k<=n)
+        {
+            a[k]+=d;
+            k+=k&-k;
         }
-
-        return list;
+    }
+    public static long power(long a,long b,long m)
+    {
+        long res=1;
+        while(b>0)
+        {
+            if(b%2!=0)
+            {
+                res=(res%m*a%m)%m;
+            }
+            b=b/2;
+            a=(a%m*a%m)%m;
+        }
+        return res;
     }
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output1.txt");
+        sc.streamOutput("Output2.txt");
 
         int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
+        while (t-->0) {
 
-        while(t-->0){
-            int n = sc.nextInt();
-            int[] arr = sc.nextIntArray(n);
+            int n=sc.nextInt();
+            int m=sc.nextInt();
+            int[] a =new int[n];
+            int[] b =new int[m];
+            for(int i=0;i<n;i++)
+            {
+                a[i]=sc.nextInt();
+            }
+            for(int i=0;i<m;i++)
+            {
+                b[i]=sc.nextInt();
+            }
+            long mod=998244353;
+            long[] fac =new long[n+1];
+            fac[0]=1;
+            for(int i=1;i<=n;i++)
+            {
+                fac[i]=(fac[i-1]*i)%mod;
+            }
+            int n1=200000;
+            int[] freq =new int[n1+1];
+            for(int i=0;i<n;i++)
+            {
+                freq[a[i]]++;
+            }
+            int[] arr =new int[n1+1];
+            for(int i=1;i<freq.length;i++)
+            {
+                int d=freq[i];
+                update(arr,d,i,n1);
+            }
+            long v=fac[n];
+            long p=1;
+            for(int i=1;i<freq.length;i++)
+            {
+                int fr=freq[i];
+                p=(p*fac[fr])%mod;
+            }
+            v=(v*power(p,mod-2,mod))%mod;
+            long x=n;
+            long sum=0;
+            int f=0;
+            for(int i=0;i<Math.min(n,m);i++)
+            {
+                int val=b[i];
+                long s=sum(arr,val-1);
+                long v1=(v*s)%mod;
+                long num = v1;
+                long deno = power(x,mod-2,mod);
 
+                v1=(v1*power(x,mod-2,mod))%mod;
+                sum=(sum+v1)%mod;
 
+                if(freq[val]==0)
+                {
+                    f=1;
+                    break;
+                }
+                update(arr,-1,val,n1);
+                long fr=freq[val];
+                v=(v*fr)%mod;
+                v=(v*power(x,mod-2,mod))%mod;
+                freq[val]--;
+                x--;
+            }
+
+            if(f==0)
+            {
+                if(n<m)
+                {
+                    sum=(sum+1)%mod;
+                }
+            }
+            sc.println(sum+"");
         }
 
-        System.out.println(sb);
         sc.close();
     }
 

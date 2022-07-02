@@ -1,277 +1,131 @@
+
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
 public class KratiProg {
 
-    static interface OnlineAccount{
-        int basePrice = 120;
-        int regularMoviePrice = 45;
-        int exclusiveMoviePrice = 80;
-    }
+    static class Node{
+        int id;
 
-    static class Account implements OnlineAccount, Comparable<Account>{
-        int noOfRegularMovies, noOfExclusiveMovies;
-        String ownerName;
+        int dist;
 
-        //1
-        Account(String ownerName, int noOfRegularMovies, int noOfExclusiveMovies){
-            this.ownerName = ownerName;
-            this.noOfRegularMovies = noOfRegularMovies;
-            this.noOfExclusiveMovies = noOfExclusiveMovies;
-        }
+        boolean isVisited;
 
-        //2
-        public int monthlyCost(){
-            return basePrice + regularMoviePrice * noOfRegularMovies
-                    + exclusiveMoviePrice * noOfExclusiveMovies;
-        }
+        boolean isFristBencher;
 
-        //3
-        public int compareTo(Account a){
-            return Integer.compare(this.monthlyCost(), a.monthlyCost());
-        }
+        List<Node> adlist = new ArrayList<>();
 
-        //4
-        public String toString(){
-            return "Owner is ["+this.ownerName+"] and montly cost is ["+this.monthlyCost()+"] USD";
+        Node(int id){
+            this.id = id;
+            this.isVisited = false;
+            this.isFristBencher = false;
+            this.dist = 0;
         }
     }
 
-    static class Shape{
-        String type, color;
+    static class Tree{
+        List<Node> nodeList;
 
-        Shape(String type, String color){
-            this.type = type;
-            this.color = color;
+        Tree(int n){
+            nodeList = new ArrayList<>();
+
+            for(int i=0;i<n;i++){
+                nodeList.add(new Node(i));
+            }
         }
 
-        public String getType(){
-            return this.type;
+        public void addEdge(int u, int v){
+            Node nu = nodeList.get(u);
+            Node nv = nodeList.get(v);
+
+            nu.adlist.add(nv);
+            nv.adlist.add(nu);
         }
 
-        public String getColor(){
-            return this.color;
+        public int getDiameter(){
+
+            int max = 0;
+
+            for(Node node: nodeList){
+                if(!node.isVisited && !node.isFristBencher){
+                    max = Math.max(max, dfs(node));
+                }
+            }
+
+            return max;
         }
 
-        public void setType(String type){
-            this.type = type;
+        public int dfs(Node source){
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(source);
+            ptrstk.push(-1);
+            source.isVisited = true;
+
+            int max = 0;
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+
+                    if(!next.isVisited && !next.isFristBencher){
+                        next.isVisited = true;
+                        stk.push(next);
+                        ptrstk.push(-1);
+                    }
+                }
+                else{
+                    int first = 0, second = 0;
+
+                    for(Node node: cur.adlist){
+                        if(node.dist >= first){
+                            second = first;
+                            first = node.dist;
+                        }
+                        else if(node.dist >= second){
+                            second = node.dist;
+                        }
+                    }
+
+                    cur.dist = first + 1;
+                    max = Math.max(max, first + second + 1);
+                }
+            }
+
+            return max;
         }
-
-        public void setColor(String color){
-            this.color = color;
-        }
-
-        public Shape cloneShape(){
-            return new Shape(this.type, this.color);
-        }
-    }
-
-    static String simpleCipher(String encrypted, int k){
-        StringBuilder sb = new StringBuilder();
-        k%=26;
-
-        for(int i=0;i<encrypted.length();i++){
-            int ch = encrypted.charAt(i) - 'A';
-            ch = (ch - k + 26)%26;
-
-            char newch = (char) (ch + 'A');
-            sb.append(newch);
-        }
-
-        return sb.toString();
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Scanner sc = new Scanner(new File("Input.txt"));
 
-        String s = sc.next();
+        int n = sc.nextInt();
+
+        Tree tr = new Tree(n);
+
+        for(int i=0;i<n-1;i++){
+            int u = sc.nextInt() - 1;
+            int v = sc.nextInt() - 1;
+
+            tr.addEdge(u, v);
+        }
+
         int k = sc.nextInt();
-
-        System.out.println(simpleCipher(s, k));
-
-        sc.close();
-    }
-
-    static class Soumit {
-        final private int BUFFER_SIZE = 1 << 18;
-        final private DataInputStream din;
-        final private byte[] buffer;
-        private PrintWriter pw;
-        private int bufferPointer, bytesRead;
-        StringTokenizer st;
-
-        public Soumit() {
-            din = new DataInputStream(System.in);
-            buffer = new byte[BUFFER_SIZE];
-            bufferPointer = bytesRead = 0;
+        for(int i=0;i<k;i++){
+            int firstBencher = sc.nextInt() - 1;
+            tr.nodeList.get(firstBencher).isFristBencher = true;
         }
 
-        public Soumit(String file_name) throws IOException {
-            din = new DataInputStream(new FileInputStream(file_name));
-            buffer = new byte[BUFFER_SIZE];
-            bufferPointer = bytesRead = 0;
-        }
+        int diameter = tr.getDiameter();
 
-        public void streamOutput(String file) throws IOException {
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
-        }
-
-        public void println(String a) {
-            pw.println(a);
-        }
-
-        public void print(String a) {
-            pw.print(a);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[3000064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
-                    break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return st.nextToken();
-        }
-
-        public void sort(int[] arr) {
-            ArrayList<Integer> arlist = new ArrayList<>();
-            for (int i : arr)
-                arlist.add(i);
-
-            Collections.sort(arlist);
-            for (int i = 0; i < arr.length; i++)
-                arr[i] = arlist.get(i);
-        }
-
-        public void sort(long[] arr) {
-            ArrayList<Long> arlist = new ArrayList<>();
-            for (long i : arr)
-                arlist.add(i);
-
-            Collections.sort(arlist);
-            for (int i = 0; i < arr.length; i++)
-                arr[i] = arlist.get(i);
-        }
-
-        public int[] nextIntArray(int n) throws IOException {
-            int[] arr = new int[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextInt();
-            }
-
-            return arr;
-        }
-
-        public long[] nextLongArray(int n) throws IOException {
-            long[] arr = new long[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextLong();
-            }
-
-            return arr;
-        }
-
-        public double[] nextDoubleArray(int n) throws IOException {
-            double[] arr = new double[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextDouble();
-            }
-
-            return arr;
-        }
-
-        public int nextInt() throws IOException {
-            int ret = 0;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-            do {
-                ret = ret * 10 + c - '0';
-            } while ((c = read()) >= '0' && c <= '9');
-
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        public long nextLong() throws IOException {
-            long ret = 0;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-            do {
-                ret = ret * 10 + c - '0';
-            }
-            while ((c = read()) >= '0' && c <= '9');
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        public double nextDouble() throws IOException {
-            double ret = 0, div = 1;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-
-            do {
-                ret = ret * 10 + c - '0';
-            }
-            while ((c = read()) >= '0' && c <= '9');
-
-            if (c == '.') {
-                while ((c = read()) >= '0' && c <= '9') {
-                    ret += (c - '0') / (div *= 10);
-                }
-            }
-
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        private void fillBuffer() throws IOException {
-            bytesRead = din.read(buffer, bufferPointer = 0, BUFFER_SIZE);
-            if (bytesRead == -1)
-                buffer[0] = -1;
-        }
-
-        private byte read() throws IOException {
-            if (bufferPointer == bytesRead)
-                fillBuffer();
-            return buffer[bufferPointer++];
-        }
-
-        public void close() throws IOException {
-            /*if (din == null)
-                return;*/
-            if (din != null) din.close();
-            if (pw != null) pw.close();
-        }
+        System.out.println(diameter-1);
     }
 }

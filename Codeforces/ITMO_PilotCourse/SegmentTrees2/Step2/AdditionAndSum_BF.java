@@ -1,137 +1,56 @@
+package Codeforces.ITMO_PilotCourse.SegmentTrees2.Step2;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class AdditionAndSum_BF {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static void update(long[] segTree, int l, int r, int v){
+        for(int i=l;i<=r;i++){
+            segTree[i] += v;
+        }
+    }
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
+    static long query(long[] segTree, int l, int r){
+        long ans = 0;
+        for(int i=l;i<=r;i++)
+            ans += segTree[i];
 
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
+        return ans;
+    }
 
-    public static void main(String[] args) throws java.lang.Exception {
+    public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
         sc.streamOutput("Output2.txt");
 
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
+        StringBuilder sb = new StringBuilder();
+        int n = sc.nextInt();
+        int q = sc.nextInt();
 
-            solve(sc);
+        long[] segTree = new long[n];
+        for(int i=0;i<n;i++){
+            segTree[i] = 0;
         }
+
+        while(q-->0){
+            int type = sc.nextInt();
+
+            int l = sc.nextInt();
+            int r = sc.nextInt() - 1;
+            if(type == 1){
+                int v = sc.nextInt();
+                update(segTree, l, r, v);
+            }
+            else{
+
+                long ans = query(segTree, l, r);
+                sb.append(ans).append("\n");
+            }
+        }
+
+        sc.println(sb.toString());
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

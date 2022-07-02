@@ -1,137 +1,113 @@
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class NearestBeautifulNumber_Easy {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static String recurse(String sn, int index, String cur, List<Character> chList, boolean flag){
+        if(index >= sn.length())
+            return cur;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        if(flag){
+            return recurse(sn, index + 1, cur + chList.get(0), chList, true);
         }
+
+        for(char ch: chList){
+            char sni = sn.charAt(index);
+
+            String s;
+            if(ch > sni){
+                s = recurse(sn, index + 1, cur + ch, chList, true);
+            }
+            else if(ch == sni){
+                s = recurse(sn, index + 1, cur + ch, chList, false);
+            }
+            else
+                continue;
+
+            if(!s.equals(""))
+                return s;
+        }
+
+        return "";
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int k = sc.nextInt();
+
+            if(n == 1000000000){
+                if(k == 1){
+                    sb.append("1111111111\n");
+                }
+                else{
+                    sb.append("1000000000\n");
+                }
+                continue;
+            }
+
+            String sn = Integer.toString(n);
+            char ch = sn.charAt(0);
+            int l = sn.length();
+
+            int x1 = Integer.parseInt(String.valueOf(ch).repeat(l));
+            int x2 = x1;
+            if(ch != '9')
+                x2 = Integer.parseInt(String.valueOf(((char) (ch + 1))).repeat(l));
+
+            if(k == 1){
+                if(x1 >= n){
+                    sb.append(x1).append("\n");
+                }
+                else{
+                    sb.append(x2).append("\n");
+                }
+            }
+            else{
+
+                int x;
+
+                if(x1 >= n){
+                    x = x1;
+                }
+                else{
+                    x = x2;
+                }
+
+                for(int i=0;i<=9;i++){
+
+                    char ch1 = (char) ('0' + i);
+
+                    for(int j=i+1;j<=9;j++){
+
+                        char ch2 = (char) ('0' + j);
+
+                        List<Character> chList = new ArrayList<>();
+                        chList.add(ch1);
+                        chList.add(ch2);
+                        String ans = recurse(sn, 0, "", chList, false);
+
+                        if(ans.equals(""))
+                            continue;
+
+                        int cur_x = Integer.parseInt(ans);
+                        x = Math.min(x, cur_x);
+                    }
+                }
+
+                sb.append(x).append("\n");
+            }
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

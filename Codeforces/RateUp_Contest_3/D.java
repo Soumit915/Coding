@@ -1,137 +1,122 @@
+package Codeforces.RateUp_Contest_3;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class D {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Node{
+        int id;
+        int childNodes_count;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
+        Node parent;
+        List<Node> child = new ArrayList<>();
+        List<Node> adlist = new ArrayList<>();
 
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        Node(int id){
+            this.id = id;
+            this.childNodes_count = 0;
         }
+    }
+
+    static class Tree{
+        List<Node> nodeList = new ArrayList<>();
+
+        Tree(int n){
+            for(int i=0;i<n;i++){
+                nodeList.add(new Node(i));
+            }
+        }
+
+        public void addEdge(int u, int v){
+            Node nu = nodeList.get(u);
+            Node nv = nodeList.get(v);
+
+            nu.adlist.add(nv);
+            nv.adlist.add(nu);
+        }
+
+        public void countChildNodes(){
+            int n = nodeList.size();
+            boolean[] isVisited = new boolean[n];
+
+            Node source = nodeList.get(0);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(source);
+            ptrstk.push(-1);
+            isVisited[source.id] = true;
+            source.parent = null;
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+                    if(!isVisited[next.id]){
+                        next.parent = cur;
+                        cur.child.add(next);
+                        stk.push(next);
+                        ptrstk.push(-1);
+                        isVisited[next.id] = true;
+                    }
+                }
+                else{
+                    cur.childNodes_count = 1;
+                    for(Node node: cur.child){
+                        cur.childNodes_count += node.childNodes_count;
+                    }
+                }
+            }
+        }
+
+        public int getMaxSavedNodes(Node node){
+            if(node == null)
+                return 0;
+
+            if(node.child.size() == 0){
+                return 0;
+            }
+            else if(node.child.size() == 1){
+                return node.child.get(0).childNodes_count - 1;
+            }
+            else{
+                return Math.max(node.child.get(0).childNodes_count - 1 + getMaxSavedNodes(node.child.get(1)),
+                        node.child.get(1).childNodes_count - 1 + getMaxSavedNodes(node.child.get(0)));
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit("Input.txt");
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+
+            Tree tr = new Tree(n);
+
+            for(int i=0;i<n-1;i++){
+                tr.addEdge(sc.nextInt() - 1, sc.nextInt() - 1);
+            }
+
+            tr.countChildNodes();
+            int ans = tr.getMaxSavedNodes(tr.nodeList.get(0));
+
+            sb.append(ans).append("\n");
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

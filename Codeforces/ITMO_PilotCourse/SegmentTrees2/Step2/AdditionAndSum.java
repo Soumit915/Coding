@@ -16,8 +16,102 @@ public class AdditionAndSum {
         n |= n>>4;
         n |= n>>8;
         n |= n>>16;
-        n |= n>>31;
+        n |= n>>28;
         return n + 1;
+    }
+
+    static void update(Node[] segTree, int si, int start, int end, long v, int l, int r){
+        //no-overlap
+        if(r < start || l > end){
+            return;
+        }
+
+        //total-overlap
+        if(l >= start && r <= end){
+            if(l == r){
+                segTree[si].val += segTree[si].lazy_val;
+                segTree[si].val += v;
+                segTree[si].lazy_val = 0;
+                return;
+            }
+
+            segTree[si].lazy_val += v;
+
+            segTree[2*si + 1].lazy_val += segTree[si].lazy_val;
+            segTree[2*si + 2].lazy_val += segTree[si].lazy_val;
+            segTree[si].lazy_val = 0;
+
+            int mid = (l + r) / 2;
+            segTree[si].val = segTree[2*si + 1].val;
+            segTree[si].val += segTree[2*si + 1].lazy_val * (mid - l + 1);
+
+            segTree[si].val += segTree[2*si + 2].val;
+            segTree[si].val += segTree[2*si + 2].lazy_val * (r - mid);
+
+            return;
+        }
+
+        //partial overlap
+
+        int mid = (l + r) / 2;
+
+        segTree[2*si + 1].lazy_val += segTree[si].lazy_val;
+        segTree[2*si + 2].lazy_val += segTree[si].lazy_val;
+        segTree[si].lazy_val = 0;
+
+        update(segTree, 2*si + 1, start, end, v, l, mid);
+        update(segTree, 2*si + 2, start, end, v, mid + 1, r);
+
+        segTree[si].val = segTree[2*si + 1].val;
+        segTree[si].val += segTree[2*si + 1].lazy_val * (mid - l + 1);
+        segTree[si].val += segTree[2*si + 2].val;
+        segTree[si].val += segTree[2*si + 2].lazy_val * (r - mid);
+    }
+
+    static long query(Node[] segTree, int si, int start, int end, int l, int r){
+        //no-overlap
+        if(r < start || l > end){
+            return 0;
+        }
+
+        //total overlap
+        if(l >= start && r <= end){
+            if(l == r){
+                segTree[si].val += segTree[si].lazy_val;
+                segTree[si].lazy_val = 0;
+                return segTree[si].val;
+            }
+
+            segTree[2*si + 1].lazy_val += segTree[si].lazy_val;
+            segTree[2*si + 2].lazy_val += segTree[si].lazy_val;
+            segTree[si].lazy_val = 0;
+
+            int mid = (l + r) / 2;
+            segTree[si].val = segTree[2*si + 1].val;
+            segTree[si].val += segTree[2*si + 1].lazy_val * (mid - l + 1);
+
+            segTree[si].val += segTree[2*si + 2].val;
+            segTree[si].val += segTree[2*si + 2].lazy_val * (r - mid);
+
+            return segTree[si].val;
+        }
+
+        //partial overlap
+
+        int mid = (l + r) / 2;
+
+        segTree[2*si + 1].lazy_val += segTree[si].lazy_val;
+        segTree[2*si + 2].lazy_val += segTree[si].lazy_val;
+        segTree[si].lazy_val = 0;
+
+        segTree[si].val = segTree[2*si + 1].val;
+        segTree[si].val += segTree[2*si + 1].lazy_val * (mid - l + 1);
+
+        segTree[si].val += segTree[2*si + 2].val;
+        segTree[si].val += segTree[2*si + 2].lazy_val * (r - mid);
+
+        return query(segTree, 2*si + 1, start, end, l, mid) +
+                query(segTree, 2*si + 2, start, end, mid + 1, r);
     }
 
     public static void main(String[] args) throws IOException {
@@ -33,22 +127,24 @@ public class AdditionAndSum {
             segTree[i] = new Node();
         }
 
-
         while(q-->0){
             int type = sc.nextInt();
+            int l = sc.nextInt();
+            int r = sc.nextInt() - 1;
 
             if(type == 1){
-                int l = sc.nextInt();
-                int r = sc.nextInt() - 1;
                 int v = sc.nextInt();
+
+                update(segTree, 0, l, r, v, 0, n-1);
             }
             else{
-                int l = sc.nextInt();
-                int r = sc.nextInt() - 1;
+
+                long ans = query(segTree, 0, l, r, 0, n-1);
+                sb.append(ans).append("\n");
             }
         }
 
-        System.out.println(sb.toString());
+        System.out.println(sb);
 
         sc.close();
     }

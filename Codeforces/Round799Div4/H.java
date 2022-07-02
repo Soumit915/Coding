@@ -1,137 +1,138 @@
+package Codeforces.Round799Div4;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class H {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Segment implements Comparable<Segment>{
+        int a, l, r;
+        int len;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        Segment(int a, int l, int r, int count){
+            this.a = a;
+            this.l = l;
+            this.r = r;
+            this.len = count;
         }
 
-        sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
+        public int compareTo(Segment s){
+            return Integer.compare(this.len, s.len);
         }
     }
 
-    private static void solve(Soumit sc) throws IOException {
+    static class Node{
+        int start, end;
+        int val;
 
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
+        Node(int start, int end, int val){
+            this.start = start;
+            this.end = end;
+            this.val = val;
         }
 
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
+        Node(int end, int val){
+            this.start = end - Math.abs(val) + 1;
+            this.end = end;
+            this.val = val;
+        }
+    }
+
+    static List<Node> getAdjacentList(List<Integer> arlist){
+        List<Node> adjacent = new ArrayList<>();
+
+        int count = 1;
+        for(int i=1;i<arlist.size();i++){
+            if(arlist.get(i) == arlist.get(i-1) + 1)
+                count++;
+            else {
+                adjacent.add(new Node(arlist.get(i-1), count));
+                adjacent.add(new Node(arlist.get(i) - 1,
+                        (arlist.get(i) - arlist.get(i-1) - 1) * -1));
+                count = 1;
+            }
+        }
+        adjacent.add(new Node(arlist.get(arlist.size() - 1), count));
+
+        return adjacent;
+    }
+
+    static Segment getBestSegment(List<Node> list, int val){
+        List<Node> adMaxList = new ArrayList<>();
+        adMaxList.add(list.get(0));
+
+        for(int i=1;i<list.size();i++){
+            adMaxList.add(new Node(list.get(i).start, list.get(i).end,
+                    Math.max(0, adMaxList.get(i-1).val + list.get(i).val)));
         }
 
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
+        int max = 0;
+        int maxIndex = -1;
+        for(int i=0;i<list.size();i++){
+            max = Math.max(max, adMaxList.get(i).val);
+            if(max == adMaxList.get(i).val){
+                maxIndex = i;
+            }
         }
 
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
+        int start = 0;
+        int end = -1;
+        int cost = 0;
 
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
+        for(int i=maxIndex;i>=0;i--){
+            if(cost + list.get(i).val == max){
+                start = list.get(i).start;
+                end = list.get(maxIndex).end;
                 break;
             }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
+            else{
+                cost += list.get(i).val;
             }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
         }
-        return res;
+
+        return new Segment(val, start, end, max);
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int[] arr = sc.nextIntArray(n);
+
+            Map<Integer, List<Integer>> hash = new HashMap<>();
+            for(int i=0;i<n;i++){
+                List<Integer> list = hash.getOrDefault(arr[i], new ArrayList<>());
+                list.add(i);
+
+                hash.put(arr[i], list);
+            }
+
+            Map<Integer, List<Node>> adjacentHash = new HashMap<>();
+            for(int i: hash.keySet()){
+                List<Integer> list = hash.get(i);
+                adjacentHash.put(i, getAdjacentList(list));
+            }
+
+            List<Segment> gamblingList = new ArrayList<>();
+            for(int i: adjacentHash.keySet()){
+                List<Node> list = adjacentHash.get(i);
+                Segment segment = getBestSegment(list, i);
+                gamblingList.add(segment);
+            }
+
+            Collections.sort(gamblingList);
+
+            Segment best = gamblingList.get(gamblingList.size() - 1);
+
+            sb.append(best.a).append(" ").append(best.l+1).append(" ").append(best.r+1).append("\n");
+        }
+
+        System.out.println(sb);
+
+        sc.close();
     }
 
     static class Soumit {

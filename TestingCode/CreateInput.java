@@ -124,11 +124,30 @@ public class CreateInput {
         }
     }
 
+    static class Range{
+        int l, r;
+        Range(int l, int r){
+            this.l = l;
+            this.r = r;
+        }
+    }
+
+    static Range getLRRange(int n){
+        int l = (int) (Math.random() * n);
+        int r = (int) (Math.random() * n + 1);
+        r--;
+
+        if(l > r)
+            return new Range(r, l);
+        else return new Range(l, r);
+    }
+
     public static void main(String[] args) throws IOException
     {
         Soumit sc = new Soumit();
-        sc.streamOutput("Input3.txt");
+        sc.streamOutput("Input.txt");
 
+<<<<<<< Updated upstream
         int t = 1;
         //sc.println(t + "");
 
@@ -139,10 +158,23 @@ public class CreateInput {
 
             for(int i=0;i<n;i++){
                 int v = (int) (Math.random() * 1000000000 + 1);
+=======
+        int t = 10;
+        sc.println(t+"");
+        while(t-->0){
+            int n = 10000;
+            int m = 10000;
+
+            sc.println(n+" "+m);
+
+            for(int i=0;i<n;i++){
+                int v = (int) (Math.random() * 200000 + 1);
+>>>>>>> Stashed changes
                 sc.print(v+" ");
             }
             sc.println();
 
+<<<<<<< Updated upstream
             int q = 1000;
             sc.println(q+"");
             for(int i=0;i<q;i++){
@@ -154,7 +186,13 @@ public class CreateInput {
                 int k = (int) (Math.random() * 1000000000 + 1);
 
                 sc.println(l+" "+r+" "+k);
+=======
+            for(int i=0;i<m;i++){
+                int v = (int) (Math.random() * 200000 + 1);
+                sc.print(v+" ");
+>>>>>>> Stashed changes
             }
+            sc.println();
         }
 
         sc.close();

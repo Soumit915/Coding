@@ -1,139 +1,119 @@
-
+package Leetcode;
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class QueueReconstructionByHeight {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static int getNextPowerOf2(int n){
+        n |= (n >> 1);
+        n |= (n >> 2);
+        n |= (n >> 4);
+        n |= (n >> 8);
+        n |= (n >> 16);
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
+        return n + 1;
+    }
 
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
+    static class People implements Comparable<People>{
+        int id;
+        int hi;
+        int ki;
 
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        People(int id, int hi, int ki){
+            this.id = id;
+            this.hi = hi;
+            this.ki = ki;
         }
 
+        public int compareTo(People people){
+            int c = Integer.compare(this.hi, people.hi);
+            if(c == 0)
+                return Integer.compare(this.ki, people.ki) * -1;
+            else return c;
+        }
+    }
+
+    static void build(int[] segTree, int si, int l, int r){
+        if(l == r){
+            segTree[si] = 1;
+            return;
+        }
+
+        int mid = (l + r) / 2;
+        build(segTree, 2*si + 1, l, mid);
+        build(segTree, 2*si + 2, mid + 1, r);
+
+        segTree[si] = segTree[2*si + 1] + segTree[2*si + 2];
+    }
+
+    static void update(int[] segTree, int si, int index, int l, int r){
+        if(l == r){
+            segTree[si] = 0;
+            return;
+        }
+
+        int mid = (l + r) / 2;
+        if(index <= mid){
+            update(segTree, 2*si + 1, index, l, mid);
+        }
+        else{
+            update(segTree, 2*si + 2, index, mid + 1, r);
+        }
+        segTree[si] = segTree[2*si + 1] + segTree[2*si + 2];
+    }
+
+    static int query(int[] segTree, int si, int k, int l, int r){
+        if(l == r){
+            return l;
+        }
+
+        int mid = (l + r) / 2;
+        if(segTree[2*si + 1] > k){
+            return query(segTree, 2*si + 1, k, l, mid);
+        }
+        else{
+            return query(segTree, 2*si + 2, k - segTree[2*si + 1], mid+1, r);
+        }
+    }
+
+    public static int[][] reconstructQueue(int[][] people) {
+        int n = people.length;
+
+        People[] pi = new People[n];
+        for(int i=0;i<n;i++){
+            pi[i] = new People(i, people[i][0], people[i][1]);
+        }
+        Arrays.sort(pi);
+
+        int sn = 2 * getNextPowerOf2(n) - 1;
+        int[] segTree = new int[sn];
+        build(segTree, 0, 0, n-1);
+
+        int[][] ans = new int[n][2];
+        for(int i=0;i<n;i++){
+            int index = query(segTree, 0, pi[i].ki, 0, n-1);
+            ans[index][0] = pi[i].hi;
+            ans[index][1] = pi[i].ki;
+
+            update(segTree, 0, index, 0, n-1);
+        }
+
+        return ans;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+        
+        int[][] arr = {{6,0}, {5,0}, {4,0}, {3,2}, {2,2}, {1,4}};
+
+        int[][] ans = reconstructQueue(arr);
+
+        for(int[] i: ans){
+            System.out.println(Arrays.toString(i));
+        }
+        
         sc.close();
     }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
-    }
-
     static class Soumit {
         final private int BUFFER_SIZE = 1 << 18;
         final private DataInputStream din;

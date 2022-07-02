@@ -1,137 +1,132 @@
+package Codeforces.Round800Div2;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class D {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Node{
+        int id;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
+        long li;
+        long ri;
 
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
+        boolean isVisited;
+        int count;
+        long maxVal;
 
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
+        Node parent;
 
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
+        List<Node> adlist = new ArrayList<>();
 
-            solve(sc);
+        Node(int id){
+            this.id = id;
         }
+    }
+
+    static class Tree{
+        List<Node> nodelist;
+
+        Tree(int n){
+            nodelist = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+
+        public void addEdge(int child, int parent){
+            Node p = nodelist.get(parent);
+            Node c = nodelist.get(child);
+
+            p.adlist.add(c);
+            c.parent = p;
+        }
+
+        public void dfs(){
+            Node source = nodelist.get(0);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(source);
+            ptrstk.push(-1);
+            source.isVisited = true;
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+
+                    if(!next.isVisited){
+                        next.isVisited = true;
+                        stk.push(next);
+                        ptrstk.push(-1);
+                    }
+                }
+                else{
+                    if(cur.adlist.size() == 0){
+                        cur.count = 1;
+                        cur.maxVal = cur.ri;
+                        continue;
+                    }
+
+                    long cost = 0;
+                    for(Node node: cur.adlist){
+                        cost += node.maxVal;
+                    }
+
+                    if(cost < cur.li){
+                        cur.count++;
+                        cur.maxVal = cur.ri;
+                    }
+                    else{
+                        cur.count = 0;
+                        cur.maxVal = Math.min(cost, cur.ri);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+
+            Tree tr = new Tree(n);
+
+            for(int i=1;i<n;i++){
+                int pi = sc.nextInt()-1;
+                tr.addEdge(i, pi);
+            }
+
+            for(int i=0;i<n;i++){
+                tr.nodelist.get(i).li = sc.nextInt();
+                tr.nodelist.get(i).ri = sc.nextInt();
+            }
+
+            tr.dfs();
+
+            int count = 0;
+            for(Node node: tr.nodelist){
+                count += node.count;
+            }
+
+            sb.append(count).append("\n");
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

@@ -1,137 +1,132 @@
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class NearestBeautifulNumber_Hard {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
-
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+    static int getSmallest(int[] arr){
+        for(int i=0;i<arr.length;i++){
+            if(arr[i] > 0)
+                return i;
         }
+
+        return -1;
+    }
+
+    static String recurse(String sn, int index, String cur, int[] count, int c, int k, boolean flag){
+        if(index >= sn.length())
+            return cur;
+
+        if(flag){
+            if(c == k){
+                int smallest = getSmallest(count);
+                char ch = (char) (smallest + '0');
+                return recurse(sn, index + 1, cur + ch, count, c, k, true);
+            }
+            else{
+                return recurse(sn, index + 1, cur + '0', count, c, k, true);
+            }
+        }
+
+        char sn_ch = sn.charAt(index);
+
+        for(char ch = '0';ch <= '9';ch++){
+
+            String s;
+
+            if(sn_ch == ch){
+                if(count[ch - '0'] > 0){
+                    count[ch - '0']++;
+                    s = recurse(sn, index + 1, cur + ch, count, c, k, false);
+
+                    if(!s.equals(""))
+                        return s;
+
+                    count[ch - '0']--;
+                }
+                else{
+                    if(c < k){
+                        count[ch - '0']++;
+                        c++;
+                        s = recurse(sn, index + 1, cur + ch, count, c, k, false);
+
+                        if(!s.equals(""))
+                            return s;
+
+                        count[ch - '0']--;
+                        c--;
+                    }
+                }
+            }
+            else if(sn_ch < ch){
+                if(count[ch - '0'] > 0){
+                    count[ch - '0']++;
+                    s = recurse(sn, index + 1, cur + ch, count, c, k, true);
+
+                    if(!s.equals(""))
+                        return s;
+
+                    count[ch - '0']--;
+                }
+                else{
+                    if(c < k){
+                        count[ch - '0']++;
+                        c++;
+                        s = recurse(sn, index + 1, cur + ch, count, c, k, true);
+
+                        if(!s.equals(""))
+                            return s;
+
+                        count[ch - '0']--;
+                        c--;
+                    }
+                }
+            }
+        }
+
+        return "";
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int t = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (t-->0){
+            int n = sc.nextInt();
+            int k = sc.nextInt();
+
+            if(n == 1000000000){
+                if(k == 1){
+                    sb.append("1111111111\n");
+                }
+                else{
+                    sb.append("1000000000\n");
+                }
+                continue;
+            }
+
+            String sn = Integer.toString(n);
+
+            int x = Integer.MAX_VALUE;
+            for(int i=1;i<=k;i++){
+                int[] count = new int[10];
+                String ans = recurse(sn, 0, "", count, 0, k, false);
+
+                if(ans.equals(""))
+                    continue;
+
+                int cur_x = Integer.parseInt(ans);
+                x = Math.min(x, cur_x);
+            }
+
+            sb.append(x).append("\n");
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

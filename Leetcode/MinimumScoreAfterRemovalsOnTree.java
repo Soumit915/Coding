@@ -1,137 +1,186 @@
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class MinimumScoreAfterRemovalsOnTree {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Node{
+        int id;
+        int val;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
+        boolean isVisited;
 
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
+        List<Edge> adlist = new ArrayList<>();
 
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        Node(int id, int val){
+            this.id = id;
+            this.val = val;
         }
+    }
+
+    static class Edge{
+        Node u, v;
+
+        int xor;
+
+        Set<Edge> componentEdges = new HashSet<>();
+
+        Edge(Node u, Node v){
+            this.u = u;
+            this.v = v;
+        }
+    }
+
+    static class Tree{
+        List<Node> nodeList;
+        List<Edge> edgelist;
+
+        Tree(int n, int[] arr){
+            this.nodeList = new ArrayList<>(n);
+            this.edgelist = new ArrayList<>(n-1);
+            for(int i=0;i<n;i++){
+                this.nodeList.add(new Node(i, arr[i]));
+            }
+        }
+
+        public void addEdge(int u, int v){
+            Node nu = nodeList.get(u);
+            Node nv = nodeList.get(v);
+
+            Edge e = new Edge(nu, nv);
+            nu.adlist.add(e);
+            nv.adlist.add(e);
+
+            this.edgelist.add(e);
+        }
+
+        public void computeXors(){
+            Node source = nodeList.get(0);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+            stk.push(source);
+            ptrstk.push(-1);
+            source.isVisited = true;
+
+            while(!stk.isEmpty())
+            {
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr<cur.adlist.size()-1)
+                {
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Edge e = cur.adlist.get(ptr);
+
+                    Node next;
+                    if(e.u == cur){
+                        next = e.v;
+                    }
+                    else{
+                        next = e.u;
+                    }
+
+                    if(!next.isVisited){
+                        stk.push(next);
+                        ptrstk.push(-1);
+                        next.isVisited = true;
+                    }
+                }
+                else{
+                    if(stk.isEmpty())
+                        continue;
+
+                    int xor = cur.val;
+                    Set<Edge> edgeset = new HashSet<>();
+                    for(Edge e: cur.adlist){
+                        if(e.u == stk.peek() || e.v == stk.peek())
+                            continue;
+                        xor ^= e.xor;
+                        edgeset.addAll(e.componentEdges);
+                        edgeset.add(e);
+                    }
+
+                    for(Edge e: cur.adlist){
+                        if(e.u == stk.peek() || e.v == stk.peek()){
+                            e.xor = xor;
+                            e.componentEdges = edgeset;
+                        }
+                    }
+                }
+            }
+        }
+
+        public int getMinScore(){
+
+            int total_xor = 0;
+            for(Node node: nodeList)
+                total_xor ^= node.val;
+
+            int min = Integer.MAX_VALUE;
+
+            for(int i=0;i<edgelist.size();i++){
+
+                Edge removed = edgelist.get(i);
+                int component1_Score = removed.xor;
+                int component2_Score = total_xor ^ component1_Score;
+
+                for(int j=i + 1;j<edgelist.size();j++){
+                    Edge toBeRemoved = edgelist.get(j);
+
+                    int cur1 = component1_Score;
+                    int cur2 = component2_Score;
+                    int cur3;
+
+                    if(!removed.componentEdges.contains(toBeRemoved)){
+                        if(toBeRemoved.componentEdges.contains(removed)){
+                            cur3 = toBeRemoved.xor ^ cur1;
+                        }
+                        else{
+                            cur3 = toBeRemoved.xor;
+                        }
+                        cur2 = cur2 ^ cur3;
+                    }
+                    else{
+                        cur3 = toBeRemoved.xor;
+                        cur1 = cur1 ^ cur3;
+                    }
+
+                    min = Math.min(min, Math.max(Math.max(cur1, cur2), cur3)
+                            - Math.min(cur1, Math.min(cur2, cur3)));
+                }
+            }
+
+            return min;
+        }
+    }
+
+    public static int minimumScore(int[] nums, int[][] edges) {
+        int n = nums.length;
+        Tree tr = new Tree(n, nums);
+
+        for(int[] edge: edges){
+            tr.addEdge(edge[0], edge[1]);
+        }
+
+        tr.computeXors();
+
+        return tr.getMinScore();
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int[] nums = {1,5,5,4,11};
+        int[][] edges = {{0,1},{1,2},{1,3},{3,4}};
+
+        System.out.println(minimumScore(nums, edges));
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

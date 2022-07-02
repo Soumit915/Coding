@@ -1,137 +1,95 @@
+package Codeforces.RateUp_Contest_4;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class A {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static class Node{
+        long count;
+        long val;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
+        Node(long val, long count){
+            this.val = val;
+            this.count = count;
         }
+    }
+
+    static boolean isEqual(List<Node> a, List<Node> b){
+        for(int i=0;i<a.size();i++){
+            if(a.get(i).val != b.get(i).val || a.get(i).count != b.get(i).count)
+                return false;
+        }
+
+        return true;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
+
+        int testcases = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (testcases-->0){
+            int n = sc.nextInt();
+            int m = sc.nextInt();
+            long[] a = sc.nextLongArray(n);
+
+            int k = sc.nextInt();
+            long[] b = sc.nextLongArray(k);
+
+            Node[] a_dis = new Node[n];
+            for(int i=0;i<n;i++){
+                long v = a[i];
+                while(v%m == 0){
+                    v /= m;
+                }
+                a_dis[i] = new Node(v, a[i] / v);
+            }
+
+            Node[] b_dis = new Node[k];
+            for(int i=0;i<k;i++){
+                long v = b[i];
+                while(v%m == 0){
+                    v /= m;
+                }
+                b_dis[i] = new Node(v, b[i] / v);
+            }
+
+            List<Node> a_list = new ArrayList<>();
+            a_list.add(a_dis[0]);
+            for(int i=1;i<n;i++){
+                if(a_dis[i].val == a_dis[i-1].val){
+                    Node last = a_list.get(a_list.size() - 1);
+                    last.count += a_dis[i].count;
+                }
+                else{
+                    a_list.add(a_dis[i]);
+                }
+            }
+
+            List<Node> b_list = new ArrayList<>();
+            b_list.add(b_dis[0]);
+            for(int i=1;i<k;i++){
+                if(b_dis[i].val == b_dis[i-1].val){
+                    Node last = b_list.get(b_list.size() - 1);
+                    last.count += b_dis[i].count;
+                }
+                else{
+                    b_list.add(b_dis[i]);
+                }
+            }
+
+            if(a_list.size() == b_list.size() && isEqual(a_list, b_list)){
+                sb.append("Yes\n");
+            }
+            else {
+                sb.append("No\n");
+            }
+        }
+
+        System.out.println(sb);
 
         sc.close();
-    }
-
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
-    }
-
-    private static void solve(Soumit sc) throws IOException {
-
-        s = new int[MAX];
-        t = new int[MAX];
-
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
-
-        precompute();
-
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
-        }
-
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
-
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
-
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
-        long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
-
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
-
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
-            }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
-        }
-        return res;
     }
 
     static class Soumit {

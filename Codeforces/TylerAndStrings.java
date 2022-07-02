@@ -1,137 +1,167 @@
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
-import java.util.StringTokenizer;
 
-public class Test {
+public class TylerAndStrings {
 
-    static int MAX = 200005;
-    static long MOD = 998244353;
+    static int getNextPowerOf2(int n){
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n |= n >> 25;
 
-    static int[] s = new int[MAX];
-    static int[] t = new int[MAX];
-
-    static long[] bitTree = new long[MAX];
-    static long[] factorial = new long[MAX];
-    static int[] freq = new int[MAX];
-
-    public static void main(String[] args) throws java.lang.Exception {
-        Soumit sc = new Soumit("Input.txt");
-        sc.streamOutput("Output2.txt");
-
-        int test = sc.nextInt();
-        for (int t = 1; t <= test; t++) {
-
-            solve(sc);
-        }
-
-        sc.close();
+        return n + 1;
     }
 
-    private static void precompute() {
-        factorial[0] = 1;
-        for (int i = 1; i < MAX; i++) {
-            factorial[i] = (factorial[i - 1] * i) % MOD;
-        }
+    static class Node{
+        long count;
+        long combinations;
     }
 
-    private static void solve(Soumit sc) throws IOException {
+    static void build(Node[] segTree, int si, int[] arr, int l, int r){
+        if(l == r){
+            segTree[si] = new Node();
 
-        s = new int[MAX];
-        t = new int[MAX];
+            segTree[si].count = arr[l];
+            segTree[si].combinations = inverse[arr[l]];
 
-        bitTree = new long[MAX];
-        factorial = new long[MAX];
-        freq = new int[MAX];
+            return;
+        }
 
-        precompute();
+        int mid = (l + r) / 2;
+        build(segTree, 2*si + 1, arr, l, mid);
+        build(segTree, 2*si + 2, arr, mid + 1, r);
+
+        segTree[si] = new Node();
+        segTree[si].count = (segTree[2*si + 1].count + segTree[2*si + 2].count) % mod;
+        segTree[si].combinations = (segTree[2*si + 1].combinations * segTree[2*si + 2].combinations) % mod;
+    }
+
+    static void update(Node[] segTree, int si, int index, int l, int r){
+        if(l == r){
+
+            segTree[si].count = segTree[si].count-1;
+            segTree[si].combinations = inverse[(int) segTree[si].count];
+
+            return;
+        }
+
+        int mid = (l + r) / 2;
+        if(index <= mid){
+            update(segTree, 2*si + 1, index, l, mid);
+        }
+        else{
+            update(segTree, 2*si + 2, index, mid + 1, r);
+        }
+        segTree[si].count = (segTree[2*si + 1].count + segTree[2*si + 2].count) % mod;
+        segTree[si].combinations = (segTree[2*si + 1].combinations * segTree[2*si + 2].combinations) % mod;
+    }
+
+    static long query_count(Node[] segTree, int si, int start, int end, int l, int r){
+        //no overlap
+        if(r < start || l > end){
+            return 0;
+        }
+
+        //total overlap
+        if(l>=start && r<=end){
+            return segTree[si].count;
+        }
+
+        //partial overlap
+        int mid = (l + r) / 2;
+        return (query_count(segTree, 2*si + 1, start, end, l, mid) +
+                query_count(segTree, 2*si + 2, start, end, mid + 1, r)) % mod;
+    }
+
+    static long mod = 998244353;
+
+    static long x, y;
+    static void gcdExtended(long a, long b){
+        if(a%b == 0){
+            x = 1;
+            y = 1 - (a / b);
+            return;
+        }
+        gcdExtended(b, a%b);
+        long t = y;
+        y = x - ((a / b) * y) % mod;
+        x = t;
+    }
+    static long modInverse(long a){
+        gcdExtended(a, mod);
+        x = (x%mod + mod)%mod;
+        return x;
+    }
+
+    static long[] fact;
+    static long[] inverse;
+
+    public static void main(String[] args) throws IOException {
+        Soumit sc = new Soumit();
 
         int n = sc.nextInt();
         int m = sc.nextInt();
 
-        for (int i = 1; i <= n; i++) {
-            s[i] = sc.nextInt();
-            freq[s[i]]++;
+        int[] a = sc.nextIntArray(n);
+        int[] b = sc.nextIntArray(m);
+
+        fact = new long[n+2];
+        inverse = new long[n+2];
+
+        fact[0] = 1;
+        inverse[0] = 1;
+
+        for(int i=1;i<fact.length;i++){
+            fact[i] = (fact[i-1] * i) % mod;
+            inverse[i] = (modInverse(i) * inverse[i-1]) % mod;
         }
 
-        for (int i = 1; i <= m; i++) {
-            t[i] = sc.nextInt();
-        }
+        int hn = 200010;
+        int[] hash = new int[hn];
+        for(int i=0;i<n;i++)
+            hash[a[i]]++;
 
-        for (int i = 1; i < MAX; i++) {
-            update(i, freq[i]);
-        }
+        int sn = 2 * getNextPowerOf2(hn) - 1;
+        Node[] segTree = new Node[sn];
+        build(segTree, 0, hash, 0, hn-1);
 
-        long productOfFactorialsOfFreq = 1;
-        for (int i = 1; i < MAX; i++) {
-            productOfFactorialsOfFreq *= factorial[freq[i]];
-            productOfFactorialsOfFreq %= MOD;
-        }
-        productOfFactorialsOfFreq = power(productOfFactorialsOfFreq, MOD - 2);
-
-        long noOfSmallerPermutations = 0;
-        boolean ok = true;
-        int minLength = Math.min(n, m);
-        for (int i = 1; i <= minLength; i++) {
-            long fact = factorial[n - i];
-            long qc = query(t[i] - 1);
-            long num = ((fact * qc) % MOD);
-            long inter = (num * productOfFactorialsOfFreq) % MOD;
-            noOfSmallerPermutations = (noOfSmallerPermutations + inter) % MOD;
-
-            sc.println(noOfSmallerPermutations+" "+(i-1)+" "+qc+" "+(t[i]));
-
-            productOfFactorialsOfFreq *= freq[t[i]] %= MOD;
-            productOfFactorialsOfFreq %= MOD;
-
-            freq[t[i]]--;
-            update(t[i], -1);
-
-            if (freq[t[i]] < 0) {
-                ok = false;
-                break;
-            }
-        }
-
-        if (n < m && ok) {
-            noOfSmallerPermutations++;
-            noOfSmallerPermutations %= MOD;
-        }
-
-        sc.println(noOfSmallerPermutations+"");
-    }
-
-    private static long query(int index) {
+        long[] dp = new long[m];
         long sum = 0;
-        while (index > 0) {
-            sum += bitTree[index];
-            sum %= MOD;
-            index -= index & -index;
-        }
-        return sum;
-    }
+        for(int i=0;i<Math.min(n, m);i++){
+            long factorial = fact[(int) segTree[0].count - 1];
+            long querycount = query_count(segTree, 0, 0, b[i]-1, 0, hn-1);
+            long num = (factorial * querycount) % mod;
+            long deno = segTree[0].combinations;
 
-    private static void update(int index, int value) {
-        while (index < MAX) {
-            bitTree[index] += value;
-            bitTree[index] %= MOD;
-            index += index & -index;
-        }
-    }
+            dp[i] = (num * deno) % mod;
+            sum = (sum + dp[i])% mod;
 
-    private static long power(long a, long b) {
-        long res = 1;
-        a %= MOD;
-        while (b > 0) {
-            if ((b & 1) == 1) {
-                res *= a;
-                res %= MOD;
+            if(query_count(segTree, 0, b[i], b[i], 0, hn-1) > 0)
+                update(segTree, 0, b[i], 0, hn-1);
+            else break;
+        }
+
+        if(n < m){
+            boolean flag = true;
+            for(int i=0;i<n;i++){
+                if(hash[b[i]] == 0){
+                    flag = false;
+                    break;
+                }
+                hash[b[i]]--;
             }
-            b >>= 1;
-            a *= a;
-            a %= MOD;
+
+            if(flag)
+                sum = (sum + 1) % mod;
         }
-        return res;
+
+        System.out.println(sum);
+
+        sc.close();
     }
 
     static class Soumit {
