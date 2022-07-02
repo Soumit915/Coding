@@ -147,52 +147,13 @@ public class CreateInput {
         Soumit sc = new Soumit();
         sc.streamOutput("Input.txt");
 
-<<<<<<< Updated upstream
         int t = 1;
         //sc.println(t + "");
 
         while(t-->0){
             int n = 30000;
-
             sc.println(n+"");
 
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 1000000000 + 1);
-=======
-        int t = 10;
-        sc.println(t+"");
-        while(t-->0){
-            int n = 10000;
-            int m = 10000;
-
-            sc.println(n+" "+m);
-
-            for(int i=0;i<n;i++){
-                int v = (int) (Math.random() * 200000 + 1);
->>>>>>> Stashed changes
-                sc.print(v+" ");
-            }
-            sc.println();
-
-<<<<<<< Updated upstream
-            int q = 1000;
-            sc.println(q+"");
-            for(int i=0;i<q;i++){
-                int l = (int) (Math.random() * n + 1);
-                int r = (int) (Math.random() * n + 1);
-                if(l > r)
-                    l = (l + r) - (r = l);
-
-                int k = (int) (Math.random() * 1000000000 + 1);
-
-                sc.println(l+" "+r+" "+k);
-=======
-            for(int i=0;i<m;i++){
-                int v = (int) (Math.random() * 200000 + 1);
-                sc.print(v+" ");
->>>>>>> Stashed changes
-            }
-            sc.println();
         }
 
         sc.close();
