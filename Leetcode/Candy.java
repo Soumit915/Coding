@@ -1,66 +1,70 @@
-package Codeforces.GoodBye2020;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class Candy {
 
-    static long mod = (long) 1e9+7;
+    public static int candy(int[] ratings) {
+        int n = ratings.length;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        int sum = 1;
+        int last = 1;
+        int count = 0;
+        for(int i=1;i<n;i++){
+            if(ratings[i] > ratings[i-1]){
+                if(count > 0){
+                    if(last <= 0)
+                        count++;
+                    int val = (last-1) * count;
+                    sum -= val;
+                    last = 1;
+                }
+
+                last++;
+                sum += last;
+                count = 0;
+            }
+            else if(ratings[i] == ratings[i-1]){
+
+                if(count > 0){
+                    if(last <= 0)
+                        count++;
+                    int val = (last-1) * count;
+                    sum -= val;
+                    last = 1;
+                    count = 0;
+
+                    sum += (last);
+                }
+                else{
+                    sum += 1;
+                    last = 1;
+                }
+
+            }
+            else{
+                last--;
+                sum += last;
+                count++;
+            }
+        }
+
+        if(count > 0){
+            if(last <= 0)
+                count++;
+            int val = (last-1) * count;
+            sum -= val;
+        }
+
+        return sum;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
-
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
-        }
-
-        System.out.println(sb);
+        int[] arr = {2,2,1};
+        System.out.println(candy(arr));
 
         sc.close();
     }

@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.*;
 import java.util.StringTokenizer;
 
 public class SparseTables {
@@ -22,15 +21,17 @@ public class SparseTables {
             }
         }
     }
+
     public static int log(int n)
     {
         if(n==0)
             return n;
         return (int) (Math.log(n)/Math.log(2));
     }
+
     public static int query(int[][] sparseTable, int l, int r)
     {
-        int diff = (int) log(r-l);
+        int diff = log(r-l);
         int min = sparseTable[l][diff];
 
         int left = (r-l+1) - (int) Math.pow(2, diff);
@@ -39,6 +40,7 @@ public class SparseTables {
 
         return min;
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
         sc.streamOutput("Output1.txt");

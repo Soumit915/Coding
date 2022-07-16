@@ -1,63 +1,82 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round805Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class F {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
+
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] a = sc.nextIntArray(n);
+            int[] b = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
+                while(a[i]%2 == 0){
+                    a[i] /= 2;
+                }
+            }
+            for(int i=0;i<n;i++){
+                while(b[i]%2 == 0){
+                    b[i] /= 2;
+                }
+            }
+
+            HashMap<Integer, Integer> hash = new HashMap<>();
+            HashMap<Integer, Integer> map = new HashMap<>();
+            for(int i: a){
+                int c = hash.getOrDefault(i, 0);
+                hash.put(i, c+1);
+            }
+
+            for(int i=0;i<n;i++){
+                if(hash.containsKey(b[i])) {
+                    map.put(b[i], map.getOrDefault(b[i], 0) + 1);
+                }
+
+                while(b[i] > 0){
+                    b[i] /= 2;
+
+                    if(hash.containsKey(b[i])) {
+                        map.put(b[i], map.getOrDefault(b[i], 0) + 1);
                     }
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+            List<Integer> li = new ArrayList<>(hash.keySet());
+            li.sort(Collections.reverseOrder());
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
+            boolean flag = true;
+            for(int i: li){
+                if(map.containsKey(i)){
+                    if(hash.get(i) > map.get(i)){
+                        flag = false;
+                        break;
                     }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
+
+                    int val = i;
+                    int c = hash.get(i);
+                    while(val > 0){
+                        map.put(val, map.getOrDefault(val, 0) - c);
+                        val /= 2;
                     }
                 }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                else{
+                    flag = false;
+                    break;
+                }
             }
 
-            sb.append(ans).append("\n");
+            if(flag){
+                sb.append("Yes\n");
+            }
+            else{
+                sb.append("No\n");
+            }
         }
 
         System.out.println(sb);

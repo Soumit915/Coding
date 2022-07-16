@@ -4,34 +4,35 @@ import java.io.*;
 import java.util.*;
 
 public class F {
-    static class Start implements Comparable<Start>
-    {
-        int id;
-        long start;
-        Start(int id, long start)
-        {
+
+    static class Segment{
+        int id, l, r;
+
+        Segment(int id, int l, int r){
             this.id = id;
-            this.start = start;
-        }
-        public int compareTo(Start s)
-        {
-            return Long.compare(this.start, s.start);
+            this.l = l;
+            this.r = r;
         }
     }
 
-    static class End implements Comparable<End>
-    {
-        int id;
-        long end;
-        End(int id, long end)
-        {
-            this.id = id;
-            this.end = end;
+    static int binarySearch(int[] arr, int v){
+        int l = 0, r = arr.length - 1;
+
+        while(l < r){
+            int mid = (l + r) / 2;
+
+            if(arr[mid] >= v){
+                r = mid;
+            }
+            else{
+                l = mid + 1;
+            }
         }
-        public int compareTo(End e)
-        {
-            return Long.compare(this.end, e.end);
-        }
+
+        if(l<=r && arr[l]<v)
+            l++;
+
+        return arr.length - l;
     }
 
     public static void main(String[] args) throws IOException {
@@ -40,11 +41,31 @@ public class F {
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
 
-        while (t-->0)
-        {
+        while (t-->0) {
             int n = sc.nextInt();
 
+            Segment[] segment = new Segment[n];
+            int[] start = new int[n];
+            int[] end = new int[n];
+            for(int i=0;i<n;i++){
+                segment[i] = new Segment(i, sc.nextInt(), sc.nextInt());
+                start[i] = segment[i].l;
+                end[i] = segment[i].r;
+            }
 
+            Arrays.sort(start);
+            Arrays.sort(end);
+
+            int min = Integer.MAX_VALUE;
+            for(int i=0;i<n;i++){
+                int after_end = binarySearch(end, segment[i].l);
+                int after_start = binarySearch(start, segment[i].r+1);
+
+                int overlapping = after_end - after_start;
+                min = Math.min(min, n - overlapping);
+            }
+
+            sb.append(min).append("\n");
         }
 
         System.out.println(sb);

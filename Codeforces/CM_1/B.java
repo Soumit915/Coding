@@ -1,66 +1,49 @@
-package Codeforces.GoodBye2020;
+package Codeforces.CM_1;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class B {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int r = sc.nextInt();
+        int n = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
+        int[][] targets = new int[n+1][3];
+        targets[0][0] = 0;
+        targets[0][1] = 1;
+        targets[0][2] = 1;
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+        for(int i=1;i<=n;i++){
+            targets[i] = sc.nextIntArray(3);
         }
 
-        System.out.println(sb);
+        int[] dp = new int[n+1];
+        int[] prefix = new int[n+1];
+
+        dp[0] = 0;
+        prefix[0] = 0;
+
+        for(int i=1;i<=n;i++){
+            int l = Math.max(0, i - 2*r - 2);
+
+            int max = l==0? 0 : prefix[l-1] + 1;
+            for(int j=l;j<i;j++){
+                if((j==0 || (dp[j]>0)) && targets[j][0] + (Math.abs(targets[i][1] - targets[j][1]) + Math.abs(targets[i][2] - targets[j][2])) <= targets[i][0]){
+                    max = Math.max(max, dp[j] + 1);
+                }
+            }
+
+            dp[i] = max;
+            prefix[i] = Math.max(prefix[i-1], dp[i]);
+        }
+
+        int max = 0;
+        for(int i: dp){
+            max = Math.max(max, i);
+        }
+        System.out.println(max);
 
         sc.close();
     }

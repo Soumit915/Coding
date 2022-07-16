@@ -1,211 +1,95 @@
 package Codeforces.Round679Div2;
 
-import java.io.*;
 import java.util.*;
+import java.io.*;
 
 public class C {
 
-    public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+    static class Node implements Comparable<Node>{
+        int id;
+        long val;
 
-        long[] a = sc.nextLongArray(6);
-        int n = sc.nextInt();
-        long[] b = sc.nextLongArray(n);
-
-        Arrays.sort(a);
-        Arrays.sort(b);
-
-        long[][] matrix = new long[6][n];
-        for(int i=0;i<6;i++)
-        {
-            for(int j=0;j<n;j++)
-            {
-                if(b[j]-a[i]>=0)
-                {
-                    matrix[i][j] = b[j]-a[i];
-                }
-            }
+        Node(int id, long val){
+            this.id = id;
+            this.val = val;
         }
 
-        for(long[] arr: matrix)
-        {
-            for(long i: arr)
-                System.out.print(i+" ");
-            System.out.println();
+        public int compareTo(Node node){
+            return Long.compare(this.val, node.val);
         }
-
-        int l = 0;
-        int r = 0;
-        for(int i=1;i<n;i++)
-        {
-
-        }
-
-        long v = matrix[5][n-1];
-        System.out.println(Math.max(0, v-matrix[0][0]));
-
-        sc.close();
     }
 
-    static class Soumit {
-        final private int BUFFER_SIZE = 1 << 18;
-        final private DataInputStream din;
-        final private byte[] buffer;
-        private PrintWriter pw;
-        private int bufferPointer, bytesRead;
-        StringTokenizer st;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        public Soumit() {
-            din = new DataInputStream(System.in);
-            buffer = new byte[BUFFER_SIZE];
-            bufferPointer = bytesRead = 0;
+        String[] line = (br.readLine()).split(" ");
+        long[] strings = new long[6];
+        for(int i=0;i<6;i++){
+            strings[i] = Long.parseLong(line[i]);
+        }
+        Arrays.sort(strings);
+
+        int n = Integer.parseInt(br.readLine());
+        line = (br.readLine()).split(" ");
+
+        long[] arr = new long[n];
+        for(int i=0;i<n;i++){
+            arr[i] = Long.parseLong(line[i]);
+        }
+        Arrays.sort(arr);
+
+        List<Queue<Long>> fretList = new ArrayList<>();
+        List<Long> allFrets = new ArrayList<>();
+        for(int i=0;i<n;i++){
+            Queue<Long> frets = new LinkedList<>();
+            for(int j=5;j>=0;j--){
+                allFrets.add(arr[i] - strings[j]);
+                frets.add(arr[i] - strings[j]);
+            }
+
+            fretList.add(frets);
         }
 
-        public Soumit(String file_name) throws IOException {
-            din = new DataInputStream(new FileInputStream(file_name));
-            buffer = new byte[BUFFER_SIZE];
-            bufferPointer = bytesRead = 0;
+        Collections.sort(allFrets);
+
+        PriorityQueue<Node> heap = new PriorityQueue<>();
+        long max = 0;
+        for(int i=0;i<n;i++){
+            long v = fretList.get(i).remove();
+            max = Math.max(max, v);
+            heap.add(new Node(i, v));
         }
 
-        public void streamOutput(String file) throws IOException {
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
-        }
+        long min = Long.MAX_VALUE;
+        boolean flag = true;
+        for(long init: allFrets){
+            while(true){
+                assert heap.peek() != null;
+                if (!(heap.peek().val < init)) break;
+                Node node = heap.remove();
+                int id = node.id;
 
-        public void println(String a) {
-            pw.println(a);
-        }
+                Queue<Long> frets = fretList.get(id);
+                while(!frets.isEmpty() && frets.peek() < init){
+                    frets.remove();
+                }
 
-        public void print(String a) {
-            pw.print(a);
-        }
-
-        public String readLine() throws IOException {
-            byte[] buf = new byte[100064]; // line length
-            int cnt = 0, c;
-            while ((c = read()) != -1) {
-                if (c == '\n')
+                if(frets.isEmpty()){
+                    flag = false;
                     break;
-                buf[cnt++] = (byte) c;
-            }
-            return new String(buf, 0, cnt);
-        }
-
-        String next() {
-            while (st == null || !st.hasMoreElements()) {
-                try {
-                    st = new StringTokenizer(readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-            return st.nextToken();
-        }
 
-        public int[] nextIntArray(int n) throws IOException {
-            int[] arr = new int[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextInt();
+                long v = frets.remove();
+                heap.add(new Node(id, v));
+                max = Math.max(max, v);
             }
 
-            return arr;
+            if(!flag)
+                break;
+
+            min = Math.min(min, max - init);
         }
 
-        public long[] nextLongArray(int n) throws IOException {
-            long[] arr = new long[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextLong();
-            }
-
-            return arr;
-        }
-
-        public double[] nextDoubleArray(int n) throws IOException {
-            double[] arr = new double[n];
-            for (int i = 0; i < n; i++) {
-                arr[i] = nextDouble();
-            }
-
-            return arr;
-        }
-
-        public int nextInt() throws IOException {
-            int ret = 0;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-            do {
-                ret = ret * 10 + c - '0';
-            } while ((c = read()) >= '0' && c <= '9');
-
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        public long nextLong() throws IOException {
-            long ret = 0;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-            do {
-                ret = ret * 10 + c - '0';
-            }
-            while ((c = read()) >= '0' && c <= '9');
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        public double nextDouble() throws IOException {
-            double ret = 0, div = 1;
-            byte c = read();
-            while (c <= ' ')
-                c = read();
-            boolean neg = (c == '-');
-            if (neg)
-                c = read();
-
-            do {
-                ret = ret * 10 + c - '0';
-            }
-            while ((c = read()) >= '0' && c <= '9');
-
-            if (c == '.') {
-                while ((c = read()) >= '0' && c <= '9') {
-                    ret += (c - '0') / (div *= 10);
-                }
-            }
-
-            if (neg)
-                return -ret;
-            return ret;
-        }
-
-        private void fillBuffer() throws IOException {
-            bytesRead = din.read(buffer, bufferPointer = 0, BUFFER_SIZE);
-            if (bytesRead == -1)
-                buffer[0] = -1;
-        }
-
-        private byte read() throws IOException {
-            if (bufferPointer == bytesRead)
-                fillBuffer();
-            return buffer[bufferPointer++];
-        }
-
-        public void close() throws IOException {
-            /*if (din == null)
-                return;*/
-            if (din != null) din.close();
-            if (pw != null) pw.close();
-        }
+        System.out.println(min);
     }
 }

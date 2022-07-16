@@ -1,66 +1,78 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Expert_2;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class B {
 
-    static long mod = (long) 1e9+7;
+    static class Edge implements Comparable<Edge>{
+        int id;
+        int val;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Edge(int id, int val){
+            this.id = id;
+            this.val = val;
+        }
+
+        public int compareTo(Edge e){
+            return Integer.compare(this.val, e.val);
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int n = sc.nextInt();
+        int m = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+        Edge[] edgeWeights = new Edge[m];
+        for(int i=0;i<m;i++){
+            StringBuilder sb = new StringBuilder();
+            for(int j=0;j<m;j++){
+                if(i==j){
+                    sb.append("1");
+                }
+                else{
+                    sb.append("0");
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+            System.out.println("? "+sb);
+            System.out.flush();
+            edgeWeights[i] = new Edge(i, sc.nextInt());
         }
 
-        System.out.println(sb);
+        Arrays.sort(edgeWeights);
+
+        int sum = 0;
+        Set<Integer> set = new HashSet<>();
+        for(int i=0;i<m;i++){
+            set.add(edgeWeights[i].id);
+
+            StringBuilder sb = new StringBuilder();
+            for(int j=0;j<m;j++){
+                if(set.contains(j)){
+                    sb.append("1");
+                }
+                else{
+                    sb.append("0");
+                }
+            }
+
+            System.out.println("? "+sb);
+            System.out.flush();
+
+            int newsum = sc.nextInt();
+            if(sum+edgeWeights[i].val == newsum){
+                sum += edgeWeights[i].val;
+            }
+            else{
+                set.remove(edgeWeights[i].id);
+            }
+        }
+
+        System.out.println("! "+sum);
+        System.out.flush();
 
         sc.close();
     }

@@ -1,63 +1,67 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round804Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class D {
 
-    static long mod = (long) 1e9+7;
+    static int performOps(List<Integer> list){
+        int majority = list.get(0);
+        int count = 1;
+        for(int i=1;i<list.size();i++){
+            if(list.get(i) == majority)
+                count++;
+            else {
+                count--;
+                if(count == 0){
+                    majority = list.get(i);
+                }
+            }
+        }
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        count = 0;
+        for (Integer integer : list) {
+            if (integer == majority) {
+                count++;
+            }
+        }
+
+        int others = list.size() - majority;
+        if(majority > others)
+            return majority - others;
+        else return 0;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] arr = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                arr[i]--;
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
+            int max = 0;
             for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
+                List<Integer> list = new ArrayList<>();
+                List<List<Integer>> segmentList = new ArrayList<>();
+                for(int j=0;j<n;j++){
+                    if(arr[j] != i){
+                        list.add(j);
                     }
                     else{
-                        cur2 = (cur2 + power[j]) % mod;
+                        if(list.size() > 0)
+                            segmentList.add(list);
+                        list = new ArrayList<>();
                     }
                 }
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
 
-            sb.append(ans).append("\n");
+            }
         }
 
         System.out.println(sb);

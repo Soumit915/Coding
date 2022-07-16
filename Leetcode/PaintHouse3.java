@@ -1,66 +1,107 @@
-package Codeforces.GoodBye2020;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class PaintHouse3 {
 
-    static long mod = (long) 1e9+7;
+    static int inf = 1000100;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    public static int minCost(int[] houses, int[][] cost, int n, int m, int target) {
+
+        int[][] dp = new int[m][target];
+
+        for(int i=0;i<n;i++){
+
+            int[][] local = new int[m][target];
+
+            for(int j=0;j<m;j++){
+                for(int k=0;k<target;k++){
+
+                    if(i == 0){
+                        if(houses[i] == 0){
+                            if(k == 0)
+                                local[j][k] = cost[i][j];
+                            else local[j][k] = inf;
+                        }
+                        else{
+                            if(j != houses[i]-1){
+                                local[j][k] = inf;
+                                continue;
+                            }
+
+                            if(k == 0)
+                                local[j][k] = 0;
+                            else local[j][k] = inf;
+                        }
+                        continue;
+                    }
+
+                    if(houses[i] == 0){
+
+                        int min = inf;
+                        for(int l=0;l<m;l++){
+                            if(l == j){
+                                min = Math.min(min, dp[l][k] + cost[i][j]);
+                            }
+                            else{
+                                if(k != 0){
+                                    min = Math.min(min, dp[l][k-1] + cost[i][j]);
+                                }
+                            }
+                        }
+
+                        local[j][k] = min;
+                    }
+                    else{
+
+                        if(j != houses[i]-1){
+                            local[j][k] = inf;
+                            continue;
+                        }
+
+                        int min = inf;
+                        for(int l=0;l<m;l++){
+                            if(l == j){
+                                min = Math.min(min, dp[l][k]);
+                            }
+                            else{
+                                if(k != 0){
+                                    min = Math.min(min, dp[l][k-1]);
+                                }
+                            }
+                        }
+
+                        local[j][k] = min;
+                    }
+
+                }
+            }
+
+            dp = local;
+        }
+
+        int min = inf;
+        for(int i=0;i<m;i++){
+            min = Math.min(min, dp[i][target-1]);
+        }
+
+        if(min >= inf){
+            return -1;
+        }
+        else{
+            return min;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int[] houses = {3,1,2,3};
+        int[][] cost = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
+        int target = 3;
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
-        }
-
-        System.out.println(sb);
+        System.out.println(minCost(houses, cost, houses.length, cost[0].length, target));
 
         sc.close();
     }

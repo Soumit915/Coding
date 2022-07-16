@@ -1,63 +1,92 @@
-package Codeforces.GoodBye2020;
+package Codeforces.EducationalRound131;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class D {
 
-    static long mod = (long) 1e9+7;
+    static class Range implements Comparable<Range>{
+        int id;
+        int l;
+        int r;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Range(int id, int l, int r){
+            this.id = id;
+            this.l = l;
+            this.r = r;
+        }
+
+        public int compareTo(Range range){
+            int c = Integer.compare(this.r, range.r);
+            if(c == 0){
+                return Integer.compare(this.l, range.l);
+            }
+            else return c;
+        }
+    }
+
+    static class Set{
+        int id;
+        Set parent;
+
+        Set(int id){
+            this.id = id;
+            this.parent = this;
+        }
+
+        public void union(Set a, Set b){
+            a.parent = b.getParent();
+        }
+
+        public Set getParent(){
+            if(this.parent == this)
+                return this;
+            this.parent = this.parent.getParent();
+            return this.parent;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] b = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
+            Range[] ranges = new Range[n];
+            Set[] set = new Set[n+1];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                int l = ((i + 1) / (b[i] + 1)) + 1;
+                int r = n;
+                if(b[i] != 0)
+                    r = Math.min(n, ((i + 1) / b[i]));
+
+                ranges[i] = new Range(i+1, l, r);
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
+            for(int i=0;i<set.length;i++){
+                set[i] = new Set(i);
             }
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
+            Arrays.sort(ranges);
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+            int[] arr = new int[n+1];
+            for(int i=1;i<=n;i++){
+                Range cur = ranges[i-1];
+
+                Set s = set[cur.l].getParent();
+                arr[cur.id] = s.id;
+
+                if(s.id<=n-1)
+                    set[s.id].union(set[s.id], set[s.id+1]);
             }
 
-            sb.append(ans).append("\n");
+            for(int i=1;i<=n;i++){
+                sb.append(arr[i]).append(" ");
+            }
+            sb.append("\n");
         }
 
         System.out.println(sb);

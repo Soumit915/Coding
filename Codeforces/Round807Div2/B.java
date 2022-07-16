@@ -1,63 +1,37 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round807Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class B {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int tc = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (tc-->0){
             int n = sc.nextInt();
             long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+            long sum = 0;
+            for(int i=0;i<n-1;i++){
+                sum += arr[i];
+            }
+
+            int index = n-1;
+            for(int i=n-2;i>=0;i--){
+                if(arr[i] > 0)
+                    index = i;
+            }
+
+            long zeros = 0;
+            for(int i=index;i<n-1;i++){
+                if(arr[i] == 0){
+                    zeros++;
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+            sb.append(sum+zeros).append("\n");
         }
 
         System.out.println(sb);

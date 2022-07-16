@@ -1,66 +1,50 @@
-package Codeforces.GoodBye2020;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class JumpHouseVI {
 
-    static long mod = (long) 1e9+7;
+    static class Node{
+        int id;
+        int val;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Node(int id, int val){
+            this.id = id;
+            this.val = val;
+        }
+    }
+
+    public int maxResult(int[] nums, int k) {
+        int n = nums.length;
+
+        Deque<Node> q = new LinkedList<>();
+
+        q.add(new Node(n-1, nums[n-1]));
+        for(int i=n-2;i>=0;i--){
+            int lim = i + k;
+            while(q.getFirst().id > lim){
+                q.removeFirst();
+            }
+
+            Node node = new Node(i, q.getFirst().val + nums[i]);
+            while(!q.isEmpty() && ((q.getLast().id > lim) || (q.getLast().val <= node.val))){
+                q.removeLast();
+            }
+
+            q.addLast(node);
+
+            if(i == 0){
+                return node.val;
+            }
+        }
+
+        return q.removeFirst().val;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
-
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
-        }
-
-        System.out.println(sb);
 
         sc.close();
     }

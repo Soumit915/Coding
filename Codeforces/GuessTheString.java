@@ -1,66 +1,70 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class GuessTheString {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Scanner sc = new Scanner(System.in);
 
-        int t = sc.nextInt();
+        int n = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+        System.out.println("? 1 1");
+        System.out.flush();
+        char ch = sc.next().charAt(0);
+
+        int[] hash = new int[26];
+        hash[ch-'a'] = 1;
+
+        sb.append(ch);
+
+        for(int i=2;i<=n;i++){
+            List<Integer> list = new ArrayList<>();
+            for(int j: hash){
+                if(j != 0){
+                    list.add(j);
+                }
+            }
+            Collections.sort(list);
+
+            int l = 0, r = list.size() - 1;
+            while(l <= r){
+                int mid = (l + r + 1) / 2;
+
+                System.out.println("? 2 "+list.get(mid)+" "+i);
+                System.out.flush();
+                int unique_i = sc.nextInt();
+                int unique_before = list.size() - mid;
+                if(unique_i > unique_before){
+                    r = mid - 1;
+                }
+                else{
+                    if(l == r)
+                        break;
+                    l = mid;
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+            if(r < l){
+                System.out.println("? 1 "+i);
+                System.out.flush();
+                ch = sc.next().charAt(0);
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
+                hash[ch-'a'] = i;
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                sb.append(ch);
             }
+            else{
+                ch = sb.charAt(list.get(l) - 1);
 
-            sb.append(ans).append("\n");
+                hash[ch - 'a'] = i;
+
+                sb.append(ch);
+            }
         }
 
-        System.out.println(sb);
+        System.out.println("! "+sb);
 
         sc.close();
     }

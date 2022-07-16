@@ -5,100 +5,61 @@ import java.util.*;
 
 public class D {
 
-    static long getSumProduct(long[] a){
-        int n = a.length;
-        long sum1 = 0;
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                sum1 += ((a[i] + a[j]) * (a[i] + a[j]));
-            }
-        }
-        return sum1;
-    }
-
-    static long getMinSum(long[] a, long[] b){
-        int n = a.length;
-        int lim = (int) (Math.pow(2, n));
-
-        long min = Long.MAX_VALUE;
-        for(int i=0;i<lim;i++){
-
-            long[] na = new long[n];
-            long[] nb = new long[n];
-
-            for(int j=0;j<n;j++){
-                if((i&(1<<j))!=0){
-                    na[j] = a[j];
-                    nb[j] = b[j];
-                }
-                else{
-                    na[j] = b[j];
-                    nb[j] = a[j];
-                }
-            }
-
-            long sum = getSumProduct(na) + getSumProduct(nb);
-            min = Math.min(min, sum);
-            if(sum==min && sum==35749){
-                System.out.println(Integer.toBinaryString(i));
-            }
-        }
-
-        return min;
-    }
-
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
+        Soumit sc = new Soumit();
 
         int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
         while (t-->0){
             int n = sc.nextInt();
-            long[] a = sc.nextLongArray(n);
-            long[] b = sc.nextLongArray(n);
+            int[] a = sc.nextIntArray(n);
+            int[] b = sc.nextIntArray(n);
 
-            long bf = getMinSum(a, b);
+            if(n == 1){
+                sb.append("0\n");
+                continue;
+            }
 
-            long sum1 = 0, sum2 = 0;
+            int[] prefix = new int[n];
+            prefix[0] = a[0] + b[0];
+            for(int i=1;i<n;i++){
+                prefix[i] = prefix[i-1] + a[i] + b[i];
+            }
+
+            long[][] dp = new long[10100][100];
+            for (long[] longs : dp) {
+                Arrays.fill(longs, Integer.MAX_VALUE);
+            }
             for(int i=0;i<n;i++){
-                for(int j=i+1;j<n;j++){
-                    sum1 += ((a[i] + a[j]) * (a[i] + a[j]));
-                    sum2 += ((b[i] + b[j]) * (b[i] + b[j]));
+
+                if(i == 0){
+                    dp[a[i]][i] = 0;
+                    dp[b[i]][i] = 0;
+                    continue;
+                }
+
+                for(int j=0;j<dp.length;j++){
+                    if(j - a[i] >= 0){
+                        dp[j][i] = dp[j-a[i]][i-1] + (long) a[i] * (j - a[i]) + (long) b[i] * (prefix[i-1] - (j - a[i]));
+                    }
+
+                    if(j - b[i] >= 0){
+                        dp[j][i] = Math.min(dp[j][i], dp[j-b[i]][i-1] + (long) b[i] * (j - b[i]) + (long) a[i] * (prefix[i-1] - (j - b[i])));
+                    }
                 }
             }
 
+            long min = Long.MAX_VALUE;
+            for (long[] longs : dp) {
+                min = Math.min(min, longs[n - 1]);
+            }
+
+            min = min * 2;
             for(int i=0;i<n;i++){
-                long tosub1 = 0, tosub2 = 0;
-                long toadd1 = 0, toadd2 = 0;
-                for(int j=0;j<n;j++){
-                    if(i==j)
-                        continue;
-
-                    tosub1 += ((a[i] + a[j]) * (a[i] + a[j]));
-                    tosub2 += ((b[i] + b[j]) * (b[i] + b[j]));
-
-                    toadd1 += ((a[i] + b[j]) * (a[i] + b[j]));
-                    toadd2 += ((b[i] + a[j]) * (b[i] + a[j]));
-                }
-
-                if(toadd1+toadd2 < tosub1+tosub2){
-                    long temp = a[i];
-                    a[i] = b[i];
-                    b[i] = temp;
-                    sum1 = sum1 - tosub1 + toadd1;
-                    sum2 = sum2 - tosub2 + toadd2;
-                }
+                min += (n-1) * ((long) a[i] *a[i] + (long) b[i] *b[i]);
             }
 
-            if(sum1+sum2!=bf){
-                System.out.println("Wrong answer at "+t);
-                System.out.println(Arrays.toString(a));
-                System.out.println(Arrays.toString(b));
-                System.out.println(bf+" "+(sum1+sum2));
-                System.exit(0);
-            }
-
-            sb.append(sum1+sum2).append("\n");
+            sb.append(min).append("\n");
         }
 
         System.out.print(sb);

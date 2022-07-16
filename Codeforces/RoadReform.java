@@ -1,63 +1,130 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class RoadReform {
 
-    static long mod = (long) 1e9+7;
+    static class Edge implements Comparable<Edge>{
+        int u, v;
+        long si;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Edge(int u, int v, long si){
+            this.u = u;
+            this.v = v;
+            this.si = si;
+        }
+
+        public int compareTo(Edge edge){
+            return Long.compare(this.si, edge.si);
+        }
+    }
+
+    static class Set{
+        int id;
+        int c;
+        Set parent;
+
+        Set(int id){
+            this.id = id;
+            this.c = 0;
+            this.parent = this;
+        }
+
+        public void union(Set u, Set v){
+            Set pu = u.getParent();
+            Set pv = v.getParent();
+
+            if(pu.c > pv.c){
+                pv.parent = pu;
+                pu.c += pv.c;
+            }
+            else{
+                pu.parent = pv;
+                pv.c += pu.c;
+            }
+        }
+
+        public Set getParent(){
+            if(this.parent == this)
+                return this;
+
+            this.parent = this.parent.getParent();
+            return this.parent;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
+
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int m = sc.nextInt();
+            long k = sc.nextLong();
 
-            long[] bits = new long[60];
+            Edge[] edge = new Edge[m];
+            for(int i=0;i<m;i++){
+                edge[i] = new Edge(sc.nextInt()-1, sc.nextInt()-1, sc.nextLong());
+            }
+
+            Arrays.sort(edge);
+
+            Set[] nodes = new Set[n];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
+                nodes[i] = new Set(i);
+            }
+
+            long max = Integer.MIN_VALUE;
+            boolean flag = false;
+            List<Long> list = new ArrayList<>();
+            for(int i=0;i<m;i++){
+                int u = edge[i].u;
+                int v = edge[i].v;
+                long s = edge[i].si;
+
+                if(nodes[u].getParent() == nodes[v].getParent()){
+                    if(list.size() > 0)
+                        continue;
+
+                    if(Math.abs(max - k) > Math.abs(s - k)){
+                        if(s > k) {
+                            list.add(s);
+                            flag = true;
+                        }
+                        else max = s;
                     }
+                }
+                else{
+                    if(list.size() > 0){
+                        list.add(s);
+                    }
+                    else if(s > k){
+                        list.add(s);
+                    }
+                    else if(Math.abs(max - k) > Math.abs(s - k)){
+                        max = s;
+                    }
+                    nodes[u].union(nodes[u], nodes[v]);
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
+            if(list.size() == 1){
+                max = Math.abs(k - list.get(0));
             }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
+            else if(list.size() > 0){
+                max = 0;
+                for(int i=flag?1:0;i<list.size();i++){
+                    max += Math.abs(k - list.get(i));
                 }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+            }
+            else{
+                max = Math.abs(max - k);
             }
 
-            sb.append(ans).append("\n");
+            sb.append(max).append("\n");
         }
 
         System.out.println(sb);

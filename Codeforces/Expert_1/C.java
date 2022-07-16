@@ -1,63 +1,146 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Expert_1;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class C {
 
-    static long mod = (long) 1e9+7;
+    static int getNextPowerOf2(int n){
+        n |= n>>1;
+        n |= n>>2;
+        n |= n>>4;
+        n |= n>>8;
+        n |= n>>16;
+        n |= n>>25;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        return n + 1;
+    }
+
+    static class Node{
+        long min;
+        long max;
+    }
+
+    static void build(Node[] segTree, int si, long[] arr, int l, int r){
+        if(l == r){
+            segTree[si] = new Node();
+            segTree[si].min = segTree[si].max = arr[l];
+            return;
+        }
+
+        int mid = (l + r) / 2;
+        build(segTree, 2*si + 1, arr, l, mid);
+        build(segTree, 2*si + 2, arr, mid + 1, r);
+        segTree[si] = new Node();
+        segTree[si].min = Math.min(segTree[2*si + 1].min, segTree[2*si + 2].min);
+        segTree[si].max = Math.max(segTree[2*si + 1].max, segTree[2*si + 2].max);
+    }
+
+    static long queryMin(Node[] segTree, int si, int start, int end, int l, int r){
+
+        if(l>end || r<start){
+            return (long) 1e15;
+        }
+
+        if(l >= start && r <= end){
+            return segTree[si].min;
+        }
+
+        int mid = (l + r) / 2;
+        return Math.min(queryMin(segTree, 2*si + 1, start, end, l, mid) ,
+                queryMin(segTree, 2*si + 2, start, end, mid + 1, r) );
+    }
+
+    static long queryMax(Node[] segTree, int si, int start, int end, int l, int r){
+
+        if(l>end || r<start){
+            return (long) -1e15;
+        }
+
+        if(l >= start && r <= end){
+            return segTree[si].max;
+        }
+
+        int mid = (l + r) / 2;
+        return Math.max(queryMax(segTree, 2*si + 1, start, end, l, mid) ,
+                queryMax(segTree, 2*si + 2, start, end, mid + 1, r) );
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while(testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
-
-            long[] bits = new long[60];
+            long[] arr = new long[n];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+                arr[i] = sc.nextLong();
+            }
+
+            long[] prefix = new long[n];
+            prefix[0] = arr[0];
+            for(int i=1;i<n;i++){
+                prefix[i] = prefix[i-1] + arr[i];
+            }
+
+            int sn = 2 * getNextPowerOf2(n) - 1;
+            Node[] segTree = new Node[sn];
+            build(segTree, 0, prefix, 0, n-1);
+
+            Stack<Integer> stk = new Stack<>();
+
+            int[] previousGreater = new int[n];
+            int[] nextGreater = new int[n];
+
+            Arrays.fill(nextGreater, n);
+            Arrays.fill(previousGreater, -1);
+
+            for(int i=0;i<n;i++){
+                while(!stk.isEmpty() && arr[i]>arr[stk.peek()]){
+                    nextGreater[stk.pop()] = i;
                 }
+                stk.push(i);
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
+            for(int i=n-1;i>=0;i--){
+                while(!stk.isEmpty() && arr[i]>arr[stk.peek()]){
+                    previousGreater[stk.pop()] = i;
+                }
+                stk.push(i);
             }
 
-            long ans = 0;
+            boolean flag = true;
             for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
+                int prev = previousGreater[i];
+                int next = nextGreater[i];
+
+                long prefix_val = 0;
+                if(i > 0 && prev + 1 < i){
+                    if(prev == -1){
+                        prefix_val = prefix[i-1] - Math.min(0, queryMin(segTree, 0, prev, i-1, 0, n-1));
                     }
                     else{
-                        cur2 = (cur2 + power[j]) % mod;
+                        prefix_val = prefix[i-1] - queryMin(segTree, 0, prev+1, i-1, 0, n-1);
                     }
                 }
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                long suffix_val = 0;
+                if(i < n-1 && next-1 > i)
+                    suffix_val = queryMax(segTree, 0, i, next-1, 0, n-1) - prefix[i];
+
+                if(prefix_val + suffix_val + arr[i] > arr[i]){
+                    flag = false;
+                    break;
+                }
             }
 
-            sb.append(ans).append("\n");
+            if(flag){
+                sb.append("YES\n");
+            }
+            else{
+                sb.append("NO\n");
+            }
         }
 
         System.out.println(sb);

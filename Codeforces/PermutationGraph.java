@@ -1,62 +1,117 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class PermutationGraph {
 
-    static long mod = (long) 1e9+7;
+    static int getNextPowerOf2(int n){
+        n |= (n >> 1);
+        n |= (n >> 2);
+        n |= (n >> 4);
+        n |= (n >> 8);
+        n |= (n >> 16);
+        n |= (n >> 26);
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        return n + 1;
+    }
+
+    static class Node{
+        int min;
+        int max;
+    }
+
+    static void build(Node[] segTree, int si, int[] arr, int l, int r){
+        if(l == r){
+            segTree[si] = new Node();
+            segTree[si].min = arr[l];
+            segTree[si].max = arr[l];
+
+            return;
+        }
+
+        int mid = (l + r) / 2;
+        build(segTree, 2*si + 1, arr, l, mid);
+        build(segTree, 2*si + 2, arr, mid + 1, r);
+
+        segTree[si] = new Node();
+        segTree[si].max = Math.max(segTree[2*si + 1].max , segTree[2*si + 2].max);
+        segTree[si].min = Math.min(segTree[2*si + 1].min , segTree[2*si + 2].min);
+    }
+
+    static int queryMin(Node[] segTree, int si, int start, int end, int l, int r){
+        //for no overlap
+        if(start>r || end<l)
+        {
+            return Integer.MAX_VALUE;
+        }
+
+        //for total overlap
+        if(start<=l && r<=end)
+        {
+            return segTree[si].min;
+        }
+
+        int mid = (l + r)/2;
+        return Math.min(queryMin(segTree, 2*si+1, start, end, l, mid)
+                , queryMin(segTree, 2*si+2, start, end, mid+1, r));
+    }
+
+    static int queryMax(Node[] segTree, int si, int start, int end, int l, int r){
+        //for no overlap
+        if(start>r || end<l) {
+            return -1;
+        }
+
+        //for total overlap
+        if(start<=l && r<=end) {
+            return segTree[si].max;
+        }
+
+        int mid = (l + r)/2;
+        return Math.max(queryMax(segTree, 2*si+1, start, end, l, mid)
+                , queryMax(segTree, 2*si+2, start, end, mid+1, r));
+    }
+
+    static int recurse(Node[] segTree, int[] hash, int l, int r){
+        if(l > r)
+            return 0;
+
+        if(l == r)
+            return 0;
+
+        int min = queryMax(segTree, 0, l, r, 0, hash.length - 1);
+        int max = queryMin(segTree, 0, l, r, 0, hash.length - 1);
+
+        int minIndex = hash[min];
+        int maxIndex = hash[max];
+
+        if(minIndex > maxIndex)
+            maxIndex = minIndex + maxIndex - (minIndex = maxIndex);
+
+        return recurse(segTree, hash, l, minIndex) + recurse(segTree, hash, maxIndex, r) + 1;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] arr = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
+            int[] hash = new int[n];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                arr[i]--;
+                hash[arr[i]] = i;
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+            int sn = 2 * getNextPowerOf2(n) - 1;
+            Node[] segTree = new Node[sn];
+            build(segTree, 0, arr, 0, n-1);
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
+            int ans = recurse(segTree, hash, 0, n-1);
             sb.append(ans).append("\n");
         }
 

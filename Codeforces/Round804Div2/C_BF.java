@@ -1,66 +1,98 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round804Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class C_BF {
 
-    static long mod = (long) 1e9+7;
+    static boolean getNextPermutation(int[] a){
+        int n = a.length;
+        for(int i=n-1;i>0;i--){
+            int l = -1;
+            if(a[i]>a[i-1]){
+                for(int j=i;j<n;j++){
+                    if(a[j]>a[i-1])
+                        l = j;
+                }
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+                int t = a[l];
+                a[l] = a[i-1];
+                a[i-1] = t;
+
+                for(int j=i;j<n-j+i-1;j++){
+                    t = a[j];
+                    a[j] = a[n-j+i-1];
+                    a[n-j+i-1] = t;
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static int mex(Set<Integer> set){
+        for(int i=0;i<10;i++)
+            if(!set.contains(i))
+                return i;
+        return 10;
+    }
+    static int getMex(int[] arr, int start, int end){
+        Set<Integer> set = new HashSet<>();
+        for(int i=start;i<=end;i++){
+            set.add(arr[i]);
+        }
+
+        return mex(set);
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
+        sc.streamOutput("Output2.txt");
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] arr = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
+            int[][] mex = new int[n][n];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+                for(int j=0;j<n;j++){
+                    mex[i][j] = getMex(arr, i, j);
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
             for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                arr[i] = i;
             }
 
-            sb.append(ans).append("\n");
+            int c = 0;
+            do{
+                boolean flag = true;
+                for(int i=0;i<n;i++){
+                    for(int j=0;j<n;j++){
+                        int cmex = getMex(arr, i, j);
+                        if(cmex != mex[i][j]){
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    if(!flag)
+                        break;
+                }
+                if(flag) {
+                    //System.out.println(Arrays.toString(arr));
+                    c++;
+                }
+            }while (getNextPermutation(arr));
+
+            sb.append(c).append("\n");
+            System.out.println(c);
         }
 
-        System.out.println(sb);
+        sc.println(sb.toString());
 
         sc.close();
     }

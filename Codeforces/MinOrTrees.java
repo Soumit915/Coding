@@ -1,63 +1,103 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class MinOrTrees {
 
-    static long mod = (long) 1e9+7;
+    static class Set{
+        int id;
+        int c;
+        Set parent;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Set(int id){
+            this.id = id;
+            this.c = 1;
+            this.parent = this;
+        }
+
+        public void union(Set u, Set v){
+            Set pu = u.getParent();
+            Set pv = v.getParent();
+
+            if(pu.c > pv.c){
+                pv.parent = pu;
+                pu.c += pv.c;
+            }
+            else{
+                pu.parent = pv;
+                pv.c += pu.c;
+            }
+        }
+
+        public Set getParent(){
+            if(this.parent == this)
+                return this;
+
+            this.parent = this.parent.getParent();
+            return this.parent;
+        }
+    }
+
+    static class Edge{
+        int u, v, w;
+
+        Edge(int u, int v, int w){
+            this.u = u;
+            this.v = v;
+            this.w = w;
+        }
+    }
+
+    static boolean isValid(Edge[] edges, int cost, int n){
+        Set[] sets = new Set[n];
+        for(int i=0;i<n;i++){
+            sets[i] = new Set(i);
+        }
+
+        int edges_taken = 0;
+        int ci = 0;
+        for (Edge e : edges) {
+            Set u = sets[e.u];
+            Set v = sets[e.v];
+
+            if (u.getParent() == v.getParent() || (cost | e.w) != cost) {
+                continue;
+            }
+
+            u.union(u, v);
+            ci |= e.w;
+            edges_taken++;
+        }
+
+        return edges_taken == n-1;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
+
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int m = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+            Edge[] edges = new Edge[m];
+            for(int i=0;i<m;i++){
+                edges[i] = new Edge(sc.nextInt()-1, sc.nextInt()-1, sc.nextInt());
+            }
+
+            int r = (1<<30) - 1;
+            for(int j=29;j>=0;j--){
+                int mid = (r ^ (1<<j));
+
+                if(isValid(edges, mid, n)){
+                    r = mid;
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+            sb.append(r).append("\n");
         }
 
         System.out.println(sb);

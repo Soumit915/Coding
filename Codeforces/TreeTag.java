@@ -1,63 +1,97 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class TreeTag {
 
-    static long mod = (long) 1e9+7;
+    static class Node{
+        int id;
+        List<Node> adlist = new ArrayList<>();
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        int diameter_crossing_through;
+        int diameter_till_here;
+
+        boolean isVisited;
+
+        Node(int id){
+            this.id = id;
+            this.isVisited = false;
+            this.diameter_crossing_through = 0;
+            this.diameter_till_here = 0;
+        }
+    }
+
+    static class Tree{
+        List<Node> nodelist = new ArrayList<>();
+
+        Tree(int n){
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+
+        public void addEdge(int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            nu.adlist.add(nv);
+            nv.adlist.add(nu);
+        }
+
+        public void getDiameter(){
+            Node source = nodelist.get(0);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+
+
+            while(!stk.isEmpty()){
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+                    if(!next.isVisited){
+                        stk.push(next);
+                        ptrstk.push(-1);
+                        next.isVisited = true;
+                    }
+                }
+                else{
+
+                    for(Node node: cur.adlist){
+
+                    }
+                }
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int tc = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (tc-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int a = sc.nextInt();
+            int b = sc.nextInt();
+            int da = sc.nextInt();
+            int db = sc.nextInt();
 
-            long[] bits = new long[60];
+            Tree tr = new Tree(n);
+
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                tr.addEdge(sc.nextInt()-1, sc.nextInt()-1);
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+            tr.getDiameter();
         }
 
         System.out.println(sb);

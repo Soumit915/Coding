@@ -1,60 +1,78 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round804Div2;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class C {
 
-    static long mod = (long) 1e9+7;
+    static long mod = (long) 1e9 + 7;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    static long x, y;
+    static void gcdExtended(long a, long b){
+        if(a%b==0) {
+            x = 1;
+            y = 1 - (a/b);
+            return;
+        }
+        gcdExtended(b, a%b);
+        long t = y;
+        y = x - ((a/b)*y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long b){
+        gcdExtended(a, b);
+        x = (x%b + b)%b;
+        return x;
+    }
+
+    static long nCr(long[] fact, long[] inverse, int a, int b){
+        long num = fact[a];
+        long deno = (inverse[b] * inverse[a-b]) %  mod;
+        num = (num * deno) % mod;
+
+        return num;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        long[] fact = new long[100100];
+        long[] inverse = new long[100100];
+        fact[0] = 1;
+        inverse[0] = 1;
+        for(int i=1;i<100100;i++){
+            fact[i] = (fact[i-1] * i) % mod;
+            inverse[i] = modInverse(fact[i], mod);
+        }
+
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int[] arr = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
+            int[] hash = new int[n];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                hash[arr[i]] = i;
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+            long ans = 1;
+            int l = hash[0], r = hash[0];
+            int last_len = 1;
+            for(int i=1;i<n;i++){
+                if(hash[i]>=l && hash[i]<=r)
+                    continue;
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
+                l = Math.min(l, hash[i]);
+                r = Math.max(r, hash[i]);
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                int len = r - l + 1;
+
+                int greater = len - (i + 1);
+                long cur = ((nCr(fact, inverse, greater , len - last_len - 1)%mod) * (fact[len - last_len - 1] % mod)) % mod;
+                ans = (ans * cur) % mod;
+
+                last_len = len;
             }
 
             sb.append(ans).append("\n");

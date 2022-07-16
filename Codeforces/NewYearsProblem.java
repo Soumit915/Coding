@@ -1,63 +1,76 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class NewYearsProblem {
 
-    static long mod = (long) 1e9+7;
+    static class Node{
+        int id, shop, happiness;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        Node(int id, int shop, int happiness){
+            this.id = id;
+            this.shop = shop;
+            this.happiness = happiness;
+        }
+    }
+
+    static boolean isValid(Node[][] happinessTable, int x){
+        int m = happinessTable[0].length;
+
+        int[] shops = new int[m];
+
+        for (Node[] nodes : happinessTable) {
+            boolean flag = false;
+
+            for (int j = 0; j < m; j++) {
+                if (nodes[j].happiness >= x) {
+                    flag = true;
+                    shops[j]++;
+                }
+            }
+
+            if (!flag)
+                return false;
+        }
+
+        int max = 0;
+        for(int i=0;i<m;i++){
+            max = Math.max(max, shops[i]);
+        }
+
+        return max >= 2;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
+            int m = sc.nextInt();
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+            Node[][] happinessTable = new Node[n][m];
+            for(int i=0;i<m;i++){
+                for(int j=0;j<n;j++){
+                    happinessTable[j][i] = new Node(j, i, sc.nextInt());
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+            int l = 1, r = 1000000000;
+            while(l < r){
+                int mid = (l + r + 1) / 2;
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
+                if(isValid(happinessTable, mid)){
+                    l = mid;
                 }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                else{
+                    r = mid - 1;
+                }
             }
 
-            sb.append(ans).append("\n");
+            sb.append(l).append("\n");
         }
 
         System.out.println(sb);

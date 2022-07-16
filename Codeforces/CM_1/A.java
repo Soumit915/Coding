@@ -1,63 +1,134 @@
-package Codeforces.GoodBye2020;
+package Codeforces.CM_1;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class A {
 
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    static class Target{
+        int x, y;
+        Target(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+        int n = sc.nextInt();
+        int[] arr = sc.nextIntArray(n);
+
+        Queue<Integer> q1 = new LinkedList<>();
+        Queue<Integer> q23 = new LinkedList<>();
+        for(int i=0;i<n;i++){
+            if(arr[i] == 1){
+                q1.add(i);
+            }
+            else if(arr[i] == 2){
+                q23.add(i);
+            }
+            else if(arr[i] == 3){
+                q23.add(i);
+            }
+        }
+
+        boolean[] isVisited = new boolean[n];
+        List<Target> list = new ArrayList<>();
+        boolean flag = true;
+        for(int i=0;i<n;i++){
+            if(arr[i] == 0 || isVisited[i]){
+                isVisited[i] = true;
+                continue;
+            }
+
+            if(arr[i] == 1){
+                list.add(new Target(i, i));
+                isVisited[i] = true;
+
+                while(!q1.isEmpty() && q1.peek() <= i)
+                    q1.remove();
+            }
+            else if(arr[i] == 2){
+                if(q1.isEmpty()){
+                    flag = false;
+                    break;
                 }
-            }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+                int nextOne = q1.remove();
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
+                list.add(new Target(i, i));
+                list.add(new Target(i, nextOne));
+                isVisited[i] = true;
+                isVisited[nextOne] = true;
+            }
+            else{
+                while(!q23.isEmpty() && q23.peek() <= i)
+                    q23.remove();
+
+                if((!q1.isEmpty() && !q23.isEmpty() && q23.peek() > q1.peek())){
+                    int nextOne = q1.remove();
+
+                    list.add(new Target(i, i));
+                    list.add(new Target(i, nextOne));
+                    list.add(new Target(nextOne, nextOne));
+                    isVisited[i] = true;
+                    isVisited[nextOne] = true;
+                }
+                else if(!q23.isEmpty()){
+                    int next23 = q23.remove();
+
+                    if(arr[next23] == 2){
+
+                        if(q1.isEmpty()){
+                            flag = false;
+                            break;
+                        }
+
+                        int nextOne = q1.remove();
+
+                        list.add(new Target(i, i));
+                        list.add(new Target(i, next23));
+                        list.add(new Target(next23, next23));
+                        list.add(new Target(next23, nextOne));
+
+                        isVisited[i] = true;
+                        isVisited[next23] = true;
+                        isVisited[nextOne] = true;
                     }
                     else{
-                        cur2 = (cur2 + power[j]) % mod;
+                        list.add(new Target(i, i));
+                        list.add(new Target(i, next23));
+
+                        isVisited[i] = true;
                     }
                 }
+                else if(!q1.isEmpty()){
+                    int nextOne = q1.remove();
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                    list.add(new Target(i, i));
+                    list.add(new Target(i, nextOne));
+                    list.add(new Target(nextOne, nextOne));
+                    isVisited[i] = true;
+                    isVisited[nextOne] = true;
+                }
+                else{
+                    flag = false;
+                    break;
+                }
             }
+        }
 
-            sb.append(ans).append("\n");
+        if(flag){
+            sb.append(list.size()).append("\n");
+            for(Target t: list){
+                sb.append(t.x + 1).append(" ").append(t.y + 1).append("\n");
+            }
+        }
+        else{
+            sb.append("-1\n");
         }
 
         System.out.println(sb);

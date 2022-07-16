@@ -1,68 +1,53 @@
-package Codeforces.GoodBye2020;
+package Codeforces.Round805Div3;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class D {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Scanner sc = new Scanner(System.in);
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        while (testcases-->0){
+            String s = sc.next();
+            int n = s.length();
 
-            long[] bits = new long[60];
+            int k = sc.nextInt();
+
+            int[] hash = new int[26];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
+                hash[s.charAt(i) - 'a']++;
+            }
+
+            int c = 0;
+            for(int i=0;i<26;i++){
+                if(c + hash[i] * (i+1) > k){
+                    int left = k - c;
+                    left /= (i + 1);
+                    hash[i] = left;
+
+                    i++;
+                    for(;i<26;i++){
+                        hash[i] = 0;
                     }
+                    break;
+                }
+                else{
+                    c += hash[i] * (i + 1);
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
             for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
+                if(hash[s.charAt(i) - 'a'] > 0){
+                    sb.append(s.charAt(i));
+                    hash[s.charAt(i) - 'a']--;
                 }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
             }
-
-            sb.append(ans).append("\n");
+            sb.append("\n");
         }
 
         System.out.println(sb);
-
-        sc.close();
     }
 
     static class Soumit {

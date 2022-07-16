@@ -1,66 +1,61 @@
-package Codeforces.GoodBye2020;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class MinimumSumOfSquaredDiff {
 
-    static long mod = (long) 1e9+7;
+    static boolean isMax(long[] diff, long max, long tot){
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        long c = 0;
+        for (long l : diff) {
+            c += Math.max(0, l - max);
+        }
+
+        return c <= tot;
+    }
+
+    public static long minSumSquareDiff(int[] nums1, int[] nums2, int k1, int k2) {
+
+        int n = nums1.length;
+
+        long[] diff = new long[n];
+        for(int i=0;i<n;i++){
+            diff[i] = Math.abs(nums1[i] - nums2[i]);
+        }
+
+        long l = 0, r = k1 + k2;
+
+        while(l < r){
+            long mid = (l + r) / 2;
+
+            if(isMax(diff, mid, k1 + k2)){
+                r = mid;
+            }
+            else{
+                l = mid + 1;
+            }
+        }
+
+        for(int i=0;i<n;i++){
+            diff[i] = Math.min(diff[i], l);
+        }
+
+        long ans = 0;
+        for(int i=0;i<n;i++){
+            ans += (diff[i] * diff[i]);
+        }
+
+        return ans;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int[] n1 = {1,2,3,4};
+        int[] n2 = {2,10,20,19};
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
-        }
-
-        System.out.println(sb);
+        minSumSquareDiff(n1, n2, 0, 0);
 
         sc.close();
     }

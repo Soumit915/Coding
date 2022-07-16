@@ -1,66 +1,60 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class PlacingJinas {
 
-    static long mod = (long) 1e9+7;
+    static long mod = (long) 1e9 + 7;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    static long x, y;
+    static void gcdExtended(long a, long b, long mod){
+        if(a%b==0) {
+            x = 1;
+            y = 1 - (a/b);
+            return;
+        }
+        gcdExtended(b, a%b, mod);
+        long t = y;
+        y = x - ((a/b)*y)%mod;
+        x = t;
+    }
+    static long modInverse(long a, long b){
+        gcdExtended(a, b, b);
+        x = (x%b + b)%b;
+        return x;
+    }
+
+    static long nCr(long[] fact, long[] inverse, int a, int b){
+        long num = fact[a];
+        long deno = (inverse[b] * inverse[a-b]) %  mod;
+        num = (num * deno) % mod;
+
+        return num;
     }
 
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Soumit sc = new Soumit("Input.txt");
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int n = sc.nextInt() + 1;
+        int[] arr = sc.nextIntArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
+        long[] fact = new long[500000];
+        long[] inverse = new long[500000];
+        fact[0] = 1;
+        inverse[0] = 1;
+        for(int i=1;i<500000;i++){
+            fact[i] = (fact[i-1] * i) % mod;
+            inverse[i] = modInverse(fact[i], mod);
         }
 
-        System.out.println(sb);
+        long sum = 0;
+        for(int i=0;i<n;i++){
+            if(arr[i] > 0)
+                sum = (sum + nCr(fact, inverse, i+arr[i], i+1)) % mod;
+        }
+
+        System.out.println(sum);
 
         sc.close();
     }

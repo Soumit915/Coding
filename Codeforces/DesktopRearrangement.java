@@ -1,63 +1,96 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class DesktopRearrangement {
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit();
+        Scanner sc = new Scanner(System.in);
 
-        int t = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        int q = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
+        char[][] mat = new char[n][m];
+        for(int i=0;i<n;i++){
+            mat[i] = sc.next().toCharArray();
+        }
+
+        int c = 0;
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(mat[i][j] == '*'){
+                    c++;
+                }
+            }
+        }
+
+        int col = -1, row = -1, d = 0;
+        if(c > 0){
+            col = (c - 1) / n;
+            row = (c - 1 + n) % n;
+
+            for(int j=0;j<col;j++){
+                for(int i=0;i<n;i++){
+                    if(mat[i][j] == '*'){
+                        d++;
                     }
                 }
             }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
+            for(int i=0;i<=row;i++){
+                if(mat[i][col] == '*'){
+                    d++;
+                }
             }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
+        }
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
+        while(q-->0){
+            int x = sc.nextInt()-1;
+            int y = sc.nextInt()-1;
+
+            if(c == 0){
+                c++;
+                if(x == 0 && y == 0){
+                    d++;
+                }
+                mat[x][y] = '*';
+                row = 0; col = 0;
+            }
+            else if(mat[x][y] == '*'){
+                c--;
+                if(y<col || (y==col && x<=row)){
+                    d--;
                 }
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                mat[x][y] = '.';
+
+                if(mat[row][col] == '*'){
+                    d--;
+                }
+
+                row = (row - 1 + n) % n;
+                if(row == n-1)
+                    col--;
+            }
+            else{
+                c++;
+                if(y<col || (y==col && x<=row)){
+                    d++;
+                }
+
+                mat[x][y] = '*';
+
+                row = (row + 1) % n;
+                if(row == 0)
+                    col++;
+
+                if(mat[row][col] == '*'){
+                    d++;
+                }
             }
 
-            sb.append(ans).append("\n");
+            sb.append(c - d).append("\n");
         }
 
         System.out.println(sb);

@@ -1,66 +1,61 @@
-package Codeforces.GoodBye2020;
+package Leetcode;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class InterleavingString {
 
-    static long mod = (long) 1e9+7;
+    static boolean[][] dp;
+    static boolean[][] isVisited;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    static boolean recurse(String s1, String s2, String s3, int si1, int si2){
+        int n1 = s1.length();
+        int n2 = s2.length();
+
+        if(isVisited[si1][si2]){
+            return dp[si1][si2];
+        }
+
+        isVisited[si1][si2] = true;
+
+        if(si1==n1 && si2==n2){
+            dp[si1][si2] = true;
+            return dp[si1][si2];
+        }
+
+        if(si1==n1){
+            dp[si1][si2] = (s2.charAt(si2)==s3.charAt(si1+si2)) && recurse(s1, s2, s3, si1, si2+1);
+            return dp[si1][si2];
+        }
+
+        if(si2==n2){
+            dp[si1][si2] = (s1.charAt(si1)==s3.charAt(si1+si2)) && recurse(s1, s2, s3, si1+1, si2);
+            return dp[si1][si2];
+        }
+
+        dp[si1][si2] = (s1.charAt(si1) == s3.charAt(si1 + si2) && recurse(s1, s2, s3, si1 + 1, si2))
+                || (s2.charAt(si2) == s3.charAt(si1 + si2) && recurse(s1, s2, s3, si1, si2 + 1));
+
+        return dp[si1][si2];
+    }
+
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int n1 = s1.length();
+        int n2 = s2.length();
+        int n3 = s3.length();
+
+        dp = new boolean[n1+1][n2+1];
+        isVisited = new boolean[n1+1][n2+1];
+
+        if(Math.abs(n1-n2)>1 || n1+n2!=n3)
+            return false;
+        else return recurse(s1, s2, s3, 0, 0);
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
-            int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
-            }
-
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
-        }
-
-        System.out.println(sb);
 
         sc.close();
     }

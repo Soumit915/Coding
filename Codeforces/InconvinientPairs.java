@@ -1,68 +1,208 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
-
-    static long mod = (long) 1e9+7;
-
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
-    }
-
+public class InconvinientPairs {
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int m = sc.nextInt();
+            int k = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+            int[] vertical = sc.nextIntArray(n);
+            int[] horizontal = sc.nextIntArray(m);
+
+            int[][] people = new int[k][2];
+            HashMap<Integer, List<Integer>> vertical_hashList = new HashMap<>();
+            HashMap<Integer, List<Integer>> horizontal_hashList = new HashMap<>();
+            for(int i=0;i<k;i++){
+                people[i] = sc.nextIntArray(2);
+
+                if(Arrays.binarySearch(vertical, people[i][0]) >= 0){
+                    List<Integer> list = vertical_hashList.getOrDefault(people[i][0], new ArrayList<>());
+                    list.add(people[i][1]);
+                    vertical_hashList.put(people[i][0], list);
+                }
+
+                if(Arrays.binarySearch(horizontal, people[i][1]) >= 0){
+                    List<Integer> list = horizontal_hashList.getOrDefault(people[i][1], new ArrayList<>());
+                    list.add(people[i][0]);
+                    horizontal_hashList.put(people[i][1], list);
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
+            for(int i: vertical_hashList.keySet()){
+                List<Integer> list = vertical_hashList.get(i);
+                Collections.sort(list);
             }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
+            for(int i: horizontal_hashList.keySet()){
+                List<Integer> list = horizontal_hashList.get(i);
+                Collections.sort(list);
             }
+
+            int[] horizontal_hash = new int[k];
+            int[] vertical_hash = new int[k];
+            for(int i=0;i<k;i++){
+                horizontal_hash[i] = people[i][1];
+                vertical_hash[i] = people[i][0];
+            }
+
+            Arrays.sort(horizontal_hash);
+            Arrays.sort(vertical_hash);
 
             long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
+            for(int i=0;i<k;i++){
+                int x = people[i][0];
+                int y = people[i][1];
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
+                if(vertical_hashList.containsKey(x) && horizontal_hashList.containsKey(y)){
+                    continue;
+                }
+                else if(vertical_hashList.containsKey(x)){
+                    int up = lower_bound(horizontal, y - 1);
+                    int down = upper_bound(horizontal, y + 1);
+
+                    long count = upper_bound_index(horizontal_hash, down) - lower_bound_index(horizontal_hash, up) - 1;
+
+                    List<Integer> in_the_same_sector_line = vertical_hashList.get(x);
+                    long in = lower_bound(in_the_same_sector_line, down - 1) - upper_bound(in_the_same_sector_line, up + 1) + 1;
+                    long tot = (count - in);
+                    ans += tot;
+                }
+                else{
+                    int up = lower_bound(vertical, x - 1);
+                    int down = upper_bound(vertical, x + 1);
+
+                    long count = upper_bound_index(vertical_hash, down) - lower_bound_index(vertical_hash, up) - 1;
+
+                    List<Integer> in_the_same_sector_line = horizontal_hashList.get(y);
+                    long in = lower_bound(in_the_same_sector_line, down - 1) - upper_bound(in_the_same_sector_line, up + 1) + 1;
+                    long tot = (count - in);
+                    ans += tot;
+                }
             }
 
-            sb.append(ans).append("\n");
+            sb.append(ans / 2).append("\n");
         }
 
         System.out.println(sb);
 
         sc.close();
+    }
+
+    static int lower_bound(int[] arr, int k){
+        int l = 0, r = arr.length - 1;
+
+        while(l < r){
+            int mid = (l + r + 1) / 2;
+
+            if(arr[mid] > k){
+                r = mid - 1;
+            }
+            else{
+                l = mid;
+            }
+        }
+
+        return arr[l];
+    }
+
+    static int upper_bound(int[] arr, int k){
+        int l = 0, r = arr.length - 1;
+
+        while(l < r){
+            int mid = (l + r) / 2;
+
+            if(arr[mid] < k){
+                l = mid + 1;
+            }
+            else{
+                r = mid;
+            }
+        }
+
+        return arr[l];
+    }
+
+    static int lower_bound_index(int[] arr, int k){
+        int l = 0, r = arr.length - 1;
+
+        while(l < r){
+            int mid = (l + r + 1) / 2;
+
+            if(arr[mid] > k){
+                r = mid - 1;
+            }
+            else{
+                l = mid;
+            }
+        }
+
+        if(l == 0 && arr[l] > k){
+            return -1;
+        }
+
+        return l;
+    }
+
+    static int upper_bound_index(int[] arr, int k){
+        int l = 0, r = arr.length - 1;
+
+        while(l < r){
+            int mid = (l + r) / 2;
+
+            if(arr[mid] < k){
+                l = mid + 1;
+            }
+            else{
+                r = mid;
+            }
+        }
+
+        if(l == arr.length - 1 && arr[l] < k){
+            return arr.length;
+        }
+
+        return l;
+    }
+
+    static int lower_bound(List<Integer> list, int k){
+        int l = 0, r = list.size() - 1;
+
+        while(l < r){
+            int mid = (l + r + 1) / 2;
+
+            if(list.get(mid) > k){
+                r = mid - 1;
+            }
+            else{
+                l = mid;
+            }
+        }
+
+        return l;
+    }
+
+    static int upper_bound(List<Integer> list, int k){
+        int l = 0, r = list.size() - 1;
+
+        while(l < r){
+            int mid = (l + r) / 2;
+
+            if(list.get(mid) < k){
+                l = mid + 1;
+            }
+            else{
+                r = mid;
+            }
+        }
+
+        return l;
     }
 
     static class Soumit {

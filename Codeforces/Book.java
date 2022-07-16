@@ -1,62 +1,105 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class Book {
 
-    static long mod = (long) 1e9+7;
+    static class Node{
+        int id;
+        int cp;
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        int dist;
+
+        List<Node> adlist = new ArrayList<>();
+        List<Node> preRequisite = new ArrayList<>();
+
+        Node(int id){
+            this.id = id;
+            this.cp = 0;
+            this.dist = 1;
+        }
+    }
+
+    static class Graph{
+        List<Node> nodelist;
+
+        Graph(int n){
+            nodelist = new ArrayList<>();
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+
+        public void addEdge(int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            nu.adlist.add(nv);
+            nv.preRequisite.add(nu);
+            nv.cp++;
+        }
+
+        public int sortTopo(){
+            boolean[] isVisited = new boolean[nodelist.size()];
+
+            Queue<Node> q = new LinkedList<>();
+
+            for(Node node: nodelist){
+                if(node.cp == 0){
+                    node.dist = 1;
+                    q.add(node);
+                }
+            }
+
+            while(!q.isEmpty()){
+                Node cur = q.remove();
+                isVisited[cur.id] = true;
+
+                for(Node node: cur.adlist){
+                    if(node.id < cur.id) {
+                        node.dist = Math.max(node.dist, cur.dist + 1);
+                    }
+                    else{
+                        node.dist = Math.max(node.dist, cur.dist);
+                    }
+                    node.cp--;
+
+                    if(node.cp == 0){
+                        q.add(node);
+                    }
+                }
+            }
+
+            for(boolean flag: isVisited){
+                if(!flag) return -1;
+            }
+
+            int max = 0;
+            for(Node node: nodelist)
+                max = Math.max(max, node.dist);
+
+            return max;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
 
-            long[] bits = new long[60];
+            Graph gr = new Graph(n);
+
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+                int k = sc.nextInt();
+                for(int j=0;j<k;j++)
+                    gr.addEdge(sc.nextInt()-1, i);
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
-            }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
+            int ans = gr.sortTopo();
             sb.append(ans).append("\n");
         }
 

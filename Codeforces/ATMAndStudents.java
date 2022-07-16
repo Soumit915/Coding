@@ -1,63 +1,114 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class ATMAndStudents {
 
-    static long mod = (long) 1e9+7;
+    static int getMaxCols(int n){
+        int i = 0;
+        while((1<<(i+1)) <= n){
+            i++;
+        }
+        return i;
+    }
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+    static void build(long[][] sparseTable, long[] arr){
+        int n = arr.length;
+        int col = sparseTable[0].length;
+
+        for(int i=0;i<n;i++){
+            sparseTable[i][0] = arr[i];
+        }
+
+        for(int i=1;i<col;i++){
+            for(int j=0;j<n;j++){
+                if(j + (1<<(i-1)) >= n)
+                    break;
+
+                sparseTable[j][i] = Math.min(sparseTable[j][i-1], sparseTable[j + (1<<(i-1))][i-1]);
+            }
+        }
+    }
+
+    static long query(long[][] sparseTable, int l, int r){
+        int col = getMaxCols(r - l);
+        long min = sparseTable[l][col];
+
+        int left = r-l+1 - (1<<col);
+        if(left > 0){
+            min = Math.min(min, sparseTable[l + left][col]);
+        }
+
+        return min;
+    }
+
+    static int getStart(long[][] sparseTable, int len, long s){
+        int n = sparseTable.length;
+
+        if(len == 0)
+            return 0;
+
+        for(int i=0;i<n;i++){
+            if(i+len > n)
+                break;
+            long min = query(sparseTable, i, i+len-1);
+
+            if(i > 0){
+                min -= query(sparseTable, i-1, i-1);
+            }
+
+            if(min >= s * -1)
+                return i;
+        }
+
+        return -1;
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
+            long s = sc.nextLong();
+
             long[] arr = sc.nextLongArray(n);
+            long[] prefix = new long[n];
+            prefix[0] = arr[0];
+            for(int i=1;i<n;i++){
+                prefix[i] = prefix[i-1] + arr[i];
+            }
 
-            long[] bits = new long[60];
+            int cols = getMaxCols(n);
+            long[][] sparseTable = new long[n][cols+1];
             for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
+                Arrays.fill(sparseTable[i], Long.MAX_VALUE);
+            }
+            build(sparseTable, prefix);
+
+            int l = 0, r = n;
+            int start;
+            while(l < r){
+                int mid = (l + r + 1) / 2;
+
+                start = getStart(sparseTable, mid, s);
+                if(start >= 0){
+                    l = mid;
+                }
+                else{
+                    r = mid - 1;
                 }
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
+            if(l == 0){
+                sb.append("-1\n");
             }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
+            else{
+                start = getStart(sparseTable, l, s);
+                sb.append(start+1).append(" ").append(start + l).append("\n");
             }
-
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
-
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
-
-            sb.append(ans).append("\n");
         }
 
         System.out.println(sb);

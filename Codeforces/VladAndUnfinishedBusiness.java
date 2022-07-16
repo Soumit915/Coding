@@ -1,61 +1,146 @@
-package Codeforces.GoodBye2020;
+package Codeforces;
 
 import java.io.*;
 import java.util.*;
 
-public class E {
+public class VladAndUnfinishedBusiness {
 
-    static long mod = (long) 1e9+7;
+    static class Node{
+        int id;
+        Node parent;
+        List<Node> adlist = new ArrayList<>();
 
-    static boolean isSet(long n, int i){
-        return (n&(1L<<i)) != 0;
+        int return_cost;
+        int single_cost;
+
+        boolean isDest;
+        boolean hasWork;
+
+        Node(int id){
+            this.id = id;
+            this.parent = null;
+            this.isDest = false;
+            this.hasWork = false;
+            this.return_cost = 0;
+            this.single_cost = 0;
+        }
+    }
+
+    static class Tree{
+
+        List<Node> nodelist;
+        Tree(int n){
+            nodelist = new ArrayList<>(n);
+            for(int i=0;i<n;i++){
+                nodelist.add(new Node(i));
+            }
+        }
+
+        public void addEdge(int u, int v){
+            Node nu = nodelist.get(u);
+            Node nv = nodelist.get(v);
+
+            nu.adlist.add(nv);
+            nv.adlist.add(nu);
+        }
+
+        public void setParent(int x){
+            Node source = nodelist.get(x);
+
+            Stack<Node> stk = new Stack<>();
+            Stack<Integer> ptrstk = new Stack<>();
+
+            stk.push(source);
+            ptrstk.push(-1);
+
+            while(!stk.isEmpty()) {
+                Node cur = stk.pop();
+                int ptr = ptrstk.pop();
+
+                if(ptr < cur.adlist.size() - 1){
+                    ptr++;
+                    stk.push(cur);
+                    ptrstk.push(ptr);
+
+                    Node next = cur.adlist.get(ptr);
+                    if(stk.isEmpty() || cur.parent!=next){
+                        stk.push(next);
+                        ptrstk.push(-1);
+                        next.parent = cur;
+                    }
+                }
+                else {
+                    for(Node node: cur.adlist){
+                        if(node == cur.parent)
+                            continue;
+                        if(node.hasWork || node.return_cost > 0){
+                            cur.return_cost += node.return_cost + 2;
+                        }
+
+                        cur.isDest |= node.isDest;
+                    }
+                }
+            }
+        }
+
+        public int dfs(int x){
+            Node source = nodelist.get(x);
+
+            Stack<Node> stk = new Stack<>();
+            stk.push(source);
+
+            int cost = 0;
+
+            while(!stk.isEmpty()){
+                source = stk.pop();
+
+                for(Node node: source.adlist){
+                    if(node == source.parent)
+                        continue;
+
+                    if((node.hasWork || node.return_cost>0) && !node.isDest){
+                        cost += (node.return_cost + 2);
+                    }
+                    else if(node.isDest){
+                        cost++;
+                        stk.push(node);
+                    }
+                }
+            }
+
+            return cost;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
+        int testcases = sc.nextInt();
         StringBuilder sb = new StringBuilder();
-        while (t-->0)
-        {
+        while (testcases-->0){
             int n = sc.nextInt();
-            long[] arr = sc.nextLongArray(n);
+            int k = sc.nextInt();
 
-            long[] bits = new long[60];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<bits.length;j++){
-                    if(isSet(arr[i], j)){
-                        bits[j]++;
-                    }
-                }
+            int x = sc.nextInt()-1;
+            int y = sc.nextInt()-1;
+
+            Tree tr = new Tree(n);
+
+            int[] a = new int[k];
+            for(int i=0;i<k;i++){
+                a[i] = sc.nextInt() - 1;
+                tr.nodelist.get(a[i]).hasWork = true;
             }
 
-            long[] pow = new long[60];
-            long[] power = new long[60];
-            pow[0] = 1;
-            for(int i=1;i<60;i++){
-                pow[i] = (pow[i-1] * 2L) % mod;
-            }
-            for(int i=0;i<60;i++){
-                power[i] = (pow[i] * bits[i])%mod;
+            for(int i=0;i<n-1;i++){
+                tr.addEdge(sc.nextInt()-1, sc.nextInt()-1);
             }
 
-            long ans = 0;
-            for(int i=0;i<n;i++){
-                long cur1 = 0;
-                long cur2 = 0;
-                for(int j=0;j<60;j++){
-                    if(isSet(arr[i], j)){
-                        cur1 = (cur1 + power[j]) % mod;
-                        cur2 = (cur2 + (pow[j] * n) % mod) % mod;
-                    }
-                    else{
-                        cur2 = (cur2 + power[j]) % mod;
-                    }
-                }
+            tr.nodelist.get(y).isDest = true;
 
-                ans = (ans + (cur1 * cur2) % mod ) % mod;
-            }
+            tr.setParent(x);
+
+            int ans = tr.dfs(x);
 
             sb.append(ans).append("\n");
         }

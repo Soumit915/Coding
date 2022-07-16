@@ -4,22 +4,83 @@ import java.io.*;
 import java.util.*;
 
 public class D {
+
+    static long[][][] dp;
+
+    static long recurse(Long[] rpairs, Long[] gpairs, Long[] bpairs, int ri, int gi, int bi){
+        int r = rpairs.length;
+        int g = gpairs.length;
+        int b = bpairs.length;
+
+        if(dp[ri][gi][bi] != -1)
+            return dp[ri][gi][bi];
+
+        if(ri >= r){
+            if(gi >= g || bi >= b){
+                dp[ri][gi][bi] = 0;
+                return dp[ri][gi][bi];
+            }
+            else{
+                dp[ri][gi][bi] = recurse(rpairs, gpairs, bpairs, ri, gi + 1, bi + 1) + (gpairs[gi] * bpairs[bi]);
+                return dp[ri][gi][bi];
+            }
+        }
+        else if(gi >= g){
+            if(bi >= b){
+                dp[ri][gi][bi] = 0;
+                return dp[ri][gi][bi];
+            }
+            else{
+                dp[ri][gi][bi] = recurse(rpairs, gpairs, bpairs, ri + 1, gi, bi + 1) + (rpairs[ri] * bpairs[bi]);
+                return dp[ri][gi][bi];
+            }
+        }
+        else if(bi >= b){
+            dp[ri][gi][bi] = recurse(rpairs, gpairs, bpairs, ri + 1, gi + 1, bi) + (rpairs[ri] * gpairs[gi]);
+            return dp[ri][gi][bi];
+        }
+        else{
+            dp[ri][gi][bi] = Math.max(Math.max(recurse(rpairs, gpairs, bpairs, ri, gi + 1, bi + 1) + (gpairs[gi] * bpairs[bi]),
+                    recurse(rpairs, gpairs, bpairs, ri + 1, gi, bi + 1) + (rpairs[ri] * bpairs[bi])) ,
+                    recurse(rpairs, gpairs, bpairs, ri + 1, gi + 1, bi) + (rpairs[ri] * gpairs[gi]));
+            return dp[ri][gi][bi];
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit();
 
-        int t = sc.nextInt();
-        StringBuilder sb = new StringBuilder();
-        while (t-->0){
-            int r = sc.nextInt();
-            int g = sc.nextInt();
-            int b = sc.nextInt();
+        int r = sc.nextInt();
+        int g = sc.nextInt();
+        int b = sc.nextInt();
 
-            int[] rpairs = new int[r];
-            int[] gpairs = new int[g];
-            int[] bpairs = new int[b];
+        Long[] rpairs = new Long[r];
+        Long[] gpairs = new Long[g];
+        Long[] bpairs = new Long[b];
 
-
+        for(int i=0;i<r;i++){
+            rpairs[i] = sc.nextLong();
         }
+        for(int i=0;i<g;i++){
+            gpairs[i] = sc.nextLong();
+        }
+        for(int i=0;i<b;i++){
+            bpairs[i] = sc.nextLong();
+        }
+
+        Arrays.sort(rpairs, Collections.reverseOrder());
+        Arrays.sort(gpairs, Collections.reverseOrder());
+        Arrays.sort(bpairs, Collections.reverseOrder());
+
+        dp = new long[r+1][g+1][b+1];
+        for(int i=0;i<=r;i++){
+            for(int j=0;j<=g;j++){
+                Arrays.fill(dp[i][j], -1);
+            }
+        }
+        long ans = recurse(rpairs, gpairs, bpairs, 0, 0, 0);
+
+        System.out.println(ans);
 
         sc.close();
     }
