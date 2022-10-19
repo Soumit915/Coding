@@ -10,6 +10,7 @@ public class QueueReconstructionByHeight {
         n |= (n >> 4);
         n |= (n >> 8);
         n |= (n >> 16);
+        n |= (n >> 26);
 
         return n + 1;
     }

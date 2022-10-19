@@ -11,6 +11,7 @@ public class TreeTag {
 
         int diameter_crossing_through;
         int diameter_till_here;
+        int dist;
 
         boolean isVisited;
 
@@ -19,6 +20,7 @@ public class TreeTag {
             this.isVisited = false;
             this.diameter_crossing_through = 0;
             this.diameter_till_here = 0;
+            this.dist = 0;
         }
     }
 
@@ -45,7 +47,9 @@ public class TreeTag {
             Stack<Node> stk = new Stack<>();
             Stack<Integer> ptrstk = new Stack<>();
 
-
+            stk.push(source);
+            ptrstk.push(-1);
+            source.isVisited = true;
 
             while(!stk.isEmpty()){
                 Node cur = stk.pop();
@@ -64,12 +68,49 @@ public class TreeTag {
                     }
                 }
                 else{
-
+                    int m1 = 0, m2 = 0;
                     for(Node node: cur.adlist){
+                        if(stk.isEmpty() || stk.peek()!=node){
+                            if(node.diameter_till_here > m1){
+                                m2 = m1;
+                                m1 = node.diameter_till_here;
+                            }
+                            else if(node.diameter_till_here > m2){
+                                m2 = node.diameter_till_here;
+                            }
+                        }
+                    }
 
+                    cur.diameter_till_here = m1 + 1;
+                    cur.diameter_crossing_through = m1 + m2 + 1;
+                }
+            }
+        }
+
+        public int getDist(int s, int t){
+            Node source = nodelist.get(s);
+            Node sink = nodelist.get(t);
+
+            for(Node node: nodelist)
+                node.isVisited = false;
+
+            Queue<Node> q = new LinkedList<>();
+            q.add(source);
+            source.isVisited = true;
+
+            while(!q.isEmpty()){
+                Node cur = q.remove();
+
+                for(Node node: cur.adlist){
+                    if(!node.isVisited){
+                        node.dist = cur.dist + 1;
+                        node.isVisited = true;
+                        q.add(node);
                     }
                 }
             }
+
+            return sink.dist;
         }
     }
 
@@ -80,18 +121,33 @@ public class TreeTag {
         StringBuilder sb = new StringBuilder();
         while (tc-->0){
             int n = sc.nextInt();
-            int a = sc.nextInt();
-            int b = sc.nextInt();
+            int a = sc.nextInt() - 1;
+            int b = sc.nextInt() - 1;
             int da = sc.nextInt();
             int db = sc.nextInt();
 
             Tree tr = new Tree(n);
 
-            for(int i=0;i<n;i++){
+            for(int i=0;i<n-1;i++){
                 tr.addEdge(sc.nextInt()-1, sc.nextInt()-1);
             }
 
             tr.getDiameter();
+
+            int diameter = 0;
+            for(Node node: tr.nodelist){
+                diameter = Math.max(diameter, node.diameter_crossing_through);
+            }
+            diameter -= 1;
+
+            int dist = tr.getDist(a, b);
+
+            if(dist <= da || (Math.min(db, diameter) <= 2*da)){
+                sb.append("Alice\n");
+            }
+            else{
+                sb.append("Bob\n");
+            }
         }
 
         System.out.println(sb);

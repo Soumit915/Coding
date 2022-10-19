@@ -156,70 +156,40 @@ public class CreateInput {
         }
     }
 
+    static int[] getPermutation(int n){
+        int[] a = new int[n];
+        HashSet<Integer> set = new HashSet<>();
+        for(int i=0;i<n;i++){
+            a[i] = (int) (Math.random() * n + 1);
+
+            while(set.contains(a[i])){
+                a[i] = (int) (Math.random() * n + 1);
+            }
+
+            set.add(a[i]);
+        }
+
+        return a;
+    }
+
     public static void main(String[] args) throws IOException
     {
         Soumit sc = new Soumit();
         sc.streamOutput("Input.txt");
 
-        int t = 1000;
-        sc.println(t + "");
+        int t = 1;
 
+        //sc.println(t+"");
         while(t-->0){
-            int n = (int) (Math.random() * 4 + 1);
-            n *= 2;
-            sc.println(n+"");
 
-            int[] hash = new int[n];
-            int[][] ans = new int[n][2];
+            int n = 1000;
+            sc.print("[");
             for(int i=0;i<n;i++){
-                int u = (int) (Math.random() * n + 1);
-                while(hash[u-1] == 2){
-                    u = (int) (Math.random() * n + 1);
-                    //System.out.println(u+" "+Arrays.toString(hash));
-                }
-
-                //System.out.println("test");
-
-                int v = (int) (Math.random() * n + 1);
-                while(hash[v-1] == 2 || u==v){
-
-                    if(hash[v-1]==2){
-                        v = (int) (Math.random() * n + 1);
-                    }
-                    else{
-                        if(i==n-1 && u==v){
-                            break;
-                        }
-                        else{
-                            v = (int) (Math.random() * n + 1);
-                        }
-                    }
-
-
-                    //System.out.println(v+" "+Arrays.toString(hash));
-                }
-
-                hash[u-1]++;
-                hash[v-1]++;
-
-                if(u == v){
-                    System.out.println(i);
-                    int te = ans[i-1][0] = u;
-                    ans[i-1][0] = u;
-                    ans[i][0] = te;
-                    ans[i][1] = v;
-                }
-                else{
-                    ans[i][0] = u;
-                    ans[i][1] = v;
-                }
+                sc.print(1000+", ");
             }
+            sc.println("]");
 
-            for(int[] i: ans){
-                sc.println(i[0]+" "+i[1]);
-            }
-
-            System.out.println(t);
+            sc.println("2");
         }
 
         sc.close();

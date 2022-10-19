@@ -20,9 +20,6 @@ public class C {
             }
         }
 
-        /*if(n==1056){
-            System.out.println(k);
-        }*/
         return k;
     }
     public static void main(String[] args) throws IOException {
@@ -44,25 +41,15 @@ public class C {
                 if((n&(1L<<i))!=0 && ((xv+(1L<<i))<=x)){
                     xv += (1L<<i);
                     n -= (1L<<i);
-                    //System.out.println(i);
                 }
             }
 
-            //System.out.println(n+" "+xv);
             for(int i=1;i<31;i+=2){
                 if((n&(1L<<i))==0 && ((xv+(1L<<i))<=x) && (n&(1L<<(i+1)))!=0){
                     xv += (1L<<i);
                     n -= (1L<<i);
                 }
-                /*if((n&(1<<i))!=0 && ((xv+(1<<i))<=x)){
-                    xv += (1<<i);
-                    n -= (1<<i);
-                    System.out.println(i+" "+n+" "+xv);
-                }*/
             }
-
-            //System.out.println(xv+" "+n);
-            //n -= xv;
 
             if(n%2==1){
                 sb.append("-1\n");

@@ -5,12 +5,8 @@ import java.util.*;
 
 public class ChefAndClosure_BruteForce {
     public static String pad(String s, int n){
-        StringBuilder sb = new StringBuilder();
-        for(int i=s.length();i<n;i++){
-            sb.append("0");
-        }
-        sb.append(s);
-        return sb.toString();
+        return "0".repeat(Math.max(0, n - s.length())) +
+                s;
     }
 
     public static void main(String[] args) throws IOException {

@@ -5,26 +5,94 @@ import java.util.StringTokenizer;
 
 public class Test {
 
+    public static long alone(long[] sums)
+    {
+        ArrayList<Long> ls = new ArrayList<Long>();
+        for(long x: sums)
+            ls.add(x);
+        Collections.sort(ls);
+        Collections.reverse(ls);
+        long sum = 0L;
+        for(int i=0; i < Math.min(sums.length, 4); i++)
+            sum += ls.get(i);
+        return sum;
+    }
+
     private static void solve(Soumit sc) throws IOException {
 
-        int n=sc.nextInt();
-        String st=sc.next();
-        char[] a=st.toCharArray();
-        int pref=-1;
-        int seg=0;
-        int count=0;
-        for(int j=0;j<n;j=j+2) {
-            if(a[j]==a[j+1]) {
-                if(a[j]-'0' != pref) {
-                    pref=a[j]-'0';
-                    seg++;
-                }
-            }
-            else {
-                count++;
-            }
+        int N = sc.nextInt();
+        int M = sc.nextInt();
+        int[][] grid = new int[N][M];
+        for(int i=0; i < N; i++)
+            grid[i] = sc.nextIntArray(M);
+
+        if(N > M)
+        {
+            int[][] lol = new int[M][N];
+            for(int r=0; r < N; r++)
+                for(int c=0; c < M; c++)
+                    lol[c][r] = grid[r][c];
+            N = lol.length;
+            M = lol[0].length;
+            grid = lol;
         }
-        sc.println(count+" "+Math.max(seg,1));
+        long[] rsums = new long[N];
+        long[] csums = new long[M];
+        for(int r=0; r < N; r++)
+            for(int c=0; c < M; c++)
+            {
+                rsums[r] += grid[r][c];
+                csums[c] += grid[r][c];
+            }
+        long res = Math.max(alone(rsums), alone(csums));
+        if(N > 4)
+        {
+            for(int r=0; r < N; r++)
+            {
+                ArrayList<Long> vals = new ArrayList<Long>();
+                for(int c=0; c < M; c++)
+                    vals.add(csums[c]-grid[r][c]);
+                Collections.sort(vals);
+                Collections.reverse(vals);
+                long temp = rsums[r];
+                for(int i=0; i < 3; i++)
+                    temp += vals.get(i);
+                res = Math.max(res, temp);
+            }
+            for(int c=0; c < M; c++)
+            {
+                ArrayList<Long> vals = new ArrayList<Long>();
+                for(int r=0; r < N; r++)
+                    vals.add(rsums[r]-grid[r][c]);
+                Collections.sort(vals);
+                Collections.reverse(vals);
+                long temp = csums[c];
+                for(int i=0; i < 3; i++)
+                    temp += vals.get(i);
+                res = Math.max(res, temp);
+            }
+            for(int a=0; a < N; a++)
+                for(int b=a+1; b < N; b++)
+                {
+                    long[] vals = new long[M];
+                    for(int c=0; c < M; c++)
+                        vals[c] = csums[c]-grid[a][c]-grid[b][c];
+                    int dex1 = 0;
+                    for(int c=0; c < M; c++)
+                        if(vals[dex1] < vals[c])
+                            dex1 = c;
+                    int dex2 = 0;
+                    if(dex1 == 0)
+                        dex2 = 1;
+                    for(int c=0; c < M; c++)
+                        if(vals[dex2] < vals[c] && c != dex1)
+                            dex2 = c;
+                    long temp = rsums[a]+rsums[b]+vals[dex1]+vals[dex2];
+                    res = Math.max(res, temp);
+                }
+        }
+
+        System.out.println(res);
     }
 
     public static void main(String[] args) throws IOException{

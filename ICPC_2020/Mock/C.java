@@ -38,10 +38,6 @@ public class C {
                     alreadyDone++;
             }
 
-            /*System.out.println(alreadyDone+" "+set.size());
-            System.out.println(map);
-            System.out.println(set);*/
-
             int maxColors = y-x+1;
             int count = 0;
             for(int i=0;i<n;i++){
