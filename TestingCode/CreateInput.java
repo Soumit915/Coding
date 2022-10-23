@@ -182,14 +182,16 @@ public class CreateInput {
         //sc.println(t+"");
         while(t-->0){
 
-            int n = 1000;
-            sc.print("[");
-            for(int i=0;i<n;i++){
-                sc.print(1000+", ");
-            }
-            sc.println("]");
+            int n = (int) (Math.random() * 100000);
+            //sc.println(n+" ");
 
-            sc.println("2");
+            for(int i=0;i<100000;i++){
+                int v = (int) (Math.random() * 315 + 2);
+                v = v * v;
+
+                sc.print(v+",");
+            }
+            sc.println();
         }
 
         sc.close();

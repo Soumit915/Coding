@@ -1,66 +1,54 @@
-package Codeforces;
+package Codeforces.EducationalRound138;
 
 import java.util.*;
 import java.io.*;
 
-public class InversionsAfterShuffle {
+public class B {
 
-    static void update(double[] bit, int index, int val){
-        int n = bit.length;
-
-        while(index <= n){
-            bit[index - 1] += val;
-            index += (index & (-index));
+    static class Node{
+        int id;
+        long a, b;
+        Node(int id, long a, long b){
+            this.id = id;
+            this.a = a;
+            this.b = b;
         }
     }
 
-    static double query(double[] bit, int index){
-        double sum = 0;
-
-        while(index > 0){
-            sum += bit[index - 1];
-            index -= (index & (-index));
-        }
-
-        return sum;
-    }
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
+        Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        int[] a = sc.nextIntArray(n);
+        int tc = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (tc-->0){
+            int n = sc.nextInt();
+            long[] a = sc.nextLongArray(n);
+            long[] b = sc.nextLongArray(n);
 
-        double len_sum = 0;
-        for(int i=1;i<=n;i++){
-            double cur_len = ((double) i * (i - 1)) / 2;
-            len_sum += (cur_len * (n - i + 1));
+            Node[] nodes = new Node[n];
+            for(int i=0;i<n;i++){
+                nodes[i] = new Node(i, a[i], b[i]);
+            }
+
+            long time = 0;
+            long max = 0;
+            for(Node node : nodes){
+                time += node.a;
+                time += node.b;
+
+                max = Math.max(max, node.b);
+            }
+
+            time -= max;
+
+            //System.out.println(n);
+            //System.out.println(Arrays.toString(a));
+            //System.out.println(Arrays.toString(b));
+
+            sb.append(time).append("\n");
         }
 
-        double total_number_of_segs = ((double) n * (n + 1)) / 2.0;
-        len_sum /= total_number_of_segs;
-
-        double seg_inv_sum = 0, twoI = 0;
-        double[] bit = new double[n];
-        double[] inv_bit = new double[n];
-        for(int i=0;i<n;i++){
-            double sumq = query(bit, a[i]);
-            double invq = query(inv_bit, a[i]);
-
-            twoI += invq;
-            double cur_inv_sum = (invq * n) - sumq;
-            seg_inv_sum += cur_inv_sum;
-
-            update(bit, a[i], i);
-            update(inv_bit, a[i], 1);
-        }
-
-        twoI *= 2;
-        seg_inv_sum *= 2;
-        seg_inv_sum /= total_number_of_segs;
-
-        double ans = twoI - seg_inv_sum + len_sum;
-
-        System.out.println(ans);
+        System.out.println(sb);
 
         sc.close();
     }

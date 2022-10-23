@@ -1,66 +1,55 @@
-package Codeforces;
+package Codeforces.EducationalRound138;
 
 import java.util.*;
 import java.io.*;
 
-public class InversionsAfterShuffle {
+public class C {
 
-    static void update(double[] bit, int index, int val){
-        int n = bit.length;
-
-        while(index <= n){
-            bit[index - 1] += val;
-            index += (index & (-index));
-        }
-    }
-
-    static double query(double[] bit, int index){
-        double sum = 0;
-
-        while(index > 0){
-            sum += bit[index - 1];
-            index -= (index & (-index));
-        }
-
-        return sum;
-    }
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
+        Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        int[] a = sc.nextIntArray(n);
+        int tc = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (tc-->0){
+            int n = sc.nextInt();
+            int[] a = sc.nextIntArray(n);
 
-        double len_sum = 0;
-        for(int i=1;i<=n;i++){
-            double cur_len = ((double) i * (i - 1)) / 2;
-            len_sum += (cur_len * (n - i + 1));
+            Arrays.sort(a);
+
+            int ans = 0;
+            for(int k=1;k<=n;k++){
+                int l = 0, r = n-1;
+
+                boolean flag = true;
+                for(int i=1;i<=k;i++){
+                    int v = k - i + 1;
+                    while(l<=r && a[r] > v){
+                        r--;
+                    }
+
+                    if(l<=r && a[r] <= v){
+                        r--;
+                    }
+                    else{
+                        flag = false;
+                        break;
+                    }
+
+                    l++;
+                }
+
+                if(!flag){
+                    break;
+                }
+
+                ans = k;
+            }
+
+            sb.append(ans).append("\n");
         }
 
-        double total_number_of_segs = ((double) n * (n + 1)) / 2.0;
-        len_sum /= total_number_of_segs;
+        System.out.println(sb);
 
-        double seg_inv_sum = 0, twoI = 0;
-        double[] bit = new double[n];
-        double[] inv_bit = new double[n];
-        for(int i=0;i<n;i++){
-            double sumq = query(bit, a[i]);
-            double invq = query(inv_bit, a[i]);
-
-            twoI += invq;
-            double cur_inv_sum = (invq * n) - sumq;
-            seg_inv_sum += cur_inv_sum;
-
-            update(bit, a[i], i);
-            update(inv_bit, a[i], 1);
-        }
-
-        twoI *= 2;
-        seg_inv_sum *= 2;
-        seg_inv_sum /= total_number_of_segs;
-
-        double ans = twoI - seg_inv_sum + len_sum;
-
-        System.out.println(ans);
 
         sc.close();
     }

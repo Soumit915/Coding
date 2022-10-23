@@ -1,66 +1,133 @@
-package Codeforces;
+package Leetcode;
 
 import java.util.*;
 import java.io.*;
 
-public class InversionsAfterShuffle {
+public class MaximumNumberOfPointsFromGridQueries {
 
-    static void update(double[] bit, int index, int val){
-        int n = bit.length;
+    static class Query{
+        int id;
+        int val;
 
-        while(index <= n){
-            bit[index - 1] += val;
-            index += (index & (-index));
+        Query(int id, int qi){
+            this.id = id;
+            this.val = qi;
         }
     }
 
-    static double query(double[] bit, int index){
-        double sum = 0;
+    static class Node{
+        int x, y, val;
 
-        while(index > 0){
-            sum += bit[index - 1];
-            index -= (index & (-index));
+        List<Node> adlist = new ArrayList<>();
+
+        Node(int x, int y, int val){
+            this.x = x;
+            this.y = y;
+            this.val = val;
+        }
+    }
+
+    static void addEdge(Node u, Node v){
+        u.adlist.add(v);
+        v.adlist.add(u);
+    }
+
+    static boolean isValid(int n, int m, int i, int j){
+        return 0<=i && i<n && 0<=j && j<m;
+    }
+
+    public static int[] maxPoints(int[][] grid, int[] queries) {
+        int qn = queries.length;
+
+        Query[] query = new Query[qn];
+        for(int i=0;i<qn;i++){
+            query[i] = new Query(i, queries[i]);
         }
 
-        return sum;
+        Arrays.sort(query, (q1, q2) -> Integer.signum(q1.val - q2.val));
+
+        int n = grid.length;
+        int m = grid[0].length;
+
+        Node[][] nodes = new Node[n][m];
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                nodes[i][j] = new Node(i, j, grid[i][j]);
+            }
+        }
+
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(isValid(n, m, i-1, j)){
+                    addEdge(nodes[i][j], nodes[i-1][j]);
+                }
+
+                if(isValid(n, m, i, j-1)){
+                    addEdge(nodes[i][j], nodes[i][j-1]);
+                }
+            }
+        }
+
+        int count = 0;
+        int[] ans = new int[qn];
+
+        Queue<Node> q = new LinkedList<>();
+        q.add(nodes[0][0]);
+
+        Set<Node> visited = new HashSet<>();
+        visited.add(nodes[0][0]);
+
+        for(int i=0;i<qn;i++){
+            Query qi = query[i];
+
+            Queue<Node> localq = new LinkedList<>();
+            while(!q.isEmpty()){
+                Node cur = q.remove();
+
+                if(cur.val < qi.val){
+                    count++;
+
+                    for(Node node : cur.adlist){
+                        if(!visited.contains(node)){
+                            visited.add(node);
+                            q.add(node);
+                        }
+                    }
+                }
+                else{
+                    localq.add(cur);
+                }
+            }
+
+            ans[qi.id] = count;
+            q = localq;
+        }
+
+        return ans;
     }
+
     public static void main(String[] args) throws IOException {
         Soumit sc = new Soumit("Input.txt");
 
-        int n = sc.nextInt();
-        int[] a = sc.nextIntArray(n);
-
-        double len_sum = 0;
-        for(int i=1;i<=n;i++){
-            double cur_len = ((double) i * (i - 1)) / 2;
-            len_sum += (cur_len * (n - i + 1));
-        }
-
-        double total_number_of_segs = ((double) n * (n + 1)) / 2.0;
-        len_sum /= total_number_of_segs;
-
-        double seg_inv_sum = 0, twoI = 0;
-        double[] bit = new double[n];
-        double[] inv_bit = new double[n];
+        int n = 745, m = 134, k = 10000;
+        int[][] grid = new int[n][m];
         for(int i=0;i<n;i++){
-            double sumq = query(bit, a[i]);
-            double invq = query(inv_bit, a[i]);
-
-            twoI += invq;
-            double cur_inv_sum = (invq * n) - sumq;
-            seg_inv_sum += cur_inv_sum;
-
-            update(bit, a[i], i);
-            update(inv_bit, a[i], 1);
+            for(int j=0;j<m;j++){
+                grid[i][j] = (int) (Math.random() * 1000000 + 1);
+            }
         }
 
-        twoI *= 2;
-        seg_inv_sum *= 2;
-        seg_inv_sum /= total_number_of_segs;
+        int[] q = new int[k];
+        for(int i=0;i<k;i++){
+            q[i] = (int) (Math.random() * 1000000 + 1);
+        }
 
-        double ans = twoI - seg_inv_sum + len_sum;
+        long start = System.currentTimeMillis();
 
-        System.out.println(ans);
+        System.out.println(Arrays.toString(maxPoints(grid, q)));
+
+        long end = System.currentTimeMillis();
+        System.out.println((end - start) / 1000.0);
 
         sc.close();
     }

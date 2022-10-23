@@ -1,64 +1,77 @@
-package Codeforces;
+package Codeforces.EducationalRound138;
 
 import java.util.*;
 import java.io.*;
 
-public class InversionsAfterShuffle {
+public class D {
 
-    static void update(double[] bit, int index, int val){
-        int n = bit.length;
+    static long mod = 998244353;
 
-        while(index <= n){
-            bit[index - 1] += val;
-            index += (index & (-index));
+    static long pow(long a, long b){
+
+        a %= mod;
+
+        long p = 1;
+        while(b>0)
+        {
+            if(b%2==1)
+            {
+                p = (p*a)%mod;
+            }
+            a = (a*a)%mod;
+            b/=2;
         }
+        return p;
     }
 
-    static double query(double[] bit, int index){
-        double sum = 0;
+    static Set<Integer> primes;
 
-        while(index > 0){
-            sum += bit[index - 1];
-            index -= (index & (-index));
+    static boolean isPrime(int n){
+        return primes.contains(n);
+    }
+
+    static long bruteforce(long n, long m){
+        long total = pow(m, n);
+        total = total % mod;
+
+        long prev = 1;
+        long total_combs = m%mod;
+        for(int i=2;i<=n;i++){
+            if(isPrime(i)){
+                prev *= i;
+            }
+
+            long cur_combs = (m / prev);
+            cur_combs = cur_combs % mod;
+            total_combs = (total_combs * cur_combs) % mod;
         }
 
-        return sum;
+        total = ((total%mod) - (total_combs%mod) + mod) % mod;
+
+        return total;
     }
+
     public static void main(String[] args) throws IOException {
-        Soumit sc = new Soumit("Input.txt");
+        Soumit sc = new Soumit();
 
-        int n = sc.nextInt();
-        int[] a = sc.nextIntArray(n);
+        primes = new HashSet<>();
+        primes.add(2);primes.add(5);primes.add(11);primes.add(17);primes.add(23);primes.add(31);primes.add(41);
+        primes.add(3);primes.add(7);primes.add(13);primes.add(19);primes.add(29);primes.add(37);primes.add(43);
 
-        double len_sum = 0;
-        for(int i=1;i<=n;i++){
-            double cur_len = ((double) i * (i - 1)) / 2;
-            len_sum += (cur_len * (n - i + 1));
+        long n = sc.nextLong();
+        long m = sc.nextLong();
+
+        long ans = 0;
+        for(int i=2;i<=n;i++){
+            long cur;
+            if(i <= 45){
+                cur = bruteforce(i, m);
+            }
+            else{
+                cur = pow(m, i);
+            }
+            ans = (ans + cur) % mod;
         }
-
-        double total_number_of_segs = ((double) n * (n + 1)) / 2.0;
-        len_sum /= total_number_of_segs;
-
-        double seg_inv_sum = 0, twoI = 0;
-        double[] bit = new double[n];
-        double[] inv_bit = new double[n];
-        for(int i=0;i<n;i++){
-            double sumq = query(bit, a[i]);
-            double invq = query(inv_bit, a[i]);
-
-            twoI += invq;
-            double cur_inv_sum = (invq * n) - sumq;
-            seg_inv_sum += cur_inv_sum;
-
-            update(bit, a[i], i);
-            update(inv_bit, a[i], 1);
-        }
-
-        twoI *= 2;
-        seg_inv_sum *= 2;
-        seg_inv_sum /= total_number_of_segs;
-
-        double ans = twoI - seg_inv_sum + len_sum;
 
         System.out.println(ans);
 
